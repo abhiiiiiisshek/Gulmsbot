@@ -1,0 +1,42 @@
+name: LMS probe
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Probe LMS API
+        env:
+          U: ${{ secrets.LMS_USERNAME }}
+          P: ${{ secrets.LMS_PASSWORD }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.parse
+          B = "https://gulms.galgotiasuniversity.org"
+          def note(m): print("::notice::" + m.replace("\n", " ")[:900])
+          def post(path, data):
+              req = urllib.request.Request(B + path, urllib.parse.urlencode(data).encode(),
+                                           headers={"User-Agent": "Mozilla/5.0 GU-LMS-Watcher"})
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.load(r)
+          t = post("/login/token.php", {"username": os.environ["U"], "password": os.environ["P"], "service": "moodle_mobile_app"})
+          if "token" not in t:
+              note("API MODE: NO - " + str(t.get("error") or t.get("errorcode")))
+              raise SystemExit
+          note("API MODE: YES, privatetoken=" + str("privatetoken" in t))
+          tok = t["token"]
+          info = post("/webservice/rest/server.php", {"wstoken": tok, "wsfunction": "core_webservice_get_site_info", "moodlewsrestformat": "json"})
+          fns = {f["name"] for f in info.get("functions", [])}
+          note(f"moodle release={info.get('release')} uploadfiles={info.get('uploadfiles')} downloadfiles={info.get('downloadfiles')} usermaxupload={info.get('usermaxuploadfilesize')} total_functions={len(fns)}")
+          want = ["mod_assign_get_submission_status","mod_assign_save_submission","mod_assign_submit_for_grading",
+                  "core_user_add_user_private_files","gradereport_user_get_grade_items","core_grades_get_grades",
+                  "mod_quiz_get_quizzes_by_courses","mod_quiz_get_user_attempts","core_calendar_get_action_events_by_timesort",
+                  "core_calendar_get_calendar_export_token","mod_forum_get_forum_discussions","mod_assign_get_assignments",
+                  "core_course_get_contents","message_popup_get_popup_notifications","mod_assign_view_submission_status",
+                  "core_files_get_unused_draft_itemid","mod_folder_get_folders_by_courses","mod_resource_get_resources_by_courses"]
+          note("HAVE: " + ", ".join(w for w in want if w in fns))
+          note("MISSING: " + (", ".join(w for w in want if w not in fns) or "none"))
+          PY
