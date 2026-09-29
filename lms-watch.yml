@@ -1,0 +1,41 @@
+name: GU LMS watcher
+
+on:
+  schedule:
+    - cron: "15 2 * * *"    # 07:45 AM IST
+    - cron: "15 14 * * *"   # 07:45 PM IST
+  workflow_dispatch:         # "Run workflow" button for manual checks
+
+permissions:
+  contents: write            # lets the job save state.json back to the repo
+
+concurrency: lms-watch
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Check LMS
+        env:
+          LMS_USERNAME: ${{ secrets.LMS_USERNAME }}
+          LMS_PASSWORD: ${{ secrets.LMS_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python lms_watch.py
+
+      - name: Save state
+        run: |
+          git config user.name "lms-watcher"
+          git config user.email "lms-watcher@users.noreply.github.com"
+          git add state.json
+          git diff --cached --quiet || (git commit -m "Update LMS state" && git push)
