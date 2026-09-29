@@ -424,8 +424,7 @@ def build_first_run_message(snap, mode):
 
 def send(text):
     if not (TG_TOKEN and TG_CHAT):
-        print(text)
-        return
+        raise RuntimeError("TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID secrets are missing")
     chunks, cur = [], ""
     for ln in text.split("\n"):
         if len(cur) + len(ln) + 1 > 3900:
@@ -438,7 +437,8 @@ def send(text):
                           data={"chat_id": TG_CHAT, "text": chunk, "parse_mode": "HTML",
                                 "disable_web_page_preview": "true"}, timeout=30)
         if not r.ok:
-            print("Telegram error:", r.text, file=sys.stderr)
+            # Fail loudly so the Actions run turns red instead of silently "succeeding"
+            raise RuntimeError(f"Telegram error: {r.json().get('description', r.text)}")
 
 
 # -------------------------------------------------------------------- main
