@@ -1,0 +1,38 @@
+name: Telegram test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Diagnose Telegram
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.parse
+          tok = os.environ.get("TOKEN", "").strip()
+          chat = os.environ.get("CHAT", "").strip()
+          def note(msg): print("::notice::" + msg.replace("\n", " "))
+          note(f"token set={bool(tok)} len={len(tok)} has_space={' ' in os.environ.get('TOKEN','')} | chat set={bool(chat)} value_looks_numeric={chat.lstrip('-').isdigit()} len={len(chat)}")
+          def call(method, data=None):
+              url = f"https://api.telegram.org/bot{tok}/{method}"
+              body = urllib.parse.urlencode(data).encode() if data else None
+              try:
+                  with urllib.request.urlopen(url, body, timeout=20) as r:
+                      return json.load(r)
+              except urllib.error.HTTPError as e:
+                  return json.load(e)
+          me = call("getMe")
+          note("getMe: " + (("OK bot=@" + me["result"]["username"]) if me.get("ok") else str(me.get("description"))))
+          up = call("getUpdates")
+          if up.get("ok"):
+              chats = {str(u.get("message", {}).get("chat", {}).get("id")) for u in up["result"] if u.get("message")}
+              note(f"chats that messaged the bot: {sorted(chats) or 'NONE - press Start on the bot'} | secret matches one: {chat in chats}")
+          sm = call("sendMessage", {"chat_id": chat, "text": "🧪 Test from GU LMS watcher - if you see this, Telegram works!"})
+          note("sendMessage: " + ("OK - message delivered" if sm.get("ok") else str(sm.get("description"))))
+          PY
