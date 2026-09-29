@@ -1,66 +1,59 @@
-# GU LMS Watcher
+# GU LMS Assistant 🤖
 
-Checks the Galgotias Moodle LMS twice a day (7:45 AM & 7:45 PM IST) and sends you a Telegram message with **only what's new**:
+A personal Telegram assistant for the Galgotias LMS. Runs 100% on free tiers — your laptop can stay off.
 
-- 🆕 New assignments
-- 🗓 New deadlines (quizzes, submissions, anything with a due date)
-- ✏️ Changed deadlines
-- 📢 Course announcements
-- 📦 New modules / study material
-- 🔔 LMS notifications
-- ⏰ Anything due in the next 48 hours (every run, as a reminder)
+| Part | Runs on | Does |
+|---|---|---|
+| **Watcher** (`lms_watch.py`) | GitHub Actions, hourly | Alerts: new assignments, deadlines, material, announcements, grades + feedback, submission confirmations, nag-until-done reminders, draft trap, quiz windows, AI summaries & breakdowns, morning plan, Sunday report |
+| **Bot** (`worker/`) | Cloudflare Workers | Live chat: `/pending` `/today` `/week` `/grades` `/courses` `/cal` `/status`, AI answers (text + 🎤 voice, Hinglish OK), **submit assignments by sending the file** |
+| **AI** | Google Gemini free tier | Summaries, plans, pre-submit checks, chat |
 
-It runs on GitHub's servers for free, so your laptop can stay off.
+Quiet hours: 11 PM – 7 AM IST, only urgent reminders (≤ 6 h left).
 
 ---
 
-## Setup (about 15 minutes)
+## One-time setup (≈15 min)
 
-### 0. Change your LMS password first
-Use the new password only in step 3.
+### 1. Gemini API key (free)
+1. Go to **aistudio.google.com/apikey** → sign in with Google → **Create API key**.
+2. Copy it.
 
-### 1. Create a Telegram bot
-1. In Telegram, open **@BotFather** → send `/newbot` → pick a name → copy the **bot token**.
-2. Open your new bot and press **Start** (it can't message you until you do).
-3. Open **@userinfobot** → it replies with your numeric **chat ID**. Copy it.
+### 2. Cloudflare (free)
+1. Sign up at **dash.cloudflare.com** (free plan, no card).
+2. Open **Workers & Pages** once. This creates your free `*.workers.dev` subdomain. If it asks you to pick a subdomain, pick anything.
+3. Copy your **Account ID** (right sidebar on the Workers & Pages page, or the dashboard URL).
+4. **My Profile → API Tokens → Create Token → "Edit Cloudflare Workers" template** → Continue → Create → copy the token.
 
-### 2. Create a PRIVATE GitHub repo
-1. github.com → **New repository** → name it `gu-lms-watcher` → choose **Private** (important) → Create.
-2. **Add file → Upload files** → upload `lms_watch.py`, `requirements.txt`, `README.md` → Commit.
-3. **Add file → Create new file** → in the name box type exactly
-   `.github/workflows/lms-watch.yml`
-   → paste the contents of `lms-watch.yml` → Commit.
-
-### 3. Add your secrets
-Repo → **Settings → Secrets and variables → Actions → New repository secret**. Add four:
+### 3. Add GitHub secrets
+Repo → **Settings → Secrets and variables → Actions → New repository secret**:
 
 | Name | Value |
 |---|---|
-| `LMS_USERNAME` | your LMS username |
-| `LMS_PASSWORD` | your (new) LMS password |
-| `TELEGRAM_BOT_TOKEN` | token from BotFather |
-| `TELEGRAM_CHAT_ID` | number from @userinfobot |
+| `GEMINI_API_KEY` | from step 1 |
+| `CLOUDFLARE_ACCOUNT_ID` | from step 2 |
+| `CLOUDFLARE_API_TOKEN` | from step 2 |
 
-### 4. First run
-Repo → **Actions** tab → enable workflows if asked → **GU LMS watcher** → **Run workflow**.
+(`LMS_USERNAME`, `LMS_PASSWORD`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` are already there.)
 
-Within a minute you should get: *"✅ GU LMS watcher connected"* with your upcoming deadlines. From then on it runs automatically.
+### 4. Deploy
+**Actions → Deploy Telegram bot → Run workflow.** When it's green, open the bot in Telegram and send `/start`.
+
+That's it. Future code changes redeploy automatically.
 
 ---
 
-## Tweaks
-- **Change times:** edit the `cron` lines in the workflow (times are UTC; IST = UTC + 5:30).
-- **Reminder window:** add an env `DUE_SOON_HOURS: "72"` under the *Check LMS* step.
-- **No "nothing new" morning ping:** add env `HEARTBEAT: "0"`.
-- **Check right now:** Actions → Run workflow.
+## Extras
+- **Google Calendar sync:** send `/cal` to the bot and follow the 3 steps.
+- **Submit an assignment:** send the file to the bot → pick the assignment → (optional) 🔍 AI-check → ✅ Submit. It never submits without your tap, and it verifies the LMS status afterwards.
+- **Test Telegram:** Actions → *Telegram test*. **Test LMS API:** Actions → *LMS probe*.
 
-## Troubleshooting
-- **"couldn't log in"** on Telegram → wrong username/password secret (or you changed your password — update `LMS_PASSWORD`).
-- **Log says "falling back to web login"** → normal; the college disabled Moodle's app API, so it uses the regular login page instead.
-- **Timeouts / connection refused** → the college site may block non-Indian IPs. Tell Claude; the fallback is running the same script on your own machine or an Indian-region free VM.
-- **No message at all** → make sure you pressed Start on your bot, and check the Actions run log.
+## Free-tier budgets (you're far below all of them)
+- GitHub Actions (private repo): 2,000 min/month — hourly watcher ≈ 750.
+- Cloudflare Workers: 100,000 requests/day.
+- Gemini: free-tier rate limits (a few hundred requests/day). If busy, the bot says so; try again in a minute.
 
 ## Privacy
-- Your password only lives in GitHub's encrypted Secrets; it's never printed or committed.
-- `state.json` (course and assignment names, used to detect what's new) is committed to the repo — that's why the repo must be **private**.
-- Usage: roughly 60 of your free 2,000 GitHub Actions minutes per month.
+- Passwords/keys live only in GitHub Secrets and Cloudflare's encrypted secrets.
+- `state.json` holds course/assignment names → **keep this repo Private**.
+- On Gemini's free tier, Google may use prompts to improve its models — don't send anything you wouldn't share.
+- The bot only answers your Telegram account (`TELEGRAM_CHAT_ID`); everyone else gets "private bot".

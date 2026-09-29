@@ -2,12 +2,11 @@ name: GU LMS watcher
 
 on:
   schedule:
-    - cron: "15 2 * * *"    # 07:45 AM IST
-    - cron: "15 14 * * *"   # 07:45 PM IST
-  workflow_dispatch:         # "Run workflow" button for manual checks
+    - cron: "20 * * * *"     # every hour (quiet hours 11 PM-7 AM IST: urgent reminders only)
+  workflow_dispatch:
 
 permissions:
-  contents: write            # lets the job save state.json back to the repo
+  contents: write
 
 concurrency: lms-watch
 
@@ -31,6 +30,7 @@ jobs:
           LMS_PASSWORD: ${{ secrets.LMS_PASSWORD }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python lms_watch.py
 
       - name: Save state
@@ -38,4 +38,4 @@ jobs:
           git config user.name "lms-watcher"
           git config user.email "lms-watcher@users.noreply.github.com"
           git add state.json
-          git diff --cached --quiet || (git commit -m "Update LMS state" && git push)
+          git diff --cached --quiet || (git commit -m "Update LMS state" && git pull --rebase -q && git push)

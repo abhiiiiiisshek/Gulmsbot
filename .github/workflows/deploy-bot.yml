@@ -1,0 +1,87 @@
+name: Deploy Telegram bot
+
+on:
+  push:
+    branches: [main]
+    paths: ["worker/**", ".github/workflows/deploy-bot.yml"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: worker
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Check secrets
+        run: |
+          for s in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID TELEGRAM_BOT_TOKEN; do
+            if [ -z "${!s}" ]; then echo "::notice::Skipping deploy: GitHub secret $s is not set yet (see README)."; echo "SKIP=1" >> $GITHUB_ENV; fi
+          done
+
+      - name: Install wrangler
+        if: env.SKIP != '1'
+        run: npm install --no-save wrangler@4 >/dev/null 2>&1 && npx wrangler --version
+
+      - name: Create / find KV storage
+        if: env.SKIP != '1'
+        run: |
+          ID=$(npx wrangler kv namespace list 2>/dev/null | python3 -c "import sys,json;print(next((n['id'] for n in json.load(sys.stdin) if n['title'].endswith('gulmsbot-kv')),''))" || true)
+          if [ -z "$ID" ]; then
+            npx wrangler kv namespace create gulmsbot-kv
+            ID=$(npx wrangler kv namespace list | python3 -c "import sys,json;print(next(n['id'] for n in json.load(sys.stdin) if n['title'].endswith('gulmsbot-kv')))")
+          fi
+          sed -i "s/__KV_ID__/$ID/" wrangler.toml
+
+      - name: Deploy worker
+        if: env.SKIP != '1'
+        run: |
+          npx wrangler deploy 2>&1 | tee deploy.log
+          URL=$(grep -oE 'https://[a-zA-Z0-9.-]+\.workers\.dev' deploy.log | head -1)
+          [ -n "$URL" ] || { echo "::error::No workers.dev URL. Open dash.cloudflare.com -> Workers & Pages once to create your free workers.dev subdomain, then re-run."; exit 1; }
+          echo "URL=$URL" >> $GITHUB_ENV
+
+      - name: Set bot secrets
+        if: env.SKIP != '1'
+        env:
+          LMS_USERNAME: ${{ secrets.LMS_USERNAME }}
+          LMS_PASSWORD: ${{ secrets.LMS_PASSWORD }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python3 -c "import os,json;json.dump({k:os.environ[k] for k in ['LMS_USERNAME','LMS_PASSWORD','TELEGRAM_BOT_TOKEN','TELEGRAM_CHAT_ID','GEMINI_API_KEY'] if os.environ.get(k)},open('/tmp/s.json','w'))"
+          npx wrangler secret bulk /tmp/s.json
+          rm -f /tmp/s.json
+
+      - name: Connect Telegram webhook
+        if: env.SKIP != '1'
+        run: |
+          SECRET=$(printf '%s' "$TELEGRAM_BOT_TOKEN:gulms-webhook" | sha256sum | cut -c1-48)
+          echo "::add-mask::$SECRET"
+          curl -sf "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
+            --data-urlencode "url=$URL/tg" --data-urlencode "secret_token=$SECRET" \
+            --data-urlencode 'allowed_updates=["message","callback_query"]' -d drop_pending_updates=true > /dev/null
+          curl -sf "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setMyCommands" -H 'Content-Type: application/json' -d '{"commands":[
+            {"command":"pending","description":"Everything not yet submitted"},
+            {"command":"today","description":"Due today"},
+            {"command":"week","description":"Due in the next 7 days"},
+            {"command":"grades","description":"Marks and feedback"},
+            {"command":"courses","description":"Your courses"},
+            {"command":"cal","description":"Sync deadlines to Google Calendar"},
+            {"command":"status","description":"Is the bot healthy?"},
+            {"command":"help","description":"What can this bot do"}]}' > /dev/null
+          sleep 5
+          HEALTH=$(curl -s "$URL/health?k=$SECRET")
+          echo "::notice::Bot health: $HEALTH"
+          echo "$HEALTH" | grep -q lms_courses || echo "::warning::The bot could not reach the LMS from Cloudflare — see health above."

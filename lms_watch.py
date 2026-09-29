@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 """
-GU LMS watcher
-Checks the Galgotias Moodle LMS for new modules, assignments, deadlines,
-announcements and notifications, and sends ONLY what changed to Telegram.
+GU LMS watcher (runs hourly on GitHub Actions)
 
-Mode A: Moodle mobile web-service API (clean, preferred)
-Mode B: normal web login + Moodle's AJAX endpoints (fallback if the API is disabled)
+Sends Telegram alerts for:
+  new assignments / deadlines / changed deadlines / announcements / material / notifications,
+  new grades + feedback, submission confirmations, "nag until done" reminders,
+  the draft trap (uploaded but never submitted), quiz windows,
+  AI summaries of new PDFs, AI breakdowns of new assignments,
+  a morning plan and a Sunday report.
+Quiet hours 23:00-07:00 IST: only urgent reminders get through.
 
-Credentials come from environment variables (GitHub Secrets) - never hard-code them.
+Secrets (env): LMS_USERNAME, LMS_PASSWORD, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, GEMINI_API_KEY (optional)
 """
+import base64
 import json
 import os
 import re
@@ -22,17 +26,22 @@ from bs4 import BeautifulSoup
 BASE = os.environ.get("LMS_BASE_URL", "https://gulms.galgotiasuniversity.org").rstrip("/")
 USER = os.environ.get("LMS_USERNAME", "")
 PASS = os.environ.get("LMS_PASSWORD", "")
-TG_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
-TG_CHAT = os.environ.get("TELEGRAM_CHAT_ID", "")
+TG_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+TG_CHAT = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 STATE_FILE = os.environ.get("STATE_FILE", "state.json")
-DUE_SOON_HOURS = int(os.environ.get("DUE_SOON_HOURS", "48"))
-HEARTBEAT = os.environ.get("HEARTBEAT", "1") == "1"  # "nothing new" ping on the morning run
 
 IST = timezone(timedelta(hours=5, minutes=30))
 UA = {"User-Agent": "Mozilla/5.0 (GU-LMS-Watcher; personal notifier)"}
-CATEGORIES = ("courses", "modules", "assignments", "events", "announcements", "notifications")
+DIGEST = ("courses", "modules", "assignments", "events", "announcements", "notifications")
+NAG_HOURS = (72, 24, 6, 2)          # reminder thresholds before a deadline
+URGENT_HOURS = 6                     # what may break quiet hours
+MAX_AI_SUMMARIES = 3                 # per run, to stay inside Gemini free-tier limits
 
 warnings = []
+NOW = time.time()
+NOW_IST = datetime.now(IST)
 
 
 class LMSError(Exception):
@@ -47,8 +56,20 @@ def clean(text):
     return re.sub(r"\s+", " ", text).strip()
 
 
+def short(name):
+    return re.sub(r"\s*\([A-Z0-9]+\)\s*$", "", clean(name))
+
+
 def esc(text):
-    return (str(text or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+    return str(text or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def md_to_html(s):
+    s = esc(s)
+    s = re.sub(r"^#+\s*(.+)$", r"<b>\1</b>", s, flags=re.M)
+    s = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", s)
+    s = re.sub(r"(^|[\s(])\*([^*\n]+?)\*(?=[\s).,!?:;]|$)", r"\1<b>\2</b>", s, flags=re.M)
+    return re.sub(r"^\s*[-*]\s+", "• ", s, flags=re.M)
 
 
 def fmt_time(ts):
@@ -57,8 +78,14 @@ def fmt_time(ts):
     return datetime.fromtimestamp(int(ts), IST).strftime("%a %d %b, %I:%M %p")
 
 
+def rel(ts):
+    s = ts - NOW
+    a = abs(s)
+    txt = f"{round(a / 60)} min" if a < 3600 else f"{round(a / 3600)} h" if a < 172800 else f"{round(a / 86400)} days"
+    return f"{txt} ago" if s < 0 else f"in {txt}"
+
+
 def flatten(obj, prefix=""):
-    """Turn nested params into Moodle's key[0][name]=value form."""
     out = {}
     if isinstance(obj, dict):
         for k, v in obj.items():
@@ -73,229 +100,172 @@ def flatten(obj, prefix=""):
     return out
 
 
-def empty_snapshot():
-    snap = {c: {} for c in CATEGORIES}
-    snap["_ok"] = []          # categories fetched successfully this run
-    snap["_failed_courses"] = []
-    return snap
+def link(name, url):
+    return f'<a href="{esc(url)}">{esc(name)}</a>' if url else esc(name)
 
 
-# ------------------------------------------------------- Mode A: web service
-class ApiClient:
-    mode = "Moodle API"
-
+# ------------------------------------------------------------------ Moodle
+class Api:
     def __init__(self):
         self.s = requests.Session()
         self.s.headers.update(UA)
-        r = self.s.post(f"{BASE}/login/token.php",
-                        data={"username": USER, "password": PASS, "service": "moodle_mobile_app"},
-                        timeout=30)
-        try:
-            data = r.json()
-        except ValueError:
-            raise LMSError("API token endpoint did not return JSON")
+        r = self.s.post(f"{BASE}/login/token.php", timeout=30,
+                        data={"username": USER, "password": PASS, "service": "moodle_mobile_app"})
+        data = r.json()
         if "token" not in data:
-            raise LMSError(data.get("error") or "no API token returned")
+            raise LMSError(data.get("error") or "LMS login failed")
         self.token = data["token"]
 
     def call(self, fn, **params):
         payload = {"wstoken": self.token, "wsfunction": fn, "moodlewsrestformat": "json"}
         payload.update(flatten(params))
-        r = self.s.post(f"{BASE}/webservice/rest/server.php", data=payload, timeout=60)
-        data = r.json()
+        data = self.s.post(f"{BASE}/webservice/rest/server.php", data=payload, timeout=60).json()
         if isinstance(data, dict) and data.get("exception"):
             raise LMSError(f"{fn}: {data.get('message')}")
         return data
 
+    def download(self, fileurl, limit=15 * 1024 * 1024):
+        sep = "&" if "?" in fileurl else "?"
+        r = self.s.get(f"{fileurl}{sep}token={self.token}", timeout=90, stream=True)
+        r.raise_for_status()
+        data = b""
+        for chunk in r.iter_content(65536):
+            data += chunk
+            if len(data) > limit:
+                return None
+        return data
 
-def collect_api(c):
-    snap = empty_snapshot()
-    uid = c.call("core_webservice_get_site_info")["userid"]
 
-    courses = c.call("core_enrol_get_users_courses", userid=uid)
+def safe(label, fn, default=None):
+    try:
+        return fn()
+    except Exception as e:  # noqa: BLE001
+        warnings.append(f"{label}: {e}")
+        return default
+
+
+def collect(c):
+    snap = {k: {} for k in DIGEST + ("grades", "subs", "quizzes")}
+    snap["_ok"] = []
+    snap["_failed_courses"] = []
+    snap["_extra"] = {"files": {}, "briefs": {}}
+    c.uid = c.call("core_webservice_get_site_info")["userid"]
+
+    courses = c.call("core_enrol_get_users_courses", userid=c.uid)
     for co in courses:
-        snap["courses"][str(co["id"])] = clean(co["fullname"])
+        snap["courses"][str(co["id"])] = short(co["fullname"])
     snap["_ok"].append("courses")
     ids = [co["id"] for co in courses]
 
-    # Modules / course material
     for cid in ids:
         cname = snap["courses"][str(cid)]
         try:
             for sec in c.call("core_course_get_contents", courseid=cid):
                 for m in sec.get("modules", []):
-                    if m.get("modname") == "label":
+                    if m.get("modname") in ("label", "subsection"):
                         continue
-                    snap["modules"][str(m["id"])] = {
-                        "name": clean(m.get("name")), "type": m.get("modname", ""),
-                        "course": cname, "section": clean(sec.get("name")),
-                        "url": m.get("url") or f"{BASE}/course/view.php?id={cid}",
+                    mid = str(m["id"])
+                    snap["modules"][mid] = {
+                        "name": clean(m.get("name")), "type": m.get("modname", ""), "course": cname,
+                        "section": clean(sec.get("name")), "url": m.get("url") or f"{BASE}/course/view.php?id={cid}",
                     }
+                    files = [f for f in (m.get("contents") or []) if f.get("type") == "file"]
+                    if files:
+                        snap["_extra"]["files"][mid] = files[0]
         except Exception as e:  # noqa: BLE001
             snap["_failed_courses"].append(cname)
             warnings.append(f"contents of {cname}: {e}")
     snap["_ok"].append("modules")
 
-    # Assignments with due dates
-    try:
+    def assignments():
         data = c.call("mod_assign_get_assignments", courseids=ids)
         for co in data.get("courses", []):
-            cname = snap["courses"].get(str(co["id"]), clean(co.get("fullname")))
+            cname = snap["courses"].get(str(co["id"]), short(co.get("fullname")))
             for a in co.get("assignments", []):
-                snap["assignments"][str(a["id"])] = {
+                aid = str(a["id"])
+                snap["assignments"][aid] = {
                     "name": clean(a["name"]), "due": a.get("duedate") or 0, "course": cname,
                     "url": f"{BASE}/mod/assign/view.php?id={a['cmid']}", "cmid": a["cmid"],
                 }
+                snap["_extra"]["briefs"][aid] = {"intro": clean(a.get("intro"))[:3000],
+                                                 "files": a.get("introattachments") or []}
         snap["_ok"].append("assignments")
-    except Exception as e:  # noqa: BLE001
-        warnings.append(f"assignments: {e}")
+    safe("assignments", assignments)
 
-    # Upcoming deadlines (quizzes, assignments, anything with a due date)
-    try:
-        ev = c.call("core_calendar_get_action_events_by_timesort",
-                    timesortfrom=int(time.time()) - 86400, limitnum=50)
-        add_events(snap, ev.get("events", []))
+    def events():
+        ev = c.call("core_calendar_get_action_events_by_timesort", timesortfrom=int(NOW) - 86400, limitnum=50)
+        for e in ev.get("events", []):
+            snap["events"][str(e["id"])] = {
+                "name": clean(e.get("name")), "due": e.get("timesort") or 0,
+                "course": short((e.get("course") or {}).get("fullname")),
+                "url": e.get("url") or "", "type": e.get("modulename"), "instance": e.get("instance"),
+            }
         snap["_ok"].append("events")
-    except Exception as e:  # noqa: BLE001
-        warnings.append(f"deadlines: {e}")
+    safe("deadlines", events)
 
-    # Announcements (news forums)
-    try:
-        forums = c.call("mod_forum_get_forums_by_courses", courseids=ids)
-        for f in forums:
+    def announcements():
+        for f in c.call("mod_forum_get_forums_by_courses", courseids=ids):
             if f.get("type") != "news":
                 continue
             cname = snap["courses"].get(str(f.get("course")), "")
-            try:
-                d = c.call("mod_forum_get_forum_discussions", forumid=f["id"], perpage=10)
-            except LMSError:
-                d = c.call("mod_forum_get_forum_discussions_paginated", forumid=f["id"],
-                           sortby="timemodified", sortdirection="DESC", perpage=10)
+            d = c.call("mod_forum_get_forum_discussions", forumid=f["id"], perpage=10)
             for disc in d.get("discussions", []):
                 did = disc.get("discussion") or disc.get("id")
                 snap["announcements"][str(did)] = {
                     "name": clean(disc.get("name") or disc.get("subject")), "course": cname,
-                    "url": f"{BASE}/mod/forum/discuss.php?d={did}",
-                    "text": clean(disc.get("message"))[:200],
+                    "url": f"{BASE}/mod/forum/discuss.php?d={did}", "text": clean(disc.get("message"))[:200],
                 }
         snap["_ok"].append("announcements")
-    except Exception as e:  # noqa: BLE001
-        warnings.append(f"announcements: {e}")
+    safe("announcements", announcements)
 
-    add_notifications(snap, lambda: c.call("message_popup_get_popup_notifications",
-                                           useridto=uid, limit=20))
-    return snap
-
-
-# ------------------------------------------------- Mode B: web login + AJAX
-class WebClient:
-    mode = "web login"
-
-    def __init__(self):
-        s = self.s = requests.Session()
-        s.headers.update(UA)
-        r = s.get(f"{BASE}/login/index.php", timeout=30)
-        data = {"username": USER, "password": PASS}
-        m = re.search(r'name="logintoken"\s+value="([^"]+)"', r.text)
-        if m:
-            data["logintoken"] = m.group(1)
-        r = s.post(f"{BASE}/login/index.php", data=data, timeout=30)
-        m = re.search(r'"sesskey":"([^"]+)"', r.text)
-        if not m or "/login/index.php" in r.url:
-            raise LMSError("web login failed - check LMS_USERNAME / LMS_PASSWORD")
-        self.sesskey = m.group(1)
-
-    def ajax(self, fn, **args):
-        r = self.s.post(f"{BASE}/lib/ajax/service.php",
-                        params={"sesskey": self.sesskey, "info": fn},
-                        json=[{"index": 0, "methodname": fn, "args": args}], timeout=60)
-        res = r.json()
-        if isinstance(res, dict) and res.get("error"):
-            raise LMSError(f"{fn}: {res.get('error')}")
-        item = res[0]
-        if item.get("error"):
-            raise LMSError(f"{fn}: {(item.get('exception') or {}).get('message')}")
-        return item["data"]
-
-
-def collect_web(c):
-    snap = empty_snapshot()
-    data = c.ajax("core_course_get_enrolled_courses_by_timeline_classification",
-                  classification="all", limit=0, offset=0, sort="fullname")
-    courses = data.get("courses", [])
-    for co in courses:
-        snap["courses"][str(co["id"])] = clean(co["fullname"])
-    snap["_ok"].append("courses")
-
-    for co in courses:
-        cid, cname = co["id"], snap["courses"][str(co["id"])]
-        try:
-            html_ = c.s.get(f"{BASE}/course/view.php?id={cid}", timeout=60).text
-            soup = BeautifulSoup(html_, "html.parser")
-            for li in soup.select("li.activity"):
-                m = re.match(r"module-(\d+)", li.get("id", ""))
-                if not m or "modtype_label" in li.get("class", []):
-                    continue
-                name = li.get("data-activityname")
-                if not name:
-                    inst = li.select_one(".instancename")
-                    if inst:
-                        for hidden in inst.select(".accesshide"):
-                            hidden.decompose()
-                        name = inst.get_text(" ")
-                link = li.select_one("a.aalink") or li.select_one("a")
-                mtype = next((k[8:] for k in li.get("class", []) if k.startswith("modtype_")), "")
-                sec = li.find_parent("li", class_="section")
-                sec_name = sec.select_one(".sectionname") if sec else None
-                snap["modules"][m.group(1)] = {
-                    "name": clean(name), "type": mtype, "course": cname,
-                    "section": clean(sec_name.get_text(" ")) if sec_name else "",
-                    "url": link["href"] if link and link.get("href") else f"{BASE}/course/view.php?id={cid}",
-                }
-        except Exception as e:  # noqa: BLE001
-            snap["_failed_courses"].append(cname)
-            warnings.append(f"course page {cname}: {e}")
-    snap["_ok"].append("modules")
-
-    try:
-        ev = c.ajax("core_calendar_get_action_events_by_timesort",
-                    timesortfrom=int(time.time()) - 86400, limitnum=50)
-        add_events(snap, ev.get("events", []))
-        snap["_ok"].append("events")
-    except Exception as e:  # noqa: BLE001
-        warnings.append(f"deadlines: {e}")
-
-    add_notifications(snap, lambda: c.ajax("message_popup_get_popup_notifications",
-                                           useridto=0, limit=20))
-    return snap
-
-
-# --------------------------------------------------------- shared collectors
-def add_events(snap, events):
-    for e in events:
-        url = e.get("url") or ((e.get("action") or {}).get("url")) or ""
-        snap["events"][str(e["id"])] = {
-            "name": clean(e.get("name")), "due": e.get("timesort") or e.get("timestart") or 0,
-            "course": clean((e.get("course") or {}).get("fullname")), "url": url,
-        }
-
-
-def add_notifications(snap, fetch):
-    try:
-        for n in fetch().get("notifications", []):
-            snap["notifications"][str(n["id"])] = {
-                "name": clean(n.get("subject")), "url": n.get("contexturl") or "",
-                "time": n.get("timecreated") or 0,
-            }
+    def notifications():
+        for n in c.call("message_popup_get_popup_notifications", useridto=c.uid, limit=20).get("notifications", []):
+            snap["notifications"][str(n["id"])] = {"name": clean(n.get("subject")), "url": n.get("contexturl") or ""}
         snap["_ok"].append("notifications")
-    except Exception as e:  # noqa: BLE001
-        warnings.append(f"notifications: {e}")
+    safe("notifications", notifications)
+
+    def grades():
+        for cid in ids:
+            r = c.call("gradereport_user_get_grade_items", courseid=cid, userid=c.uid)
+            for g in (r.get("usergrades") or [{}])[0].get("gradeitems", []):
+                if g.get("itemtype") == "course":
+                    continue
+                gf = g.get("gradeformatted") or "-"
+                if gf == "-":
+                    continue
+                snap["grades"][f"{cid}:{g['id']}"] = {
+                    "name": clean(g.get("itemname")), "grade": gf, "max": g.get("grademax"),
+                    "feedback": clean(g.get("feedback"))[:300], "course": snap["courses"][str(cid)],
+                }
+        snap["_ok"].append("grades")
+    safe("grades", grades)
+
+    def subs():
+        for aid, a in snap["assignments"].items():
+            due = a.get("due") or 0
+            if due and not (NOW - 3 * 86400 < due < NOW + 21 * 86400):
+                continue
+            st = c.call("mod_assign_get_submission_status", assignid=int(aid))
+            sub = (st.get("lastattempt") or {}).get("submission") or (st.get("lastattempt") or {}).get("teamsubmission") or {}
+            snap["subs"][aid] = sub.get("status") or "new"
+        snap["_ok"].append("subs")
+    safe("submission status", subs)
+
+    def quizzes():
+        for q in c.call("mod_quiz_get_quizzes_by_courses", courseids=ids).get("quizzes", []):
+            snap["quizzes"][str(q["id"])] = {
+                "name": clean(q.get("name")), "course": snap["courses"].get(str(q.get("course")), ""),
+                "open": q.get("timeopen") or 0, "close": q.get("timeclose") or 0, "limit": q.get("timelimit") or 0,
+                "url": f"{BASE}/mod/quiz/view.php?id={q.get('coursemodule')}",
+            }
+        snap["_ok"].append("quizzes")
+    safe("quizzes", quizzes)
+    return snap
 
 
-# ------------------------------------------------------------- diff + state
 def merge_with_old(new, old):
-    """If something failed this run, keep the old data so it isn't re-reported as 'new' later."""
-    for cat in CATEGORIES:
+    """Categories that failed this run keep old data, so nothing is re-reported as new later."""
+    for cat in DIGEST + ("grades", "subs", "quizzes"):
         if cat not in new["_ok"]:
             new[cat] = dict(old.get(cat, {}))
     failed = set(new["_failed_courses"])
@@ -305,79 +275,249 @@ def merge_with_old(new, old):
     return new
 
 
-def compute_changes(old, new):
+# ------------------------------------------------------------------- diffs
+def digest_changes(old, new):
     ch = {k: [] for k in ("assignments", "deadlines", "changed", "modules", "announcements", "notifications")}
     ok = set(new["_ok"])
-    reported_urls = set()
-
+    reported = set()
     if "assignments" in ok:
         for k, v in new["assignments"].items():
             o = old.get("assignments", {}).get(k)
             if not o:
-                ch["assignments"].append(v)
-                reported_urls.add(v["url"])
+                ch["assignments"].append({**v, "id": k})
+                reported.add(v["url"])
             elif v.get("due") and o.get("due") != v.get("due"):
                 ch["changed"].append({**v, "old_due": o.get("due")})
-                reported_urls.add(v["url"])
-
+                reported.add(v["url"])
     if "events" in ok:
         for k, v in new["events"].items():
-            if any(u and u in v["url"] for u in reported_urls):
+            if any(u and u in v["url"] for u in reported):
                 continue
             o = old.get("events", {}).get(k)
             if not o:
                 ch["deadlines"].append(v)
             elif o.get("due") != v.get("due"):
                 ch["changed"].append({**v, "old_due": o.get("due")})
-
-    new_assign_cmids = {str(a.get("cmid")) for a in ch["assignments"]}
+    new_cmids = {str(a.get("cmid")) for a in ch["assignments"]}
     for cat in ("modules", "announcements", "notifications"):
-        if cat not in ok:
-            continue
-        for k, v in new[cat].items():
-            if k not in old.get(cat, {}) and not (cat == "modules" and k in new_assign_cmids):
-                ch[cat].append(v)
+        if cat in ok:
+            for k, v in new[cat].items():
+                if k not in old.get(cat, {}) and not (cat == "modules" and k in new_cmids):
+                    ch[cat].append({**v, "id": k})
     return ch
 
 
-def due_soon(snap):
-    now = time.time()
-    horizon = now + DUE_SOON_HOURS * 3600
-    seen, items = set(), []
-    for v in list(snap["events"].values()) + list(snap["assignments"].values()):
-        due = v.get("due") or 0
-        key = v["name"].lower().replace(" is due", "").strip()
-        if now < due <= horizon and key not in seen:
-            seen.add(key)
-            items.append(v)
-    return sorted(items, key=lambda x: x["due"])
+def grade_changes(old, new):
+    if "grades" not in new["_ok"] or "grades" not in old:  # first run with grades = silent baseline
+        return []
+    out = []
+    for k, g in new["grades"].items():
+        o = old.get("grades", {}).get(k)
+        if not o or o.get("grade") != g["grade"] or (g["feedback"] and o.get("feedback") != g["feedback"]):
+            out.append({**g, "updated": bool(o)})
+    return out
 
 
-def upcoming(snap, limit=15):
-    now = time.time()
-    seen, items = set(), []
-    for v in list(snap["events"].values()) + list(snap["assignments"].values()):
-        key = v["name"].lower().replace(" is due", "").strip()
-        if (v.get("due") or 0) > now and key not in seen:
-            seen.add(key)
-            items.append(v)
-    return sorted(items, key=lambda x: x["due"])[:limit]
+def submission_confirmations(old, new):
+    out = []
+    for aid, st in new["subs"].items():
+        if st == "submitted" and old.get("subs", {}).get(aid) not in (None, "submitted"):
+            a = new["assignments"].get(aid)
+            if a:
+                out.append(a)
+    return out
 
 
-# ----------------------------------------------------------------- message
+def nags(new, meta, quiet):
+    """Nag-until-done reminders + draft trap. Returns list of (text, urgent)."""
+    out = []
+    sent = meta.setdefault("nag", {})
+    for aid, a in new["assignments"].items():
+        due = a.get("due") or 0
+        st = new["subs"].get(aid)
+        if not due or due <= NOW or st is None or st == "submitted":
+            continue
+        hours = (due - NOW) / 3600
+        crossed = [h for h in NAG_HOURS if hours <= h]
+        if not crossed:
+            continue
+        level = min(crossed)
+        done = sent.get(aid, [])
+        if level in done:
+            continue
+        if quiet and level > URGENT_HOURS:
+            continue
+        sent[aid] = sorted(set(done) | set(crossed))
+        icon = "🚨" if level <= 6 else "⏰"
+        trap = "\n   🪤 <b>It's still a DRAFT</b> — your teacher can't see it until you click Submit!" if st == "draft" else ""
+        out.append(f"{icon} <b>{link(a['name'], a['url'])}</b> — {esc(a['course'])}\n"
+                   f"   due {fmt_time(due)} (<b>{rel(due)}</b>), not submitted yet{trap}")
+    # forget finished assignments
+    for aid in list(sent):
+        if aid not in new["assignments"] or new["subs"].get(aid) == "submitted":
+            sent.pop(aid, None)
+    return out
+
+
+def quiz_alerts(api, new, meta, quiet):
+    out = []
+    last = meta.get("last_run", NOW - 3600)
+    flags = meta.setdefault("quiz", {})
+    for qid, q in new["quizzes"].items():
+        f = flags.setdefault(qid, [])
+        if q["open"] and last < q["open"] <= NOW and "open" not in f and not quiet:
+            lim = f", ⏱ {q['limit'] // 60} min limit" if q["limit"] else ""
+            closes = f", closes {fmt_time(q['close'])}" if q["close"] else ""
+            out.append(f"❓ <b>Quiz open now:</b> {link(q['name'], q['url'])} — {esc(q['course'])}{closes}{lim}")
+            f.append("open")
+        if q["close"] and NOW < q["close"] <= NOW + 24 * 3600 and "closing" not in f:
+            if quiet and q["close"] - NOW > URGENT_HOURS * 3600:
+                continue
+            attempts = safe("quiz attempts", lambda: api.call("mod_quiz_get_user_attempts", quizid=int(qid), status="finished"), {})
+            if not (attempts or {}).get("attempts"):
+                out.append(f"⏳ <b>Quiz closes {rel(q['close'])}</b> and you haven't attempted it: "
+                           f"{link(q['name'], q['url'])} — {esc(q['course'])}")
+            f.append("closing")
+    for qid in list(flags):
+        if qid not in new["quizzes"]:
+            flags.pop(qid)
+    return out
+
+
+# --------------------------------------------------------------------- AI
+_model = None
+
+
+def gemini(parts, system=None, max_tokens=4096):
+    global _model
+    if not GEMINI_KEY:
+        return None
+    _model = _model or GEMINI_MODEL
+    body = {"contents": [{"role": "user", "parts": parts}],
+            "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.4}}
+    if system:
+        body["systemInstruction"] = {"parts": [{"text": system}]}
+    for attempt in range(3):
+        r = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/{_model}:generateContent",
+                          headers={"x-goog-api-key": GEMINI_KEY}, json=body, timeout=120)
+        if r.status_code == 404 and attempt == 0:
+            _model = pick_model() or _model
+            continue
+        if r.status_code in (429, 503):
+            time.sleep(20)
+            continue
+        if not r.ok:
+            warnings.append(f"gemini: {r.status_code} {r.text[:200]}")
+            return None
+        parts_out = (r.json().get("candidates") or [{}])[0].get("content", {}).get("parts", [])
+        return "".join(p.get("text", "") for p in parts_out if not p.get("thought")).strip() or None
+    return None
+
+
+def pick_model():
+    r = requests.get("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200",
+                     headers={"x-goog-api-key": GEMINI_KEY}, timeout=30)
+    names = [m["name"].split("/")[-1] for m in r.json().get("models", [])
+             if "generateContent" in m.get("supportedGenerationMethods", []) and "flash" in m["name"]
+             and not re.search(r"lite|image|tts|live|audio|preview|exp", m["name"])]
+    return sorted(names, reverse=True)[0] if names else None
+
+
+AI_STYLE = ("You write for a Telegram message read on a phone by Abhi, an MCA first-semester student. "
+            "Plain text, short, '•' bullets, *single asterisks* for bold, no headings, no tables.")
+READABLE = re.compile(r"pdf|image/|text/plain")
+
+
+def ai_summary(api, module, f):
+    mime = f.get("mimetype") or ""
+    if not READABLE.search(mime):
+        return None
+    data = api.download(f["fileurl"])
+    if not data:
+        return None
+    return gemini([{"inline_data": {"mime_type": mime, "data": base64.b64encode(data).decode()}},
+                   {"text": f'New study material "{module["name"]}" for {module["course"]}. '
+                            "Give: 1 line on what it covers, then 4-5 bullet key points, then 'Key terms:' with 5-8 terms. "
+                            "Keep it under 120 words."}], system=AI_STYLE)
+
+
+def ai_breakdown(api, a, brief):
+    parts = []
+    for f in brief.get("files", [])[:1]:
+        if READABLE.search(f.get("mimetype") or ""):
+            data = api.download(f["fileurl"])
+            if data:
+                parts.append({"inline_data": {"mime_type": f["mimetype"], "data": base64.b64encode(data).decode()}})
+    if not parts and len(brief.get("intro", "")) < 20:
+        return None
+    parts.append({"text": f'New assignment "{a["name"]}" ({a["course"]}), due {fmt_time(a["due"])}.\n'
+                          f'Brief: """{brief.get("intro") or "(see attached file)"}"""\n'
+                          "Help him plan it (do NOT write the answers): *What they really want* (1-2 lines), "
+                          "*Checklist* (bullets of deliverables/requirements), *Time needed* (estimate), "
+                          "*Watch out* (1-2 common mistakes). Max 120 words."})
+    return gemini(parts, system=AI_STYLE)
+
+
+def pending_lines(api):
+    ev = api.call("core_calendar_get_action_events_by_timesort", timesortfrom=int(NOW) - 14 * 86400,
+                  timesortto=int(NOW) + 14 * 86400, limitnum=50).get("events", [])
+    return [f"- {'[OVERDUE] ' if e['timesort'] < NOW else ''}{clean(e['name'])} ({short(e['course']['fullname'])}) "
+            f"due {fmt_time(e['timesort'])}" for e in ev]
+
+
+def morning_plan(api):
+    lines = pending_lines(api)
+    if not lines:
+        return "☀️ <b>Good morning!</b> Nothing pending on the LMS. Free day — use it well 😎"
+    txt = gemini([{"text": f"Today is {NOW_IST.strftime('%A %d %B')}. Pending LMS items:\n" + "\n".join(lines) +
+                          "\n\nWrite a short morning plan: greet in one line (Hinglish ok), then 2-4 bullets of what "
+                          "to do TODAY in priority order with rough time boxes, then one line about what's coming "
+                          "later this week. Max 90 words."}], system=AI_STYLE)
+    if txt:
+        return "☀️ <b>Morning plan</b>\n\n" + md_to_html(txt)
+    return "☀️ <b>Good morning!</b> Pending:\n" + esc("\n".join(lines[:10]))
+
+
+def sunday_report(new, meta):
+    week_ago = NOW - 7 * 86400
+    done = [x for x in meta.get("log_submitted", []) if x[0] > week_ago]
+    grades = [x for x in meta.get("log_grades", []) if x[0] > week_ago]
+    upcoming = sorted([e for e in new["events"].values() if NOW < e["due"] <= NOW + 7 * 86400], key=lambda e: e["due"])
+    pending_now = [a for aid, a in new["assignments"].items()
+                   if a.get("due") and a["due"] > NOW and new["subs"].get(aid) not in (None, "submitted")]
+    msg = "📈 <b>Sunday report</b>\n"
+    msg += f"\n✅ Submitted this week: <b>{len(done)}</b>"
+    if done:
+        msg += "\n" + "\n".join(f"   • {esc(n)}" for _, n in done[:10])
+    msg += f"\n📊 Grades received: <b>{len(grades)}</b>"
+    if grades:
+        msg += "\n" + "\n".join(f"   • {esc(n)}" for _, n in grades[:10])
+    msg += f"\n📝 Open assignments: <b>{len(pending_now)}</b>"
+    msg += f"\n🗓 Due next 7 days: <b>{len(upcoming)}</b>"
+    if upcoming:
+        msg += "\n" + "\n".join(f"   • {link(e['name'], e['url'])} — {esc(e['course'])}, {fmt_time(e['due'])}" for e in upcoming[:12])
+    return msg
+
+
+# ---------------------------------------------------------------- messages
 def line(v, show_due=True, extra=""):
-    name = f'<a href="{esc(v["url"])}">{esc(v["name"])}</a>' if v.get("url") else esc(v["name"])
-    parts = [f"• <b>{name}</b>"]
+    s = f"• <b>{link(v['name'], v.get('url'))}</b>"
     if v.get("course"):
-        parts.append(f" — {esc(v['course'])}")
+        s += f" — {esc(v['course'])}"
     if show_due and v.get("due"):
-        parts.append(f"\n   ⏳ {fmt_time(v['due'])}")
-    return "".join(parts) + extra
+        s += f"\n   ⏳ {fmt_time(v['due'])} ({rel(v['due'])})"
+    return s + extra
 
 
-def build_message(ch, snap, mode):
-    now = datetime.now(IST).strftime("%d %b, %I:%M %p")
+def digest_message(ch, grades, confirms):
     blocks = []
+    if confirms:
+        blocks.append("✅ <b>Submission confirmed by the LMS</b>\n" + "\n".join(line(v, show_due=False) for v in confirms))
+    if grades:
+        blocks.append("📊 <b>Grades</b>\n" + "\n".join(
+            f"• <b>{esc(g['name'])}</b> — {esc(g['course'])}: <b>{esc(g['grade'])}"
+            f"{'/' + str(round(float(g['max']))) if g.get('max') else ''}</b>{' (updated)' if g['updated'] else ''}"
+            + (f"\n   💬 <i>{esc(g['feedback'][:200])}</i>" if g.get("feedback") else "") for g in grades))
     if ch["assignments"]:
         blocks.append("🆕 <b>New assignments</b>\n" + "\n".join(line(v) for v in ch["assignments"]))
     if ch["deadlines"]:
@@ -387,36 +527,26 @@ def build_message(ch, snap, mode):
             line(v, extra=f"\n   (was {fmt_time(v['old_due'])})") for v in ch["changed"]))
     if ch["announcements"]:
         blocks.append("📢 <b>Announcements</b>\n" + "\n".join(
-            line(v, show_due=False) + (f"\n   <i>{esc(v['text'][:140])}…</i>" if v.get("text") else "")
+            line(v, show_due=False) + (f"\n   <i>{esc(v['text'][:160])}…</i>" if v.get("text") else "")
             for v in ch["announcements"]))
     if ch["modules"]:
         mods = ch["modules"][:25]
-        body = "\n".join(line({**v, "name": f"{v['name']} ({v['type']})" if v.get('type') else v['name']},
-                              show_due=False) for v in mods)
+        body = "\n".join(line({**v, "name": f"{v['name']} ({v['type']})"}, show_due=False) for v in mods)
         if len(ch["modules"]) > 25:
             body += f"\n…and {len(ch['modules']) - 25} more"
-        blocks.append("📦 <b>New modules / material</b>\n" + body)
+        blocks.append("📦 <b>New material</b>\n" + body)
     if ch["notifications"]:
         blocks.append("🔔 <b>Notifications</b>\n" + "\n".join(line(v, show_due=False) for v in ch["notifications"]))
-
-    soon = due_soon(snap)
-    has_news = bool(blocks)
-    if soon:
-        blocks.append(f"⏰ <b>Due in the next {DUE_SOON_HOURS}h</b>\n" + "\n".join(line(v) for v in soon))
-
-    if not has_news and not soon:
-        if HEARTBEAT and datetime.now(IST).hour < 12:
-            return f"✅ <b>GU LMS</b> — nothing new ({now})"
+    if not blocks:
         return None
-    header = f"📚 <b>GU LMS update</b> — {now}"
-    return header + "\n\n" + "\n\n".join(blocks)
+    return f"📚 <b>GU LMS update</b> — {NOW_IST.strftime('%d %b, %I:%M %p')}\n\n" + "\n\n".join(blocks)
 
 
-def build_first_run_message(snap, mode):
-    up = upcoming(snap)
-    msg = (f"✅ <b>GU LMS watcher connected</b> (via {mode})\n"
-           f"Tracking {len(snap['courses'])} courses and {len(snap['modules'])} modules.\n"
-           f"From now on you'll only hear about what's new.")
+def first_run_message(snap):
+    up = sorted([e for e in snap["events"].values() if e["due"] > NOW], key=lambda e: e["due"])[:15]
+    msg = (f"✅ <b>GU LMS watcher connected</b>\nTracking {len(snap['courses'])} courses, "
+           f"{len(snap['modules'])} modules, {len(snap['assignments'])} assignments, {len(snap['grades'])} grades.\n"
+           "From now on you'll only hear about what's new.")
     if up:
         msg += "\n\n🗓 <b>Upcoming deadlines</b>\n" + "\n".join(line(v) for v in up)
     return msg
@@ -433,11 +563,13 @@ def send(text):
         cur += ln + "\n"
     chunks.append(cur)
     for chunk in chunks:
-        r = requests.post(f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
-                          data={"chat_id": TG_CHAT, "text": chunk, "parse_mode": "HTML",
-                                "disable_web_page_preview": "true"}, timeout=30)
+        data = {"chat_id": TG_CHAT, "text": chunk, "parse_mode": "HTML", "disable_web_page_preview": "true"}
+        r = requests.post(f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage", data=data, timeout=30)
+        if not r.ok and "parse" in r.text.lower():  # broken HTML from AI -> send as plain text
+            data.pop("parse_mode")
+            data["text"] = re.sub(r"<[^>]+>", "", chunk)
+            r = requests.post(f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage", data=data, timeout=30)
         if not r.ok:
-            # Fail loudly so the Actions run turns red instead of silently "succeeding"
             raise RuntimeError(f"Telegram error: {r.json().get('description', r.text)}")
 
 
@@ -445,36 +577,92 @@ def send(text):
 def main():
     if not USER or not PASS:
         sys.exit("Set LMS_USERNAME and LMS_PASSWORD")
-
     old = {}
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE, encoding="utf-8") as f:
             old = json.load(f)
+    meta = old.get("meta", {})
 
     try:
-        try:
-            client = ApiClient()
-            snap = collect_api(client)
-        except LMSError as e:
-            print(f"API mode unavailable ({e}); falling back to web login")
-            client = WebClient()
-            snap = collect_web(client)
+        api = Api()
+        snap = collect(api)
     except Exception as e:  # noqa: BLE001
         send(f"⚠️ <b>GU LMS watcher</b> couldn't check the LMS:\n<code>{esc(e)}</code>\n"
              "If you changed your password, update the LMS_PASSWORD secret.")
         raise
 
-    first_run = not old
     snap = merge_with_old(snap, old)
-    msg = build_first_run_message(snap, client.mode) if first_run else \
-        build_message(compute_changes(old, snap), snap, client.mode)
-    if msg:
-        send(msg)
-    else:
-        print("Nothing new.")
+    extra = snap.pop("_extra")
+    hour = NOW_IST.hour
+    quiet = hour >= 23 or hour < 7
+    today = NOW_IST.strftime("%Y-%m-%d")
+    messages = []
 
+    if not old.get("courses"):
+        messages.append(first_run_message(snap))
+        meta["plan_date"] = today
+    else:
+        urgent = nags(snap, meta, quiet) + quiz_alerts(api, snap, meta, quiet)
+
+        if quiet:
+            # hold everything non-urgent until the morning run: keep old data so it's reported later
+            for cat in DIGEST + ("grades", "subs"):
+                snap[cat] = old.get(cat, snap[cat])
+        else:
+            ch = digest_changes(old, snap)
+            grades = grade_changes(old, snap)
+            confirms = submission_confirmations(old, snap)
+            for a in confirms:
+                meta.setdefault("log_submitted", []).append([NOW, a["name"]])
+            for g in grades:
+                meta.setdefault("log_grades", []).append([NOW, f"{g['name']}: {g['grade']}"])
+
+            if hour >= 7 and meta.get("plan_date") != today:
+                messages.append(safe("morning plan", lambda: morning_plan(api)) or "")
+                meta["plan_date"] = today
+
+            msg = digest_message(ch, grades, confirms)
+            if msg:
+                messages.append(msg)
+
+            # AI extras for brand-new items
+            if GEMINI_KEY:
+                for a in ch["assignments"][:3]:
+                    txt = safe("breakdown", lambda: ai_breakdown(api, a, extra["briefs"].get(a["id"], {})))
+                    if txt:
+                        messages.append(f"🧩 <b>Breakdown:</b> {link(a['name'], a['url'])}\n\n{md_to_html(txt)}")
+                done = 0
+                for m in ch["modules"]:
+                    if done >= MAX_AI_SUMMARIES:
+                        break
+                    f = extra["files"].get(m["id"])
+                    if m["type"] != "resource" or not f:
+                        continue
+                    txt = safe("summary", lambda: ai_summary(api, m, f))
+                    if txt:
+                        done += 1
+                        messages.append(f"📄 <b>{link(m['name'], m['url'])}</b> — {esc(m['course'])}\n\n{md_to_html(txt)}")
+
+            if NOW_IST.weekday() == 6 and hour >= 19 and meta.get("report_week") != NOW_IST.strftime("%G-%V"):
+                messages.append(sunday_report(snap, meta))
+                meta["report_week"] = NOW_IST.strftime("%G-%V")
+
+        if urgent:
+            messages.insert(0, "🔔 <b>Reminders</b>\n\n" + "\n\n".join(urgent))
+
+    for m in messages:
+        if m:
+            send(m)
+    if not any(messages):
+        print("Nothing new.")
     for w in warnings:
         print("warning:", w)
+
+    # trim logs, persist
+    for k in ("log_submitted", "log_grades"):
+        meta[k] = [x for x in meta.get(k, []) if x[0] > NOW - 30 * 86400]
+    meta["last_run"] = NOW
+    snap["meta"] = meta
     snap.pop("_ok", None)
     snap.pop("_failed_courses", None)
     with open(STATE_FILE, "w", encoding="utf-8") as f:

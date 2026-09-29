@@ -1,0 +1,8 @@
+name = "gulmsbot"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+workers_dev = true
+
+[[kv_namespaces]]
+binding = "KV"
+id = "__KV_ID__"
