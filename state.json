@@ -190,6 +190,19 @@
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=450667"
   }
  },
+ "grades": {},
+ "meta": {
+  "last_run": 1790708047.315546,
+  "log_grades": [],
+  "log_submitted": [],
+  "nag": {},
+  "quiz": {
+   "32268": [],
+   "33978": [],
+   "34033": [],
+   "34678": []
+  }
+ },
  "modules": {
   "406071": {
    "course": "Problem Solving and Computer Programming(E1PA103B)",
@@ -1343,5 +1356,45 @@
    "time": 1790705513,
    "url": ""
   }
+ },
+ "quizzes": {
+  "32268": {
+   "close": 1789021560,
+   "course": "Computational Mathematics and Statistics",
+   "limit": 1800,
+   "name": "Pre-Visit Quiz",
+   "open": 1787552760,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=414382"
+  },
+  "33978": {
+   "close": 1789632600,
+   "course": "Programming with Python",
+   "limit": 0,
+   "name": "Quiz Unit 1",
+   "open": 1789629900,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=440172"
+  },
+  "34033": {
+   "close": 0,
+   "course": "English Proficiency and Aptitude Building",
+   "limit": 0,
+   "name": "Pre Assessment Percentage",
+   "open": 0,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=441157"
+  },
+  "34678": {
+   "close": 1791656760,
+   "course": "Computational Mathematics and Statistics",
+   "limit": 2400,
+   "name": "Internal Assesment 1",
+   "open": 1790245560,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=447632"
+  }
+ },
+ "subs": {
+  "28535": "new",
+  "28869": "new",
+  "29296": "new",
+  "29488": "new"
  }
 }
