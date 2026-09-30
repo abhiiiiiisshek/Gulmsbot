@@ -40,7 +40,7 @@ export default {
 };
 
 function chatOf(u) {
-  return u.message?.chat?.id ?? u.callback_query?.message?.chat?.id;
+  return u.message?.chat?.id ?? u.callback_query?.message?.chat?.id ?? u.poll_answer?.user?.id;
 }
 
 async function webhookSecret(env) {
@@ -59,6 +59,7 @@ async function handle(update, env) {
   }
 
   if (update.callback_query) return onCallback(update.callback_query, env);
+  if (update.poll_answer) return onPollAnswer(update.poll_answer, env);
 
   const msg = update.message;
   if (msg.document || msg.photo) return onFile(msg, env);
@@ -67,24 +68,39 @@ async function handle(update, env) {
   if (!text) return;
 
   const cmd = text.startsWith("/") ? text.split(/[\s@]/)[0].toLowerCase() : null;
+  const who = msg.from?.first_name || "";
   switch (cmd) {
     case "/start":
-    case "/help": return send(env, chat, HELP);
+    case "/menu": return sendView(env, chat, await homeView(env, who));
+    case "/help": return sendView(env, chat, await namedView(env, "help"));
     case "/pending":
-    case "/done": return sendView(env, chat, await pendingText(env, 60, "📋 <b>Everything pending</b>"));
-    case "/today": return sendView(env, chat, await pendingText(env, 1, "📅 <b>Due today</b>"));
-    case "/week": return sendView(env, chat, await pendingText(env, 7, "🗓 <b>Due this week</b>"));
-    case "/hidden": return sendView(env, chat, await hiddenView(env));
-    case "/grades": return send(env, chat, await gradesText(env));
-    case "/courses": return send(env, chat, await coursesText(env));
-    case "/cal": return send(env, chat, await calendarText(env));
-    case "/status": return send(env, chat, await statusText(env));
-    case null: return aiChat(env, chat, text);
+    case "/done": return sendView(env, chat, await namedView(env, "pending"));
+    case "/today": return sendView(env, chat, await namedView(env, "today"));
+    case "/week": return sendView(env, chat, await namedView(env, "week"));
+    case "/hidden": return sendView(env, chat, await namedView(env, "hidden"));
+    case "/grades": return sendView(env, chat, await namedView(env, "grades"));
+    case "/courses": return sendView(env, chat, await namedView(env, "courses"));
+    case "/cal": return sendView(env, chat, await namedView(env, "cal"));
+    case "/status": return sendView(env, chat, await namedView(env, "status"));
+    case "/study": return sendView(env, chat, withNav(await coursePicker(env, "📚 <b>Study mode</b>\nPick a course:", "sc")));
+    case "/exam": return sendView(env, chat, await namedView(env, "exam"));
+    case "/stop":
+      await env.KV.delete(`s:${chat}`); await env.KV.delete(`sh:${chat}`);
+      return sendView(env, chat, { text: "🛑 Left study mode. Back to normal chat.", markup: { inline_keyboard: [NAV] } });
+    case null: {
+      const s = await getSession(env, chat);
+      if (s?.mode === "ask") return studyAsk(env, chat, s, text);
+      return aiChat(env, chat, text);
+    }
     default: return send(env, chat, "Unknown command. Try /help — or just ask me in plain words.");
   }
 }
 
 const HELP = `🤖 <b>GU LMS assistant</b>
+
+🏠 /menu — your dashboard with buttons
+📚 /study — pick a course file → summary, explain simply, quiz, flashcards, Q&A
+🎯 /exam — revision plan + 10-question mock test for a course
 
 <b>Ask anything</b> — in English or Hinglish, text or 🎤 voice:
 <i>"kal kya submit karna hai?"</i>, <i>"plan my week"</i>, <i>"which subject am I behind in?"</i>
@@ -199,7 +215,7 @@ async function pendingText(env, days, title) {
   if (!items.length) return { text: `${title}\n\nNothing! 🎉 Go touch grass.${hiddenNote}` };
   const overdue = items.filter((e) => e.overdue);
   const upcoming = items.filter((e) => !e.overdue);
-  let out = `${title} (${items.length})\n`;
+  let out = `${title} (${items.length})\n<i>🔴 overdue · 🟠 &lt;24h · 🟡 &lt;3 days · 🟢 later</i>\n`;
   if (overdue.length) out += `\n🔴 <b>Overdue</b>\n${overdue.map(fmtItem).join("\n")}\n`;
   if (upcoming.length) out += `\n${upcoming.map(fmtItem).join("\n")}`;
   out += `\n\n<i>Tap to mark something done (e.g. submitted offline):</i>${hiddenNote}`;
@@ -221,7 +237,8 @@ const sendView = (env, chat, v) => send(env, chat, v.text, v.markup ? { reply_ma
 
 function fmtItem(e) {
   const icon = { assign: "📝", quiz: "❓", forum: "💬" }[e.type] || "📌";
-  return `${icon} <a href="${esc(e.url)}">${esc(e.name)}</a> — ${esc(e.course)}\n    ⏳ ${fmtTime(e.due)} <i>(${relTime(e.due)})</i>`;
+  const when = e.overdue ? `<b>${relTime(e.due)}</b>` : `<b>${countdown(e.due)}</b> left`;
+  return `${urgency(e)} ${icon} <a href="${esc(e.url)}">${esc(e.name)}</a>\n      ${esc(e.course)} · ${when} · <i>${fmtTime(e.due)}</i>`;
 }
 
 async function gradesText(env) {
@@ -240,7 +257,9 @@ async function gradesText(env) {
     out += `\n<b>${esc(x.c.name)}</b>${total && total.gradeformatted !== "-" ? ` — total ${esc(total.gradeformatted)}` : ""}\n`;
     for (const g of items) {
       const max = g.grademax ? `/${Number(g.grademax)}` : "";
-      out += `• ${esc(clean(g.itemname))}: <b>${esc(g.gradeformatted)}${max}</b>`;
+      const pct = Number(g.graderaw) >= 0 && Number(g.grademax) > 0 ? Number(g.graderaw) / Number(g.grademax) : null;
+      const medal = pct === null ? "•" : pct >= 0.9 ? "🏆" : pct >= 0.75 ? "🌟" : pct >= 0.6 ? "👍" : "📈";
+      out += `${medal} ${esc(clean(g.itemname))}: <b>${esc(g.gradeformatted)}${max}</b>${pct !== null ? `\n   ${bar(pct)} ${Math.round(pct * 100)}%` : ""}`;
       const fb = clean(g.feedback);
       if (fb) out += `\n   💬 <i>${esc(fb.slice(0, 150))}</i>`;
       out += "\n";
@@ -316,6 +335,7 @@ Style: friendly peer, witty but brief, reply in the same language/mix he uses (E
 Formatting: plain text only. Use "•" for bullets and *single asterisks* for bold. No markdown headings, no tables.
 Use ONLY the LMS data provided for facts about deadlines; never invent assignments or dates. If something isn't in the data, say so and suggest the right command (/grades, /pending, /cal).
 If Abhi clearly says a pending item is finished/submitted/done (e.g. "ER diagram ho gaya", "mark SQL lab done"), confirm briefly and append [[DONE:<id>]] using the item's id from the data. If he says to bring one back / it's not done, append [[UNDONE:<id>]]. Only use ids that appear in the data; if unclear which item, ask instead of tagging.
+If he asks to learn/revise a topic from his courses, answer briefly and tell him he can open 📚 Study (/study) to learn from the actual course slides, or /exam for a mock test.
 For academic work: help him understand, plan and check — but do not write graded assignment answers for him to submit.`;
 
 async function aiChat(env, chat, text) {
@@ -352,9 +372,10 @@ async function onVoice(msg, env) {
 // the next one is tried. The last model that worked is remembered.
 const MODELS = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3-flash-preview", "gemini-3.5-flash-lite", "gemini-flash-lite-latest"];
 
-async function gemini(env, parts, { system, maxTokens = 4096 } = {}) {
+async function gemini(env, parts, { system, maxTokens = 8192, json = false } = {}) {
   if (!env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not set");
   const body = { contents: [{ role: "user", parts }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.5 } };
+  if (json) body.generationConfig.responseMimeType = "application/json";
   if (system) body.systemInstruction = { parts: [{ text: system }] };
   const remembered = await env.KV.get("gmodel");
   const order = [...new Set([env.GEMINI_MODEL, remembered, ...MODELS].filter(Boolean))];
@@ -439,12 +460,29 @@ async function onCallback(cq, env) {
   const chat = cq.message.chat.id;
   const mid = cq.message.message_id;
   const orig = cq.message.reply_to_message;
-  const [act, aid] = (cq.data || "").split(":");
+  let data = cq.data || "";
+  const fresh = data.endsWith("!"); // buttons on watcher alerts open a new message instead of replacing the alert
+  data = data.replace(/!$/, "");
+  const [act, aid] = data.split(":");
+  const parts = data.split(":");
   await tg(env, "answerCallbackQuery", { callback_query_id: cq.id }).catch(() => {});
+  const show = (v) => (fresh ? sendView(env, chat, v) : edit(env, chat, mid, v.text, v.markup || { inline_keyboard: [] }));
+
+  if (act === "home") return show(await homeView(env, cq.from?.first_name || ""));
+  if (act === "v") return show(await namedView(env, parts[1]));
+  if (act === "st") return show(withNav(await coursePicker(env, "📚 <b>Study mode</b>\nPick a course:", "sc")));
+  if (act === "sc") return show(await materialsView(env, parts[1], Number(parts[2] || 0)));
+  if (act === "sm") { const m = await findMaterial(env, parts[1]); await setSession(env, chat, { cmid: m.cmid, name: m.name, mode: "browse" }); return show(materialCard(m)); }
+  if (act === "sa") return studyAction(env, chat, parts[1], parts[2]);
+  if (act === "ex") return examPrep(env, chat, parts[1]);
+  if (act === "eq") return startQuiz(env, chat, { type: "exam", cid: parts[1] }, 10);
+  if (act === "ec") return startCards(env, chat, { type: "exam", cid: parts[1] });
+  if (act === "fc") return onCard(env, chat, mid, parts);
+  if (act === "stop") { await env.KV.delete(`s:${chat}`); await env.KV.delete(`sh:${chat}`); return send(env, chat, "🛑 Left study mode.", { reply_markup: { inline_keyboard: [NAV] } }); }
 
   if (act === "x") return edit(env, chat, mid, "❌ Cancelled. Nothing was uploaded.");
   if (act === "m" || act === "u") {
-    const key = cq.data.slice(2);
+    const key = data.slice(2);
     const all = await actionEvents(env, 30, 90, true);
     const item = all.find((e) => e.key === key);
     const name = item?.name || (await getDone(env))[key]?.name || key;
@@ -453,8 +491,8 @@ async function onCallback(cq, env) {
       ? `✅ Marked done: <b>${esc(name)}</b>${key.startsWith("assign:") ? "\n<i>Heads-up: this only hides it in the bot and stops reminders. The LMS still shows it as not submitted.</i>" : ""}`
       : `↩️ Back on your list: <b>${esc(name)}</b>`;
     await send(env, chat, note);
-    const v = act === "m" ? await pendingText(env, 60, "📋 <b>Everything pending</b>") : await hiddenView(env);
-    return edit(env, chat, mid, v.text, v.markup || { inline_keyboard: [] });
+    if (fresh) return;
+    return show(await namedView(env, act === "m" ? "pending" : "hidden"));
   }
   if (!orig || !(orig.document || orig.photo)) return edit(env, chat, mid, "⚠️ I lost track of the file — please send it again.");
   const f = fileOf(orig);
@@ -561,6 +599,364 @@ async function moodleUpload(env, bytes, name, mime) {
   const j = await r.json();
   if (!Array.isArray(j) || !j[0]?.itemid) throw new Error(`LMS upload failed: ${j.error || j.message || JSON.stringify(j).slice(0, 150)}`);
   return j[0].itemid;
+}
+
+// ================================================================ UI: home dashboard & views
+const NAV = [{ text: "🏠 Menu", callback_data: "home" }];
+const withNav = (v, extraRows = []) => ({ text: v.text, markup: { inline_keyboard: [...(v.markup?.inline_keyboard || []), ...extraRows, NAV] } });
+
+function urgency(e) {
+  const left = e.due - Date.now() / 1000;
+  return left < 0 ? "🔴" : left < 86400 ? "🟠" : left < 3 * 86400 ? "🟡" : "🟢";
+}
+function countdown(ts) {
+  const s = Math.max(0, ts - Date.now() / 1000);
+  const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+  return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`;
+}
+function bar(frac, n = 10) {
+  const f = Math.max(0, Math.min(n, Math.round(frac * n)));
+  return "▰".repeat(f) + "▱".repeat(n - f);
+}
+
+async function homeView(env, who = "") {
+  const ev = await actionEvents(env, 14, 60);
+  const now = Date.now() / 1000;
+  const end = endOfTodayIST();
+  const overdue = ev.filter((e) => e.overdue).length;
+  const today = ev.filter((e) => !e.overdue && e.due <= end).length;
+  const week = ev.filter((e) => !e.overdue && e.due <= now + 7 * 86400).length;
+  const next = ev.filter((e) => !e.overdue).sort((a, b) => a.due - b.due)[0];
+  const mood = overdue ? "🔥 A few fires to put out" : today ? "⚡ Busy day — let's go" : week ? "🙂 Manageable week" : "😎 All clear. Rare. Enjoy it.";
+  let text = `🎓 <b>Hey${who ? ` ${esc(who)}` : ""}!</b>  ·  ${fmtTime(Math.floor(now)).split(",")[0]}\n${mood}\n\n`
+    + `🔴 Overdue     <b>${overdue}</b>\n📅 Due today  <b>${today}</b>\n🗓 This week  <b>${week}</b>\n`;
+  if (next) text += `\n⏳ <b>Next up</b> ${urgency(next)} ${esc(next.name)}\n     ${esc(next.course)} · <b>${countdown(next.due)}</b> left\n`;
+  text += `\n<i>💬 Ask anything · 🎤 voice note · 📎 drop a file to submit</i>`;
+  const kb = [
+    [{ text: `📋 Pending (${ev.length})`, callback_data: "v:pending" }, { text: "📅 Today", callback_data: "v:today" }],
+    [{ text: "🗓 This week", callback_data: "v:week" }, { text: "📊 Grades", callback_data: "v:grades" }],
+    [{ text: "📚 Study", callback_data: "st" }, { text: "🎯 Exam prep", callback_data: "v:exam" }],
+    [{ text: "🗓 Calendar sync", callback_data: "v:cal" }, { text: "🙈 Hidden", callback_data: "v:hidden" }],
+    [{ text: "🩺 Status", callback_data: "v:status" }, { text: "❓ Help", callback_data: "v:help" }],
+  ];
+  return { text, markup: { inline_keyboard: kb } };
+}
+
+async function namedView(env, name) {
+  switch (name) {
+    case "pending": return withNav(await pendingText(env, 60, "📋 <b>Everything pending</b>"));
+    case "today": return withNav(await pendingText(env, 1, "📅 <b>Due today</b>"));
+    case "week": return withNav(await pendingText(env, 7, "🗓 <b>Due this week</b>"));
+    case "hidden": return withNav(await hiddenView(env));
+    case "grades": return withNav({ text: await gradesText(env) });
+    case "courses": return withNav({ text: await coursesText(env) });
+    case "cal": return withNav({ text: await calendarText(env) });
+    case "status": return withNav({ text: await statusText(env) });
+    case "help": return withNav({ text: HELP });
+    case "exam": return withNav(await coursePicker(env, "🎯 <b>Exam prep</b>\nPick a course — I'll read its latest material and build a revision plan + mock test.", "ex"));
+    default: return homeView(env);
+  }
+}
+
+// ================================================================ Study mode
+const READABLE = /pdf|presentationml|wordprocessingml|text\/plain/;
+const KIND = (mime) => /presentationml/.test(mime) ? "📊" : /pdf/.test(mime) ? "📕" : /wordprocessingml/.test(mime) ? "📝" : "📄";
+
+async function coursePicker(env, title, prefix) {
+  const cs = await courses(env);
+  const rows = [];
+  for (let i = 0; i < cs.length; i += 2)
+    rows.push(cs.slice(i, i + 2).map((c) => ({ text: c.name.slice(0, 30), callback_data: prefix === "ex" ? `ex:${c.id}` : `sc:${c.id}:0` })));
+  return { text: title, markup: { inline_keyboard: rows } };
+}
+
+async function listMaterials(env, cid) {
+  const cached = await env.KV.get(`ml:${cid}`);
+  if (cached) return JSON.parse(cached);
+  const secs = await ws(env, "core_course_get_contents", { courseid: cid });
+  const list = [];
+  for (const sec of secs)
+    for (const m of sec.modules || []) {
+      if (!["resource", "folder"].includes(m.modname)) continue;
+      const files = (m.contents || []).filter((f) => f.type === "file" && READABLE.test(f.mimetype || ""))
+        .slice(0, 4).map((f) => ({ url: f.fileurl, mime: f.mimetype, name: f.filename, size: f.filesize }));
+      if (files.length) list.push({ cmid: m.id, cid, name: clean(m.name), section: clean(sec.name), files });
+    }
+  await env.KV.put(`ml:${cid}`, JSON.stringify(list), { expirationTtl: 6 * 3600 });
+  return list;
+}
+
+async function findMaterial(env, cmid) {
+  for (const c of await courses(env)) {
+    const m = (await listMaterials(env, c.id)).find((x) => String(x.cmid) === String(cmid));
+    if (m) return { ...m, course: c.name };
+  }
+  throw new Error("That file isn't on the LMS anymore.");
+}
+
+async function materialsView(env, cid, page = 0) {
+  const [list, cs] = await Promise.all([listMaterials(env, cid), courses(env)]);
+  const cname = cs.find((c) => String(c.id) === String(cid))?.name || "Course";
+  const per = 8, pages = Math.max(1, Math.ceil(list.length / per));
+  page = Math.min(Math.max(0, page), pages - 1);
+  const slice = list.slice(page * per, page * per + per);
+  const rows = slice.map((m) => [{ text: `${KIND(m.files[0].mime)} ${m.name}`.slice(0, 55), callback_data: `sm:${m.cmid}` }]);
+  const pager = [];
+  if (page > 0) pager.push({ text: "⬅️ Prev", callback_data: `sc:${cid}:${page - 1}` });
+  if (page < pages - 1) pager.push({ text: "Next ➡️", callback_data: `sc:${cid}:${page + 1}` });
+  if (pager.length) rows.push(pager);
+  rows.push([{ text: "🎯 Exam prep for this course", callback_data: `ex:${cid}` }]);
+  rows.push([{ text: "⬅️ Courses", callback_data: "st" }, ...NAV]);
+  const text = list.length
+    ? `📚 <b>${esc(cname)}</b>\n${list.length} readable files · page ${page + 1}/${pages}\n\n<i>📊 slides · 📕 PDF · 📝 doc — pick one to study:</i>`
+    : `📚 <b>${esc(cname)}</b>\n\nNo readable files here yet (I can read PDF, PPTX, DOCX, TXT).`;
+  return { text, markup: { inline_keyboard: rows } };
+}
+
+function materialCard(m) {
+  const kinds = [...new Set(m.files.map((f) => KIND(f.mime)))].join(" ");
+  return {
+    text: `📖 <b>${esc(m.name)}</b>\n📚 ${esc(m.course)}${m.section ? ` · ${esc(m.section)}` : ""}\n${kinds} ${m.files.length > 1 ? `${m.files.length} files` : esc(m.files[0].name)}\n\nWhat should we do with it?`,
+    markup: { inline_keyboard: [
+      [{ text: "📝 Summary", callback_data: `sa:sum:${m.cmid}` }, { text: "💡 Explain simply", callback_data: `sa:eli5:${m.cmid}` }],
+      [{ text: "🧠 Quiz me (5)", callback_data: `sa:quiz:${m.cmid}` }, { text: "🃏 Flashcards", callback_data: `sa:cards:${m.cmid}` }],
+      [{ text: "💬 Ask questions about it", callback_data: `sa:ask:${m.cmid}` }],
+      [{ text: "⬅️ Files", callback_data: `sc:${m.cid}:0` }, ...NAV],
+    ] },
+  };
+}
+
+// --- read PPTX / DOCX (zip files) without any library
+async function zipEntries(buf, want) {
+  const u8 = new Uint8Array(buf), dv = new DataView(buf), td = new TextDecoder();
+  let e = u8.length - 22;
+  while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+  if (e < 0) throw new Error("not a zip");
+  const n = dv.getUint16(e + 10, true);
+  let p = dv.getUint32(e + 16, true);
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true);
+    const nlen = dv.getUint16(p + 28, true), xlen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true);
+    const lho = dv.getUint32(p + 42, true);
+    const name = td.decode(u8.subarray(p + 46, p + 46 + nlen));
+    p += 46 + nlen + xlen + clen;
+    if (!want(name)) continue;
+    const start = lho + 30 + dv.getUint16(lho + 26, true) + dv.getUint16(lho + 28, true);
+    const data = u8.subarray(start, start + csize);
+    let xml;
+    if (method === 0) xml = td.decode(data);
+    else if (method === 8) xml = await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text();
+    else continue;
+    out.push({ name, xml });
+  }
+  return out;
+}
+const unxml = (s) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
+
+async function officeText(buf, mime) {
+  if (/presentationml/.test(mime)) {
+    const slides = await zipEntries(buf, (n) => /^ppt\/slides\/slide\d+\.xml$/.test(n));
+    slides.sort((a, b) => Number(a.name.match(/\d+/)[0]) - Number(b.name.match(/\d+/)[0]));
+    return slides.map((s, i) => {
+      const paras = s.xml.split(/<\/a:p>/).map((p) => [...p.matchAll(/<a:t>([^<]*)<\/a:t>/g)].map((m) => m[1]).join("")).filter((t) => t.trim());
+      return paras.length ? `[Slide ${i + 1}] ${unxml(paras.join(" | "))}` : "";
+    }).filter(Boolean).join("\n");
+  }
+  if (/wordprocessingml/.test(mime)) {
+    const [doc] = await zipEntries(buf, (n) => n === "word/document.xml");
+    if (!doc) return "";
+    return unxml(doc.xml.split(/<\/w:p>/).map((p) => [...p.matchAll(/<w:t[^>]*>([^<]*)<\/w:t>/g)].map((m) => m[1]).join("")).filter((t) => t.trim()).join("\n"));
+  }
+  return new TextDecoder().decode(buf);
+}
+
+// Returns Gemini "parts" for a material: extracted text for slides/docs, uploaded file for PDFs. Cached in KV.
+async function materialParts(env, m) {
+  const key = `mp:${m.cmid}`;
+  const cached = await env.KV.get(key);
+  if (cached) return JSON.parse(cached);
+  const token = await mtoken(env);
+  const parts = [];
+  let hasFile = false, textBudget = 90000;
+  for (const f of m.files) {
+    const r = await fetch(`${f.url}${f.url.includes("?") ? "&" : "?"}token=${token}`, { headers: UA });
+    if (!r.ok) continue;
+    const buf = await r.arrayBuffer();
+    if (/pdf/.test(f.mime)) {
+      if (buf.byteLength > 18 * 1024 * 1024) continue;
+      const up = await geminiUpload(env, buf, f.mime, f.name);
+      parts.push({ file_data: { mime_type: up.mimeType, file_uri: up.uri } });
+      hasFile = true;
+    } else {
+      const t = (await officeText(buf, f.mime)).slice(0, textBudget);
+      textBudget -= t.length;
+      if (t.trim()) parts.push({ text: `MATERIAL "${f.name}":\n${t}` });
+    }
+  }
+  if (!parts.length) throw new Error("I couldn't read anything in that file (maybe it's only images).");
+  // Gemini keeps uploaded files ~48h, so PDF-based parts are cached shorter
+  await env.KV.put(key, JSON.stringify(parts), { expirationTtl: hasFile ? 40 * 3600 : 7 * 86400 });
+  return parts;
+}
+
+const STUDY_STYLE = `You are a friendly, sharp tutor for Abhi (MCA, first semester, Galgotias University). Use ONLY the course material provided as your source; if something isn't covered, say so briefly.
+Formatting for Telegram on a phone: plain text, short lines, emoji section markers, "•" bullets, *single asterisks* for bold. No markdown headings or tables. Match his language (English/Hinglish).`;
+
+async function setSession(env, chat, s) { await env.KV.put(`s:${chat}`, JSON.stringify(s), { expirationTtl: 3 * 3600 }); }
+async function getSession(env, chat) { return JSON.parse((await env.KV.get(`s:${chat}`)) || "null"); }
+
+async function studyAction(env, chat, act, cmid) {
+  const m = await findMaterial(env, cmid);
+  await setSession(env, chat, { cmid: m.cmid, name: m.name, mode: act === "ask" ? "ask" : "browse" });
+  if (act === "ask")
+    return send(env, chat, `💬 <b>Ask me anything about:</b>\n📖 ${esc(m.name)}\n\nI'll answer from the file itself. Try <i>"explain the main concept"</i> or <i>"what's on slide 5?"</i>\n\n<i>/stop to leave study mode</i>`);
+  if (act === "quiz") return startQuiz(env, chat, { type: "mat", cmid: m.cmid }, 5);
+  if (act === "cards") return startCards(env, chat, { type: "mat", cmid: m.cmid });
+  const wait = await send(env, chat, `⏳ Reading <b>${esc(m.name)}</b>… <i>(~15 sec)</i>`);
+  await tg(env, "sendChatAction", { chat_id: chat, action: "typing" }).catch(() => {});
+  const parts = await materialParts(env, m);
+  const prompt = act === "eli5"
+    ? `Explain this material super simply, like to a smart friend who missed the class. Use 1-2 everyday analogies (Indian context welcome), then "🔑 Remember these 3 things". Max 180 words.`
+    : `Summarise this material for revision:\n📌 What it's about (1 line)\n🔑 Key points (6-8 bullets)\n🧠 Key terms (term — 1-line meaning, max 6)\n❓ 2 likely exam questions\nMax 230 words.`;
+  const out = await gemini(env, [...parts, { text: prompt }], { system: STUDY_STYLE });
+  return edit(env, chat, wait.message_id, `${act === "eli5" ? "💡" : "📝"} <b>${esc(m.name)}</b>\n\n${mdToHtml(out)}`, { inline_keyboard: [
+    [{ text: "🧠 Quiz me", callback_data: `sa:quiz:${m.cmid}` }, { text: "🃏 Flashcards", callback_data: `sa:cards:${m.cmid}` }],
+    [{ text: act === "eli5" ? "📝 Full summary" : "💡 Explain simply", callback_data: `sa:${act === "eli5" ? "sum" : "eli5"}:${m.cmid}` }, { text: "💬 Ask about it", callback_data: `sa:ask:${m.cmid}` }],
+    NAV,
+  ] });
+}
+
+async function studyAsk(env, chat, s, question) {
+  await tg(env, "sendChatAction", { chat_id: chat, action: "typing" }).catch(() => {});
+  const m = await findMaterial(env, s.cmid);
+  const parts = await materialParts(env, m);
+  const hist = JSON.parse((await env.KV.get(`sh:${chat}`)) || "[]");
+  const out = await gemini(env, [...parts, { text: `${hist.length ? `Earlier in this study chat:\n${hist.join("\n")}\n\n` : ""}Abhi asks: ${question}\nAnswer from the material (mention slide/page when useful). Max 150 words.` }], { system: STUDY_STYLE });
+  await env.KV.put(`sh:${chat}`, JSON.stringify([...hist, `Q: ${question.slice(0, 200)}`, `A: ${out.slice(0, 300)}`].slice(-6)), { expirationTtl: 3 * 3600 });
+  return send(env, chat, `${mdToHtml(out)}\n\n<i>📖 Studying: ${esc(m.name)} · /stop to exit</i>`, { reply_markup: { inline_keyboard: [
+    [{ text: "🧠 Quiz me on this", callback_data: `sa:quiz:${m.cmid}` }, { text: "🛑 Stop studying", callback_data: "stop" }],
+  ] } });
+}
+
+// --- source of questions: one material, or a course's latest material (exam prep)
+async function sourceParts(env, src) {
+  if (src.type === "mat") {
+    const m = await findMaterial(env, src.cmid);
+    return { title: m.name, parts: await materialParts(env, m) };
+  }
+  const [list, cs] = await Promise.all([listMaterials(env, src.cid), courses(env)]);
+  const cname = cs.find((c) => String(c.id) === String(src.cid))?.name || "Course";
+  if (!list.length) throw new Error("No readable material in this course yet.");
+  const latest = list.slice(-3);
+  const parts = [{ text: `COURSE: ${cname}\nAll material titles: ${list.map((m) => m.name).join("; ")}` }];
+  for (const m of latest) parts.push(...(await materialParts(env, { ...m, course: cname })));
+  return { title: cname, parts, latest: latest.map((m) => m.name) };
+}
+
+async function examPrep(env, chat, cid) {
+  const wait = await send(env, chat, "🎯 Reading your latest course material and building a plan… <i>(~30 sec)</i>");
+  const src = await sourceParts(env, { type: "exam", cid });
+  const out = await gemini(env, [...src.parts, { text: `Create exam prep for this course:\n🎯 Top 8 topics most likely to be asked (1 line each, most important first)\n📅 5-day revision plan (Day 1…Day 5, one line each)\n⚡ 3 smart exam tips for these topics\nMax 250 words.` }], { system: STUDY_STYLE });
+  return edit(env, chat, wait.message_id, `🎯 <b>Exam prep — ${esc(src.title)}</b>\n<i>Based on: ${esc(src.latest.join(", "))}</i>\n\n${mdToHtml(out)}`, { inline_keyboard: [
+    [{ text: "📝 10-question mock test", callback_data: `eq:${cid}` }],
+    [{ text: "🃏 Flashcards", callback_data: `ec:${cid}` }, { text: "📚 Pick a file", callback_data: `sc:${cid}:0` }],
+    NAV,
+  ] });
+}
+
+// ================================================================ Quiz (native Telegram quiz polls)
+function parseJson(s) {
+  const t = s.replace(/^```(?:json)?\s*|\s*```$/g, "").trim();
+  return JSON.parse(t.slice(t.indexOf("["), t.lastIndexOf("]") + 1));
+}
+
+async function startQuiz(env, chat, src, n) {
+  const wait = await send(env, chat, `🧠 Cooking up ${n} questions… <i>(~20 sec)</i>`);
+  const { title, parts } = await sourceParts(env, src);
+  const raw = await gemini(env, [...parts, { text: `Create ${n} multiple-choice questions that test real understanding of the material above (university exam style; mix easy, medium, hard; no trivia about file names).
+Return ONLY a JSON array: [{"q": "question, max 250 chars", "options": ["4 options", "each max 90 chars"], "answer": 0, "why": "why the answer is right, max 180 chars"}]. "answer" is the 0-based index of the correct option. Vary where the correct answer is.` }], { system: STUDY_STYLE, json: true });
+  let qs = [];
+  try { qs = parseJson(raw).filter((q) => q.q && Array.isArray(q.options) && q.options.length >= 2 && q.options[q.answer] !== undefined).slice(0, n); } catch { /* handled below */ }
+  if (!qs.length) return edit(env, chat, wait.message_id, "😵 The AI returned a messy quiz. Tap again to retry.", { inline_keyboard: [NAV] });
+  await env.KV.put(`qz:${chat}`, JSON.stringify({ total: qs.length, answered: 0, score: 0, title, src }), { expirationTtl: 2 * 86400 });
+  await edit(env, chat, wait.message_id, `🧠 <b>Quiz: ${esc(title)}</b>\n${qs.length} questions below. Tap an answer — I'll keep score. 🎯`);
+  for (let i = 0; i < qs.length; i++) {
+    const q = qs[i];
+    const poll = await tg(env, "sendPoll", {
+      chat_id: chat, question: `${i + 1}/${qs.length}. ${q.q}`.slice(0, 300),
+      options: q.options.slice(0, 10).map((o) => ({ text: String(o).slice(0, 100) })),
+      type: "quiz", correct_option_id: Number(q.answer), explanation: String(q.why || "").slice(0, 200), is_anonymous: false,
+    });
+    await env.KV.put(`poll:${poll.poll.id}`, JSON.stringify({ c: Number(q.answer) }), { expirationTtl: 2 * 86400 });
+  }
+}
+
+async function onPollAnswer(pa, env) {
+  const chat = pa.user.id;
+  const p = JSON.parse((await env.KV.get(`poll:${pa.poll_id}`)) || "null");
+  const s = JSON.parse((await env.KV.get(`qz:${chat}`)) || "null");
+  if (!p || !s) return;
+  s.answered += 1;
+  if (pa.option_ids?.[0] === p.c) s.score += 1;
+  await env.KV.put(`qz:${chat}`, JSON.stringify(s), { expirationTtl: 2 * 86400 });
+  if (s.answered < s.total) return;
+  const frac = s.score / s.total;
+  const verdict = frac === 1 ? "🏆 Perfect! Topper energy." : frac >= 0.8 ? "🌟 Solid! Almost there." : frac >= 0.5 ? "👍 Decent — review the ones you missed." : "📚 Time to revise this one. You got this.";
+  const again = s.src.type === "mat" ? `sa:quiz:${s.src.cmid}` : `eq:${s.src.cid}`;
+  const cards = s.src.type === "mat" ? `sa:cards:${s.src.cmid}` : `ec:${s.src.cid}`;
+  return send(env, chat, `🏁 <b>Quiz done — ${esc(s.title)}</b>\n\nScore: <b>${s.score}/${s.total}</b>\n${bar(frac)} ${Math.round(frac * 100)}%\n${verdict}`, { reply_markup: { inline_keyboard: [
+    [{ text: "🔁 New questions", callback_data: again }, { text: "🃏 Flashcards", callback_data: cards }],
+    NAV,
+  ] } });
+}
+
+// ================================================================ Flashcards
+async function startCards(env, chat, src) {
+  const wait = await send(env, chat, "🃏 Making flashcards… <i>(~15 sec)</i>");
+  const { title, parts } = await sourceParts(env, src);
+  const raw = await gemini(env, [...parts, { text: `Create 8 revision flashcards from the material above: the most exam-relevant definitions, concepts and differences.
+Return ONLY a JSON array: [{"q": "front: short question or term, max 150 chars", "a": "back: crisp answer, max 250 chars"}].` }], { system: STUDY_STYLE, json: true });
+  let cards = [];
+  try { cards = parseJson(raw).filter((c) => c.q && c.a).slice(0, 10); } catch { /* handled below */ }
+  if (!cards.length) return edit(env, chat, wait.message_id, "😵 Couldn't make cards this time. Tap again to retry.", { inline_keyboard: [NAV] });
+  const deck = { cards, i: 0, known: 0, missed: [], title, src };
+  await env.KV.put(`fc:${chat}`, JSON.stringify(deck), { expirationTtl: 86400 });
+  return edit(env, chat, wait.message_id, cardText(deck, false), cardKb(deck, false));
+}
+
+function cardText(d, revealed) {
+  const c = d.cards[d.i];
+  const dots = d.cards.map((_, k) => (k < d.i ? "●" : k === d.i ? "◉" : "○")).join("");
+  return `🃏 <b>Card ${d.i + 1}/${d.cards.length}</b> · ${esc(d.title)}\n${dots}\n\n❓ <b>${esc(c.q)}</b>${revealed ? `\n\n💡 ${esc(c.a)}` : "\n\n<i>Think of the answer, then reveal…</i>"}`;
+}
+function cardKb(d, revealed) {
+  return { inline_keyboard: revealed
+    ? [[{ text: "✅ Knew it", callback_data: "fc:k:1" }, { text: "🔁 Not yet", callback_data: "fc:k:0" }]]
+    : [[{ text: "👀 Reveal", callback_data: "fc:r" }], [{ text: "⏹ End deck", callback_data: "fc:end" }]] };
+}
+
+async function onCard(env, chat, mid, parts) {
+  const d = JSON.parse((await env.KV.get(`fc:${chat}`)) || "null");
+  if (!d) return edit(env, chat, mid, "This deck expired. Start a new one from 📚 Study.", { inline_keyboard: [NAV] });
+  if (parts[1] === "r") return edit(env, chat, mid, cardText(d, true), cardKb(d, true));
+  if (parts[1] === "again") {
+    Object.assign(d, { cards: d.missed, i: 0, known: 0, missed: [] });
+  } else if (parts[1] === "k") {
+    if (parts[2] === "1") d.known += 1; else d.missed.push(d.cards[d.i]);
+    d.i += 1;
+  }
+  if (parts[1] === "end" || d.i >= d.cards.length) {
+    await env.KV.put(`fc:${chat}`, JSON.stringify(d), { expirationTtl: 86400 });
+    const seen = parts[1] === "end" ? d.i : d.cards.length;
+    const frac = seen ? d.known / seen : 0;
+    const rows = [];
+    if (d.missed.length) rows.push([{ text: `🔁 Practice the ${d.missed.length} I missed`, callback_data: "fc:again" }]);
+    rows.push([{ text: "🧠 Quiz me", callback_data: d.src.type === "mat" ? `sa:quiz:${d.src.cmid}` : `eq:${d.src.cid}` }], NAV);
+    return edit(env, chat, mid, `🏁 <b>Deck done — ${esc(d.title)}</b>\n\nYou knew <b>${d.known}/${seen}</b>\n${bar(frac)} ${Math.round(frac * 100)}%\n${frac >= 0.8 ? "🔥 Locked in!" : "💪 A couple more rounds and it'll stick."}`, { inline_keyboard: rows });
+  }
+  await env.KV.put(`fc:${chat}`, JSON.stringify(d), { expirationTtl: 86400 });
+  return edit(env, chat, mid, cardText(d, false), cardKb(d, false));
 }
 
 // -------------------------------------------------------------- Telegram

@@ -71,8 +71,11 @@ jobs:
           echo "::add-mask::$SECRET"
           curl -sf "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
             --data-urlencode "url=$URL/tg" --data-urlencode "secret_token=$SECRET" \
-            --data-urlencode 'allowed_updates=["message","callback_query"]' -d drop_pending_updates=true > /dev/null
+            --data-urlencode 'allowed_updates=["message","callback_query","poll_answer"]' -d drop_pending_updates=true > /dev/null
           curl -sf "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setMyCommands" -H 'Content-Type: application/json' -d '{"commands":[
+            {"command":"menu","description":"🏠 Dashboard with buttons"},
+            {"command":"study","description":"📚 Study a course file (summary, quiz, flashcards)"},
+            {"command":"exam","description":"🎯 Revision plan + mock test"},
             {"command":"pending","description":"Everything not yet submitted"},
             {"command":"today","description":"Due today"},
             {"command":"week","description":"Due in the next 7 days"},
@@ -80,6 +83,7 @@ jobs:
             {"command":"courses","description":"Your courses"},
             {"command":"cal","description":"Sync deadlines to Google Calendar"},
             {"command":"status","description":"Is the bot healthy?"},
+            {"command":"stop","description":"Leave study mode"},
             {"command":"help","description":"What can this bot do"}]}' > /dev/null
           sleep 5
           HEALTH=$(curl -s "$URL/health?k=$SECRET")

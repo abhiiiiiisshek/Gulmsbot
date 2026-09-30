@@ -13,6 +13,8 @@ Quiet hours 23:00-07:00 IST: only urgent reminders get through.
 Secrets (env): LMS_USERNAME, LMS_PASSWORD, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, GEMINI_API_KEY (optional)
 """
 import base64
+import io
+import zipfile
 import json
 import os
 import re
@@ -350,7 +352,7 @@ def submission_confirmations(old, new):
 
 
 def nags(new, meta, quiet):
-    """Nag-until-done reminders + draft trap. Returns list of (text, urgent)."""
+    """Nag-until-done reminders + draft trap. Returns list of (html, assignment id, name)."""
     out = []
     sent = meta.setdefault("nag", {})
     for aid, a in new["assignments"].items():
@@ -371,8 +373,8 @@ def nags(new, meta, quiet):
         sent[aid] = sorted(set(done) | set(crossed))
         icon = "🚨" if level <= 6 else "⏰"
         trap = "\n   🪤 <b>It's still a DRAFT</b> — your teacher can't see it until you click Submit!" if st == "draft" else ""
-        out.append(f"{icon} <b>{link(a['name'], a['url'])}</b> — {esc(a['course'])}\n"
-                   f"   due {fmt_time(due)} (<b>{rel(due)}</b>), not submitted yet{trap}")
+        out.append((f"{icon} <b>{link(a['name'], a['url'])}</b> — {esc(a['course'])}\n"
+                    f"   due {fmt_time(due)} (<b>{rel(due)}</b>), not submitted yet{trap}", aid, a["name"]))
     # forget finished assignments
     for aid in list(sent):
         if aid not in new["assignments"] or new["subs"].get(aid) == "submitted":
@@ -391,15 +393,15 @@ def quiz_alerts(api, new, meta, quiet):
         if q["open"] and last < q["open"] <= NOW and "open" not in f and not quiet:
             lim = f", ⏱ {q['limit'] // 60} min limit" if q["limit"] else ""
             closes = f", closes {fmt_time(q['close'])}" if q["close"] else ""
-            out.append(f"❓ <b>Quiz open now:</b> {link(q['name'], q['url'])} — {esc(q['course'])}{closes}{lim}")
+            out.append((f"❓ <b>Quiz open now:</b> {link(q['name'], q['url'])} — {esc(q['course'])}{closes}{lim}", None, None))
             f.append("open")
         if q["close"] and NOW < q["close"] <= NOW + 24 * 3600 and "closing" not in f:
             if quiet and q["close"] - NOW > URGENT_HOURS * 3600:
                 continue
             attempts = safe("quiz attempts", lambda: api.call("mod_quiz_get_user_attempts", quizid=int(qid), status="finished"), {})
             if not (attempts or {}).get("attempts"):
-                out.append(f"⏳ <b>Quiz closes {rel(q['close'])}</b> and you haven't attempted it: "
-                           f"{link(q['name'], q['url'])} — {esc(q['course'])}")
+                out.append((f"⏳ <b>Quiz closes {rel(q['close'])}</b> and you haven't attempted it: "
+                            f"{link(q['name'], q['url'])} — {esc(q['course'])}", None, None))
             f.append("closing")
     for qid in list(flags):
         if qid not in new["quizzes"]:
@@ -434,7 +436,26 @@ def gemini(parts, system=None, max_tokens=4096):
 
 AI_STYLE = ("You write for a Telegram message read on a phone by Abhi, an MCA first-semester student. "
             "Plain text, short, '•' bullets, *single asterisks* for bold, no headings, no tables.")
-READABLE = re.compile(r"pdf|image/|text/plain")
+READABLE = re.compile(r"pdf|image/|text/plain|presentationml|wordprocessingml")
+
+
+def office_text(data, mime):
+    """Plain text from PPTX/DOCX (they're zip files of XML)."""
+    z = zipfile.ZipFile(io.BytesIO(data))
+    if "presentationml" in mime:
+        names = sorted((n for n in z.namelist() if re.fullmatch(r"ppt/slides/slide\d+\.xml", n)),
+                       key=lambda n: int(re.search(r"\d+", n).group()))
+        out = []
+        for i, n in enumerate(names, 1):
+            paras = ["".join(re.findall(r"<a:t>([^<]*)</a:t>", p)) for p in z.read(n).decode("utf8", "ignore").split("</a:p>")]
+            paras = [p for p in paras if p.strip()]
+            if paras:
+                out.append(f"[Slide {i}] " + " | ".join(paras))
+        text = "\n".join(out)
+    else:
+        xml = z.read("word/document.xml").decode("utf8", "ignore")
+        text = "\n".join(t for t in ("".join(re.findall(r"<w:t[^>]*>([^<]*)</w:t>", p)) for p in xml.split("</w:p>")) if t.strip())
+    return BeautifulSoup(text, "html.parser").get_text()[:90000]
 
 
 def ai_summary(api, module, f):
@@ -444,7 +465,14 @@ def ai_summary(api, module, f):
     data = api.download(f["fileurl"])
     if not data:
         return None
-    return gemini([{"inline_data": {"mime_type": mime, "data": base64.b64encode(data).decode()}},
+    if "officedocument" in mime:
+        text = office_text(data, mime)
+        if not text.strip():
+            return None
+        first = {"text": f"MATERIAL:\n{text}"}
+    else:
+        first = {"inline_data": {"mime_type": mime, "data": base64.b64encode(data).decode()}}
+    return gemini([first,
                    {"text": f'New study material "{module["name"]}" for {module["course"]}. '
                             "Give: 1 line on what it covers, then 4-5 bullet key points, then 'Key terms:' with 5-8 terms. "
                             "Keep it under 120 words."}], system=AI_STYLE)
@@ -564,7 +592,10 @@ def first_run_message(snap):
     return msg
 
 
-def send(text):
+def send(text, buttons=None):
+    """buttons: list of rows, each row a list of (label, callback_data). '!' = open as a new message in the bot."""
+    if isinstance(text, tuple):
+        text, buttons = text
     if not (TG_TOKEN and TG_CHAT):
         raise RuntimeError("TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID secrets are missing")
     chunks, cur = [], ""
@@ -574,8 +605,10 @@ def send(text):
             cur = ""
         cur += ln + "\n"
     chunks.append(cur)
-    for chunk in chunks:
+    for i, chunk in enumerate(chunks):
         data = {"chat_id": TG_CHAT, "text": chunk, "parse_mode": "HTML", "disable_web_page_preview": "true"}
+        if buttons and i == len(chunks) - 1:
+            data["reply_markup"] = json.dumps({"inline_keyboard": [[{"text": t[:60], "callback_data": d} for t, d in row] for row in buttons]})
         r = requests.post(f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage", data=data, timeout=30)
         if not r.ok and "parse" in r.text.lower():  # broken HTML from AI -> send as plain text
             data.pop("parse_mode")
@@ -613,7 +646,7 @@ def main():
     messages = []
 
     if not old.get("courses"):
-        messages.append(first_run_message(snap))
+        messages.append((first_run_message(snap), [[("🏠 Open menu", "home!")]]))
         meta["plan_date"] = today
     else:
         urgent = nags(snap, meta, quiet) + quiz_alerts(api, snap, meta, quiet)
@@ -632,41 +665,47 @@ def main():
                 meta.setdefault("log_grades", []).append([NOW, f"{g['name']}: {g['grade']}"])
 
             if hour >= 7 and meta.get("plan_date") != today:
-                messages.append(safe("morning plan", lambda: morning_plan(api)) or "")
+                plan = safe("morning plan", lambda: morning_plan(api))
+                if plan:
+                    messages.append((plan, [[("📋 Pending", "v:pending!"), ("🏠 Menu", "home!")]]))
                 meta["plan_date"] = today
 
             msg = digest_message(ch, grades, confirms)
             if msg:
-                messages.append(msg)
+                messages.append((msg, [[("📋 Pending", "v:pending!"), ("🏠 Menu", "home!")]]))
 
             # AI extras for brand-new items
             if GEMINI_KEY:
                 for a in ch["assignments"][:3]:
                     txt = safe("breakdown", lambda: ai_breakdown(api, a, extra["briefs"].get(a["id"], {})))
                     if txt:
-                        messages.append(f"🧩 <b>Breakdown:</b> {link(a['name'], a['url'])}\n\n{md_to_html(txt)}")
+                        messages.append((f"🧩 <b>Breakdown:</b> {link(a['name'], a['url'])}\n\n{md_to_html(txt)}", [[("📋 Pending", "v:pending!"), ("🏠 Menu", "home!")]]))
                 done = 0
                 for m in ch["modules"]:
                     if done >= MAX_AI_SUMMARIES:
                         break
                     f = extra["files"].get(m["id"])
-                    if m["type"] != "resource" or not f:
+                    if m["type"] not in ("resource", "folder") or not f:
                         continue
                     txt = safe("summary", lambda: ai_summary(api, m, f))
                     if txt:
                         done += 1
-                        messages.append(f"📄 <b>{link(m['name'], m['url'])}</b> — {esc(m['course'])}\n\n{md_to_html(txt)}")
+                        messages.append((f"📄 <b>{link(m['name'], m['url'])}</b> — {esc(m['course'])}\n\n{md_to_html(txt)}",
+                                         [[("🧠 Quiz me", f"sa:quiz:{m['id']}!"), ("🃏 Flashcards", f"sa:cards:{m['id']}!")],
+                                          [("📖 Study this file", f"sm:{m['id']}!")]]))
 
             if NOW_IST.weekday() == 6 and hour >= 19 and meta.get("report_week") != NOW_IST.strftime("%G-%V"):
-                messages.append(sunday_report(snap, meta))
+                messages.append((sunday_report(snap, meta), [[("🎯 Exam prep", "v:exam!"), ("🏠 Menu", "home!")]]))
                 meta["report_week"] = NOW_IST.strftime("%G-%V")
 
         if urgent:
-            messages.insert(0, "🔔 <b>Reminders</b>\n\n" + "\n\n".join(urgent))
+            done_btns = [[(f"✅ Done: {name}", f"m:assign:{aid}!")] for _, aid, name in urgent if aid][:5]
+            messages.insert(0, ("🔔 <b>Reminders</b>\n\n" + "\n\n".join(h for h, _, _ in urgent),
+                                done_btns + [[("📋 Pending", "v:pending!"), ("🏠 Menu", "home!")]]))
 
     for m in messages:
         if m:
-            send(m)
+            send(*m) if isinstance(m, tuple) else send(m)
     if not any(messages):
         print("Nothing new.")
     for w in warnings:
