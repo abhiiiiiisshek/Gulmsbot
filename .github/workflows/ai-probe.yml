@@ -28,8 +28,8 @@ jobs:
               note(f"LIST FAILED {st}: {j.get('error',{}).get('message')}"); raise SystemExit
           names = [m["name"].split("/")[-1] for m in j["models"] if "generateContent" in m.get("supportedGenerationMethods", [])]
           note("models: " + ", ".join(n for n in names if re.search(r"gemini|gemma", n))[:850])
-          cands = [n for n in names if re.search(r"flash|gemma-3-27b|pro", n) and not re.search(r"image|tts|live|audio|embedding|computer", n)]
-          for n in cands[:14]:
+          cands = ["gemini-3.8-flash","gemini-3.7-flash","gemini-3.6-flash","gemini-3.5-flash","gemini-3-flash-preview","gemini-flash-latest","gemini-3.5-flash-lite","gemini-3.1-flash-lite","gemini-flash-lite-latest","gemma-4-31b-it"]
+          for n in cands:
               st, j = req(f"https://generativelanguage.googleapis.com/v1beta/models/{n}:generateContent",
                           {"contents": [{"parts": [{"text": "Reply with: ok"}]}]})
               msg = "OK" if st == 200 else f"{st} {j.get('error',{}).get('message','')[:140]}"
