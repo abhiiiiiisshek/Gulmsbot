@@ -301,6 +301,11 @@ async function gemini(env, parts, { system, maxTokens = 4096 } = {}, retried = f
     method: "POST", headers: { "x-goog-api-key": env.GEMINI_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify(body),
   });
   if (r.status === 404 && !retried) { await pickModel(env); return gemini(env, parts, { system, maxTokens }, true); }
+  if ((r.status === 503 || r.status === 500) && !retried) { // Google overloaded: wait, then retry once
+    await new Promise((res) => setTimeout(res, 3000));
+    return gemini(env, parts, { system, maxTokens }, true);
+  }
+  if (r.status === 503) throw new Error("Google's AI is overloaded right now. Try again in a minute.");
   if (r.status === 429) throw new Error("AI is busy (free-tier rate limit). Try again in a minute.");
   const j = await r.json();
   if (!r.ok) throw new Error(`AI error: ${j.error?.message || r.status}`);
