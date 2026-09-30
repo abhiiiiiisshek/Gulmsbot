@@ -9,6 +9,9 @@ const GEMINI = "https://generativelanguage.googleapis.com";
 
 // ------------------------------------------------------------------ entry
 export default {
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(onCron(env).catch((e) => console.log("cron error", e)));
+  },
   async fetch(req, env) {
     const url = new URL(req.url);
     const secret = await webhookSecret(env);
@@ -33,7 +36,12 @@ export default {
       await handle(update, env);
     } catch (e) {
       const chat = chatOf(update);
-      if (chat) await tg(env, "sendMessage", { chat_id: chat, text: `⚠️ Error: ${String(e.message || e).slice(0, 300)}` }).catch(() => {});
+      if (chat && String(chat) === String(env.TELEGRAM_CHAT_ID).trim()) {
+        let retry = null;
+        if (update.callback_query?.data) retry = update.callback_query.data.replace(/!?$/, "!");
+        else if (update.message?.text) { await env.KV.put("lastmsg", update.message.text, { expirationTtl: 3600 }); retry = "rt"; }
+        await tg(env, "sendMessage", { chat_id: chat, text: friendlyError(e), ...(retry ? { reply_markup: { inline_keyboard: [[{ text: "🔁 Try again", callback_data: retry }]] } } : {}) }).catch(() => {});
+      }
     }
     return new Response("ok");
   },
@@ -62,12 +70,13 @@ async function handle(update, env) {
   if (update.poll_answer) return onPollAnswer(update.poll_answer, env);
 
   const msg = update.message;
-  if (msg.document || msg.photo) return onFile(msg, env);
-  if (msg.voice || msg.audio) return onVoice(msg, env);
+  if (msg.document || msg.photo) { await track(env, "File sent").catch(() => {}); return onFile(msg, env); }
+  if (msg.voice || msg.audio) { await track(env, "Voice").catch(() => {}); return onVoice(msg, env); }
   const text = (msg.text || "").trim();
   if (!text) return;
 
   const cmd = text.startsWith("/") ? text.split(/[\s@]/)[0].toLowerCase() : null;
+  if (cmd) await track(env, cmd).catch(() => {});
   const who = msg.from?.first_name || "";
   switch (cmd) {
     case "/start":
@@ -87,11 +96,19 @@ async function handle(update, env) {
     case "/start_here":
     case "/plan": return startHere(env, chat);
     case "/files": return sendView(env, chat, await assignListView(env));
+    case "/next": return sendView(env, chat, await doNextView(env, 0));
+    case "/settings": return sendView(env, chat, await settingsView(env));
+    case "/review": return startReview(env, chat);
+    case "/radar": return sendView(env, chat, await radarView(env));
+    case "/stats": return sendView(env, chat, await statsView(env));
+    case "/receipts": return sendView(env, chat, await receiptsView(env));
+    case "/pin": { const st = await getSettings(env); st.pin = true; await kvPut(env, "settings", st); return pinDashboard(env, chat); }
     case "/stop":
       await env.KV.delete(`s:${chat}`); await env.KV.delete(`sh:${chat}`);
       return sendView(env, chat, { text: "🛑 Left study mode. Back to normal chat.", markup: { inline_keyboard: [NAV] } });
     case null: {
       const s = await getSession(env, chat);
+      await track(env, s?.mode === "ask" ? "Study Q&A" : "AI chat").catch(() => {});
       if (s?.mode === "ask") return studyAsk(env, chat, s, text);
       if (/(where|kaha+n?|kidhar).{0,25}(start|shuru|begin)|kya padh|what (should|do) i study|start studying/i.test(text)) return startHere(env, chat);
       return aiChat(env, chat, text);
@@ -102,7 +119,10 @@ async function handle(update, env) {
 
 const HELP = `🤖 <b>GU LMS assistant</b>
 
-🏠 /menu — your dashboard with buttons
+🏠 /menu — dashboard · ▶️ /next — the one thing to do now
+⚙️ /settings — how often I ping you, quiet hours, extras
+🔁 /review — cards you missed, spaced out so they stick · 📡 /radar — weak topics
+🧾 /receipts — your submissions · 📈 /stats — what you actually use
 📚 /study — pick a course file → summary, explain simply, quiz, flashcards, Q&A
 🎯 /exam — revision plan + 10-question mock test for a course
 🧭 /plan — "where do I start?" — a study plan for right now
@@ -474,7 +494,13 @@ async function onCallback(cq, env) {
   await tg(env, "answerCallbackQuery", { callback_query_id: cq.id }).catch(() => {});
   const show = (v) => (fresh ? sendView(env, chat, v) : edit(env, chat, mid, v.text, v.markup || { inline_keyboard: [] }));
 
+  await track(env, act === "v" ? `View: ${parts[1]}` : FEATURE[act] || act).catch(() => {});
   if (act === "home") return show(await homeView(env, cq.from?.first_name || ""));
+  if (act === "dn") return show(await doNextView(env, Number(parts[1] || 0)));
+  if (act === "sz") return snooze(env, chat, `${parts[1]}:${parts[2]}`, Number(parts[3] || 3));
+  if (act === "se") return show(await onSetting(env, chat, parts));
+  if (act === "rv") return startReview(env, chat);
+  if (act === "rt") { const t = await env.KV.get("lastmsg"); if (t) return handle({ message: { ...cq.message, from: cq.from, text: t, message_id: mid } }, env); return; }
   if (act === "v") return show(await namedView(env, parts[1]));
   if (act === "st") return show(withNav(await coursePicker(env, "📚 <b>Study mode</b>\nPick a course:", "sc")));
   if (act === "sc") return show(await materialsView(env, parts[1], Number(parts[2] || 0)));
@@ -533,6 +559,7 @@ async function onCallback(cq, env) {
     }
     const after = await assignInfo(env, aid);
     const ok = final ? after.status === "submitted" : ["draft", "submitted"].includes(after.status);
+    await addReceipt(env, { name: info.name, course: info.course, file: f.name, at: Math.floor(Date.now() / 1000), status: after.status, url: info.url });
     return edit(env, chat, mid,
       `${ok ? "✅" : "⚠️"} <b>${final ? "Submitted" : "Draft saved"}</b>: ${esc(info.name)} (${esc(info.course)})
 📎 ${esc(f.name)}
@@ -642,15 +669,13 @@ async function homeView(env, who = "") {
   let text = `🎓 <b>Hey${who ? ` ${esc(who)}` : ""}!</b>  ·  ${fmtTime(Math.floor(now)).split(",")[0]}\n${mood}\n\n`
     + `🔴 Overdue     <b>${overdue}</b>\n📅 Due today  <b>${today}</b>\n🗓 This week  <b>${week}</b>\n`;
   if (next) text += `\n⏳ <b>Next up</b> ${urgency(next)} ${esc(next.name)}\n     ${esc(next.course)} · <b>${countdown(next.due)}</b> left\n`;
-  text += `\n<i>💬 Ask anything · 🎤 voice note · 📎 drop a file to submit</i>`;
+  const due = srsDue(await kvJson(env, "srs", { cards: {} })).length;
+  if (due) text += `🔁 <b>${due}</b> review card${due > 1 ? "s" : ""} due\n`;
+  text += `\n<i>💬 Ask anything · 🎤 voice note · 📎 drop a file to submit</i>\n<i>🕒 live · ${fmtTime(Math.floor(now)).split(", ")[1]}</i>`;
   const kb = [
-    [{ text: `📋 Pending (${ev.length})`, callback_data: "v:pending" }, { text: "📅 Today", callback_data: "v:today" }],
-    [{ text: "🗓 This week", callback_data: "v:week" }],
-    [{ text: "🧭 Where do I start?", callback_data: "go" }],
-    [{ text: "📚 Study", callback_data: "st" }, { text: "🎯 Exam prep", callback_data: "v:exam" }],
-    [{ text: "📂 Assignment files", callback_data: "v:assign" }, { text: "📊 Grades", callback_data: "v:grades" }],
-    [{ text: "🗓 Calendar sync", callback_data: "v:cal" }, { text: "🙈 Hidden", callback_data: "v:hidden" }],
-    [{ text: "🩺 Status", callback_data: "v:status" }, { text: "❓ Help", callback_data: "v:help" }],
+    [{ text: `▶️ Do next${next || overdue ? "" : " ✨"}`, callback_data: "dn:0" }],
+    [{ text: "📚 Study", callback_data: "st" }, { text: "📤 Submit", callback_data: "v:sub" }],
+    [{ text: `🧭 Where do I start?`, callback_data: "go" }, { text: "➕ More", callback_data: "v:more" }],
   ];
   return { text, markup: { inline_keyboard: kb } };
 }
@@ -667,6 +692,12 @@ async function namedView(env, name) {
     case "status": return withNav({ text: await statusText(env) });
     case "help": return withNav({ text: HELP });
     case "assign": return assignListView(env);
+    case "settings": return settingsView(env);
+    case "receipts": return receiptsView(env);
+    case "radar": return radarView(env);
+    case "stats": return statsView(env);
+    case "sub": return submitView(env);
+    case "more": return moreView();
     case "exam": return withNav(await coursePicker(env, "🎯 <b>Exam prep</b>\nPick a course — I'll read its latest material and build a revision plan + mock test.", "ex"));
     default: return homeView(env);
   }
@@ -902,7 +933,7 @@ Return ONLY a JSON array: [{"q": "question, max 250 chars", "options": ["4 optio
       options: q.options.slice(0, 10).map((o) => ({ text: String(o).slice(0, 100) })),
       type: "quiz", correct_option_id: Number(q.answer), explanation: String(q.why || "").slice(0, 200), is_anonymous: false,
     });
-    await env.KV.put(`poll:${poll.poll.id}`, JSON.stringify({ c: Number(q.answer) }), { expirationTtl: 2 * 86400 });
+    await env.KV.put(`poll:${poll.poll.id}`, JSON.stringify({ c: Number(q.answer), q: q.q, a: `${q.options[q.answer]} — ${q.why || ""}`, t: title, src }), { expirationTtl: 2 * 86400 });
   }
 }
 
@@ -912,7 +943,10 @@ async function onPollAnswer(pa, env) {
   const s = JSON.parse((await env.KV.get(`qz:${chat}`)) || "null");
   if (!p || !s) return;
   s.answered += 1;
-  if (pa.option_ids?.[0] === p.c) s.score += 1;
+  const right = pa.option_ids?.[0] === p.c;
+  if (right) s.score += 1;
+  else if (p.q) await srsAdd(env, p.q, p.a, p.t, p.src);   // missed -> comes back for review tomorrow
+  if (p.t) await perfAdd(env, p.t, p.src, right ? 1 : 0, 1);
   await env.KV.put(`qz:${chat}`, JSON.stringify(s), { expirationTtl: 2 * 86400 });
   if (s.answered < s.total) return;
   const frac = s.score / s.total;
@@ -953,11 +987,18 @@ function cardKb(d, revealed) {
 async function onCard(env, chat, mid, parts) {
   const d = JSON.parse((await env.KV.get(`fc:${chat}`)) || "null");
   if (!d) return edit(env, chat, mid, "This deck expired. Start a new one from 📚 Study.", { inline_keyboard: [NAV] });
+  if (d.i >= d.cards.length && parts[1] !== "again") parts = [parts[0], "end"]; // stale button on a finished deck
   if (parts[1] === "r") return edit(env, chat, mid, cardText(d, true), cardKb(d, true));
   if (parts[1] === "again") {
     Object.assign(d, { cards: d.missed, i: 0, known: 0, missed: [] });
   } else if (parts[1] === "k") {
-    if (parts[2] === "1") d.known += 1; else d.missed.push(d.cards[d.i]);
+    const cur = d.cards[d.i], knew = parts[2] === "1";
+    if (knew) d.known += 1; else d.missed.push(cur);
+    if (d.srs) await srsGrade(env, cur.id, knew);
+    else {
+      if (!knew) await srsAdd(env, cur.q, cur.a, d.title, d.src);
+      await perfAdd(env, d.title, d.src, knew ? 1 : 0, 1);
+    }
     d.i += 1;
   }
   if (parts[1] === "end" || d.i >= d.cards.length) {
@@ -965,8 +1006,10 @@ async function onCard(env, chat, mid, parts) {
     const seen = parts[1] === "end" ? d.i : d.cards.length;
     const frac = seen ? d.known / seen : 0;
     const rows = [];
-    if (d.missed.length) rows.push([{ text: `🔁 Practice the ${d.missed.length} I missed`, callback_data: "fc:again" }]);
-    rows.push([{ text: "🧠 Quiz me", callback_data: d.src.type === "mat" ? `sa:quiz:${d.src.cmid}` : `eq:${d.src.cid}` }], NAV);
+    if (d.missed.length && !d.srs) rows.push([{ text: `🔁 Practice the ${d.missed.length} I missed`, callback_data: "fc:again" }]);
+    if (!d.srs && d.missed.length) rows.push([{ text: `🗓 ${d.missed.length} added to daily review`, callback_data: "rv" }]);
+    if (d.src.type !== "srs") rows.push([{ text: "🧠 Quiz me", callback_data: d.src.type === "mat" ? `sa:quiz:${d.src.cmid}` : `eq:${d.src.cid}` }]);
+    rows.push(NAV);
     return edit(env, chat, mid, `🏁 <b>Deck done — ${esc(d.title)}</b>\n\nYou knew <b>${d.known}/${seen}</b>\n${bar(frac)} ${Math.round(frac * 100)}%\n${frac >= 0.8 ? "🔥 Locked in!" : "💪 A couple more rounds and it'll stick."}`, { inline_keyboard: rows });
   }
   await env.KV.put(`fc:${chat}`, JSON.stringify(d), { expirationTtl: 86400 });
@@ -1142,6 +1185,8 @@ ${pending}
 Course files (id | course | title), most recent last per course:
 ${mats.map((m) => `${m.cmid} | ${m.course} | ${m.name}`).join("\n")}
 
+Weak topics from his quizzes (accuracy): ${(await weakTopicsLine(env)) || "no data yet"}
+
 Abhi asks: "Where should I start studying?" Build a focused plan for the next study session, prioritising overdue work, then the nearest deadlines/quizzes, then the course that seems furthest behind.
 Return ONLY JSON: {"why": "1 line on the priority logic", "steps": [{"title": "max 8 words", "do": "what exactly to do, max 20 words", "minutes": 25, "cmid": id of the file to open or null}]}. 3-4 steps, only cmids from the list.` }], { json: true, system: STUDY_STYLE });
   let p;
@@ -1166,6 +1211,267 @@ async function downloadMaterial(env, chat, cmid) {
     try { await tgSendFile(env, chat, await lmsFile(env, f.url), f.name, `${KIND(f.mime)} ${esc(m.name)} · ${esc(m.course)}`); }
     catch (e) { await send(env, chat, `⚠️ ${esc(f.name)}: ${esc(e.message)}`); }
   }
+}
+
+// ================================================================ Sprint: settings, pinned dashboard, SRS, radar, stats, health
+const kvJson = async (env, k, dflt) => JSON.parse((await env.KV.get(k)) || "null") ?? dflt;
+const kvPut = (env, k, v, ttl) => env.KV.put(k, JSON.stringify(v), ttl ? { expirationTtl: ttl } : undefined);
+
+// ---------- settings (the hourly watcher reads the same KV key)
+const DEFAULT_SETTINGS = { mode: "hourly", quiet: "23-7", pin: true, plan: true, summaries: true, sunday: true, review: true };
+const QUIET_OPTIONS = ["22-7", "23-7", "0-8", "off"];
+const getSettings = async (env) => ({ ...DEFAULT_SETTINGS, ...(await kvJson(env, "settings", {})) });
+
+async function settingsView(env) {
+  const s = await getSettings(env);
+  const mode = (m, label) => ({ text: `${s.mode === m ? "🔘" : "⚪"} ${label}`, callback_data: `se:mode:${m}` });
+  const tog = (k, label) => [{ text: `${s[k] ? "✅" : "⬜"} ${label}`, callback_data: `se:t:${k}` }];
+  const qLabel = s.quiet === "off" ? "off" : s.quiet.split("-").map((h) => { const n = Number(h); return n === 0 ? "12 AM" : n < 12 ? `${n} AM` : n === 12 ? "12 PM" : `${n - 12} PM`; }).join(" – ");
+  return {
+    text: `⚙️ <b>Settings</b>\n\n🔔 <b>Update digests</b> — how often I send "what's new"\n<i>Urgent reminders (≤ 6h left) always get through.</i>\n\n🌙 <b>Quiet hours:</b> ${qLabel}\n\n<b>Extras</b>`,
+    markup: { inline_keyboard: [
+      [mode("hourly", "Hourly"), mode("3x", "3× a day"), mode("morning", "Morning")],
+      [{ text: `🌙 Quiet hours: ${qLabel} — tap to change`, callback_data: "se:q" }],
+      tog("pin", "📌 Pinned live dashboard"),
+      tog("plan", "☀️ Morning plan"),
+      tog("summaries", "📄 AI summaries of new files"),
+      tog("review", "🔁 Daily review reminder"),
+      tog("sunday", "📈 Sunday report"),
+      NAV,
+    ] },
+  };
+}
+
+async function onSetting(env, chat, parts) {
+  const s = await getSettings(env);
+  if (parts[1] === "mode") s.mode = parts[2];
+  if (parts[1] === "q") s.quiet = QUIET_OPTIONS[(QUIET_OPTIONS.indexOf(s.quiet) + 1) % QUIET_OPTIONS.length];
+  if (parts[1] === "t") s[parts[2]] = !s[parts[2]];
+  await kvPut(env, "settings", s);
+  if (parts[2] === "pin") s.pin ? await pinDashboard(env, chat) : await unpinDashboard(env, chat);
+  return settingsView(env);
+}
+
+// ---------- snooze (watcher skips snoozed items; the Worker cron re-reminds when it expires)
+async function snooze(env, chat, key, hours) {
+  const sn = await kvJson(env, "snooze", {});
+  const all = await actionEvents(env, 30, 90, true);
+  const item = all.find((e) => e.key === key);
+  sn[key] = { until: Math.floor(Date.now() / 1000) + hours * 3600, name: item?.name || key, url: item?.url || "" };
+  await kvPut(env, "snooze", sn);
+  return send(env, chat, `😴 Snoozed <b>${esc(sn[key].name)}</b> for ${hours}h. I'll ping you at ${fmtTime(sn[key].until).split(", ")[1]}.`);
+}
+
+// ---------- pinned live dashboard
+async function liveText(env) {
+  const ev = await actionEvents(env, 14, 60);
+  const now = Date.now() / 1000, end = endOfTodayIST();
+  const overdue = ev.filter((e) => e.overdue).length, today = ev.filter((e) => !e.overdue && e.due <= end).length;
+  const week = ev.filter((e) => !e.overdue && e.due <= now + 7 * 86400).length;
+  const next = ev.filter((e) => !e.overdue).sort((a, b) => a.due - b.due)[0];
+  const due = srsDue(await kvJson(env, "srs", { cards: {} })).length;
+  let t = `📌 <b>LIVE</b> · 🕒 synced ${fmtTime(Math.floor(now)).split(", ")[1]}\n🔴 ${overdue} overdue · 📅 ${today} today · 🗓 ${week} this week`;
+  if (next) t += `\n⏳ ${urgency(next)} <b>${esc(next.name)}</b> — ${countdown(next.due)}`;
+  if (due) t += `\n🔁 ${due} review card${due > 1 ? "s" : ""} due`;
+  return t;
+}
+const LIVE_KB = { inline_keyboard: [[{ text: "▶️ Do next", callback_data: "dn:0!" }, { text: "🏠 Menu", callback_data: "home!" }]] };
+
+async function pinDashboard(env, chat) {
+  const m = await send(env, chat, await liveText(env), { reply_markup: LIVE_KB });
+  await tg(env, "pinChatMessage", { chat_id: chat, message_id: m.message_id, disable_notification: true }).catch(() => {});
+  await env.KV.put("pin", String(m.message_id));
+}
+async function unpinDashboard(env, chat) {
+  const id = await env.KV.get("pin");
+  if (id) await tg(env, "unpinChatMessage", { chat_id: chat, message_id: Number(id) }).catch(() => {});
+  await env.KV.delete("pin");
+}
+async function refreshPin(env) {
+  const id = await env.KV.get("pin");
+  if (!id) return;
+  await tg(env, "editMessageText", { chat_id: env.TELEGRAM_CHAT_ID, message_id: Number(id), text: await liveText(env), parse_mode: "HTML", reply_markup: LIVE_KB })
+    .catch(async (e) => { if (/not found|can't be edited/i.test(e.message)) await env.KV.delete("pin"); });
+}
+
+// ---------- simplified home: Do next / Study / Submit / More
+async function doNextView(env, idx = 0) {
+  const ev = (await actionEvents(env, 14, 60)).sort((a, b) => a.due - b.due);
+  if (!ev.length) {
+    const due = srsDue(await kvJson(env, "srs", { cards: {} })).length;
+    return withNav({ text: `▶️ <b>Do next</b>\n\nNothing pending on the LMS 🎉${due ? `\nBut ${due} review cards are due — 3 minutes, keeps it fresh.` : ""}`, markup: { inline_keyboard: [
+      ...(due ? [[{ text: "🔁 Review now", callback_data: "rv" }]] : []), [{ text: "🧭 Plan a study session", callback_data: "go" }]] } });
+  }
+  const i = Math.min(idx, ev.length - 1), e = ev[i];
+  const rows = [];
+  if (e.type === "assign") rows.push([{ text: "📂 Brief + files", callback_data: `af:${e.instance}` }, { text: "🧭 How to start", callback_data: `hs:${e.instance}` }]);
+  rows.push([{ text: "✅ Mark done", callback_data: `m:${e.key}` }, { text: "😴 Snooze 3h", callback_data: `sz:${e.key}:3` }]);
+  if (e.url) rows.push([{ text: "🔗 Open on LMS", url: e.url }]);
+  if (i + 1 < ev.length) rows.push([{ text: `⏭ Next (${i + 2}/${ev.length})`, callback_data: `dn:${i + 1}` }]);
+  const icon = { assign: "📝", quiz: "❓", forum: "💬" }[e.type] || "📌";
+  const tip = e.type === "assign" ? "\n\n📤 Done? Just send the file here to submit." : e.type === "quiz" ? "\n\n💡 Warm up first: 📚 Study → 🧠 Quiz me." : "";
+  return withNav({ text: `▶️ <b>Do next</b>  (${i + 1}/${ev.length})\n\n${urgency(e)} ${icon} <b>${esc(e.name)}</b>\n📚 ${esc(e.course)}\n⏳ ${e.overdue ? `<b>overdue</b> (${relTime(e.due)})` : `<b>${countdown(e.due)}</b> left · ${fmtTime(e.due)}`}${tip}`, markup: { inline_keyboard: rows } });
+}
+
+async function submitView(env) {
+  const open = (await actionEvents(env, 14, 60)).filter((e) => e.type === "assign");
+  return withNav({ text: `📤 <b>Submit</b>\n\nJust <b>send me the file</b> (PDF, DOCX, image…) — I'll ask which assignment, can AI-check it, and only submit when you tap ✅.\n\n${open.length ? `<b>Open assignments</b>\n${open.slice(0, 8).map((e) => `${urgency(e)} ${esc(e.name)} — ${e.overdue ? "overdue" : countdown(e.due)}`).join("\n")}` : "No open assignments right now 🎉"}`,
+    markup: { inline_keyboard: [[{ text: "🧾 My receipts", callback_data: "v:receipts" }]] } });
+}
+
+function moreView() {
+  const b = (text, cb) => ({ text, callback_data: cb });
+  return withNav({ text: "➕ <b>More</b>", markup: { inline_keyboard: [
+    [b("📋 Pending", "v:pending"), b("📅 Today", "v:today"), b("🗓 Week", "v:week")],
+    [b("🧭 Where do I start?", "go"), b("🎯 Exam prep", "v:exam")],
+    [b("🔁 Review cards", "rv"), b("📡 Weak topics", "v:radar")],
+    [b("📂 Assignment files", "v:assign"), b("📊 Grades", "v:grades")],
+    [b("🧾 Receipts", "v:receipts"), b("🙈 Hidden", "v:hidden")],
+    [b("🗓 Calendar sync", "v:cal"), b("📈 My stats", "v:stats")],
+    [b("⚙️ Settings", "v:settings"), b("🩺 Status", "v:status"), b("❓ Help", "v:help")],
+  ] } });
+}
+
+// ---------- receipts
+async function addReceipt(env, r) {
+  const list = await kvJson(env, "receipts", []);
+  list.unshift(r);
+  await kvPut(env, "receipts", list.slice(0, 50));
+}
+async function receiptsView(env) {
+  const list = await kvJson(env, "receipts", []);
+  if (!list.length) return withNav({ text: "🧾 <b>Receipts</b>\n\nNo submissions through the bot yet. When you submit here, I keep a record with time + LMS status — handy proof." });
+  return withNav({ text: `🧾 <b>Receipts</b> (last ${Math.min(15, list.length)})\n\n${list.slice(0, 15).map((r) =>
+    `${r.status === "submitted" ? "✅" : "📝"} <a href="${esc(r.url)}">${esc(r.name)}</a> — ${esc(r.course)}\n   📎 ${esc(r.file)} · 🕒 ${fmtTime(r.at)} · <b>${esc(r.status)}</b>`).join("\n\n")}` });
+}
+
+// ---------- spaced repetition (Leitner boxes) + weak-topic radar
+const BOX_DAYS = [0, 1, 3, 7, 21];
+const srsDue = (srs) => Object.entries(srs.cards).filter(([, c]) => c.due <= Date.now() / 1000).map(([id, c]) => ({ id, ...c }));
+const cardId = (q) => { let h = 0; for (const ch of q) h = (h * 31 + ch.charCodeAt(0)) | 0; return `c${(h >>> 0).toString(36)}`; };
+
+async function srsAdd(env, q, a, topic, src) {
+  const srs = await kvJson(env, "srs", { cards: {} });
+  const id = cardId(q);
+  srs.cards[id] = { q: q.slice(0, 300), a: a.slice(0, 400), topic, src, box: 1, due: Math.floor(Date.now() / 1000) + 86400 };
+  const ids = Object.keys(srs.cards);
+  if (ids.length > 300) for (const old of ids.sort((x, y) => srs.cards[y].due - srs.cards[x].due).slice(300)) delete srs.cards[old];
+  await kvPut(env, "srs", srs);
+}
+async function srsGrade(env, id, knew) {
+  const srs = await kvJson(env, "srs", { cards: {} });
+  const c = srs.cards[id];
+  if (!c) return;
+  c.box = knew ? c.box + 1 : 1;
+  if (c.box >= BOX_DAYS.length) delete srs.cards[id];
+  else c.due = Math.floor(Date.now() / 1000) + BOX_DAYS[c.box] * 86400;
+  await kvPut(env, "srs", srs);
+}
+async function perfAdd(env, topic, src, right, total) {
+  const perf = await kvJson(env, "perf", {});
+  const p = perf[topic] || { right: 0, total: 0, src };
+  p.right += right; p.total += total; p.src = src; p.last = Math.floor(Date.now() / 1000);
+  perf[topic] = p;
+  await kvPut(env, "perf", perf);
+}
+
+async function startReview(env, chat) {
+  const due = srsDue(await kvJson(env, "srs", { cards: {} })).sort((a, b) => a.due - b.due).slice(0, 10);
+  if (!due.length) return send(env, chat, "🔁 No review cards due. Miss a quiz question or tap 🔁 <i>Not yet</i> on a flashcard and it'll come back here at the right time.", { reply_markup: { inline_keyboard: [NAV] } });
+  const deck = { cards: due.map((c) => ({ q: c.q, a: c.a, id: c.id })), i: 0, known: 0, missed: [], title: "Daily review", src: { type: "srs" }, srs: true };
+  await kvPut(env, `fc:${chat}`, deck, 86400);
+  return send(env, chat, cardText(deck, false), { reply_markup: cardKb(deck, false) });
+}
+
+async function radarView(env) {
+  const perf = await kvJson(env, "perf", {});
+  const rows = Object.entries(perf).filter(([, p]) => p.total >= 3).map(([t, p]) => ({ t, ...p, acc: p.right / p.total })).sort((a, b) => a.acc - b.acc);
+  if (!rows.length) return withNav({ text: "📡 <b>Weak-topic radar</b>\n\nNot enough data yet. Do a few quizzes or flashcard decks in 📚 Study — I'll track what sticks and what doesn't." });
+  const kb = rows.filter((r) => r.acc < 0.7 && r.src?.type === "mat").slice(0, 3).map((r) => [{ text: `📖 Revise: ${r.t}`.slice(0, 55), callback_data: `sm:${r.src.cmid}` }]);
+  return withNav({ text: `📡 <b>Weak-topic radar</b>\n<i>weakest first · from your quizzes + flashcards</i>\n\n${rows.slice(0, 10).map((r) =>
+    `${r.acc < 0.5 ? "🔴" : r.acc < 0.7 ? "🟡" : "🟢"} <b>${esc(r.t)}</b>\n   ${bar(r.acc)} ${Math.round(r.acc * 100)}% (${r.right}/${r.total})`).join("\n")}`, markup: { inline_keyboard: kb } });
+}
+async function weakTopicsLine(env) {
+  const perf = await kvJson(env, "perf", {});
+  return Object.entries(perf).filter(([, p]) => p.total >= 3 && p.right / p.total < 0.7).map(([t, p]) => `${t} (${Math.round((p.right / p.total) * 100)}%)`).join("; ");
+}
+
+// ---------- private usage counters
+const FEATURE = { home: "Menu", v: "Views", st: "Study", sc: "Study", sm: "Study", sa: "Study actions", ex: "Exam prep", eq: "Mock test", ec: "Exam flashcards",
+  fc: "Flashcards", go: "Where do I start", af: "Assignment files", at: "Answer template", hs: "How to start", dl: "Downloads", m: "Mark done", u: "Undo done",
+  p: "Submit", f: "Submit", d: "Draft", c: "AI check", dn: "Do next", rv: "Review", se: "Settings", sz: "Snooze", sub: "Submit screen", more: "More" };
+async function track(env, name) {
+  const s = await kvJson(env, "stats", { since: Math.floor(Date.now() / 1000), n: {} });
+  s.n[name] = (s.n[name] || 0) + 1;
+  await kvPut(env, "stats", s);
+}
+async function statsView(env) {
+  const s = await kvJson(env, "stats", { since: Math.floor(Date.now() / 1000), n: {} });
+  const days = Math.max(1, Math.round((Date.now() / 1000 - s.since) / 86400));
+  const rows = Object.entries(s.n).sort((a, b) => b[1] - a[1]);
+  const max = rows[0]?.[1] || 1;
+  const all = ["Do next", "Study actions", "Study Q&A", "Flashcards", "Mock test", "Exam prep", "Review", "Where do I start", "Assignment files",
+    "Answer template", "How to start", "Downloads", "Mark done", "Snooze", "Submit", "AI check", "AI chat", "Voice", "File sent", "Settings"];
+  const unused = all.filter((f) => !s.n[f]);
+  return withNav({ text: `📈 <b>Your usage</b> · last ${days} day${days > 1 ? "s" : ""}\n<i>private — only counts, nothing else</i>\n\n${rows.slice(0, 12).map(([k, v]) => `${bar(v / max, 8)} ${v} · ${esc(k)}`).join("\n") || "Nothing yet."}${unused.length ? `\n\n💤 <b>Never used:</b> ${esc(unused.join(", "))}` : ""}` });
+}
+
+// ---------- cron: pinned dashboard, snooze wake-ups, review nudge, health monitor
+async function onCron(env) {
+  const chat = env.TELEGRAM_CHAT_ID;
+  const now = Math.floor(Date.now() / 1000);
+  const hour = new Date(Date.now() + IST_MS).getUTCHours();
+  const today = new Date(Date.now() + IST_MS).toISOString().slice(0, 10);
+  const s = await getSettings(env);
+  const [qs, qe] = s.quiet === "off" ? [-1, -1] : s.quiet.split("-").map(Number);
+  const quiet = qs >= 0 && (qs > qe ? hour >= qs || hour < qe : hour >= qs && hour < qe);
+
+  // 1. LMS health (alert once when it breaks, once when it recovers)
+  let lmsOk = true;
+  try { await ws(env, "core_webservice_get_site_info"); } catch { lmsOk = false; }
+  const h = await kvJson(env, "health", { lmsFails: 0, lmsAlerted: false, watcherAlerted: false });
+  if (!lmsOk) {
+    h.lmsFails += 1;
+    if (h.lmsFails >= 3 && !h.lmsAlerted) { await send(env, chat, "🚨 <b>I can't reach the LMS</b> for ~1.5 hours.\nIf you changed your LMS password, update the <code>LMS_PASSWORD</code> secret on GitHub and re-run <b>Deploy Telegram bot</b>. Otherwise the LMS is probably down — I'll tell you when it's back."); h.lmsAlerted = true; }
+  } else {
+    if (h.lmsAlerted) await send(env, chat, "✅ LMS is reachable again. All good.");
+    h.lmsFails = 0; h.lmsAlerted = false;
+  }
+  // 2. watcher health (it writes watcher_last to KV every hourly run)
+  const wl = Number((await env.KV.get("watcher_last")) || 0);
+  if (wl && now - wl > 3 * 3600 && !h.watcherAlerted) {
+    await send(env, chat, "⚠️ <b>Hourly LMS checks stopped</b> (no run for 3h+).\nOpen GitHub → your repo → <b>Actions → GU LMS watcher</b>. If it says the workflow is disabled, click <b>Enable workflow</b>.");
+    h.watcherAlerted = true;
+  } else if (wl && now - wl < 2 * 3600) h.watcherAlerted = false;
+  await kvPut(env, "health", h);
+  if (!lmsOk) return;
+
+  // 3. pinned live dashboard
+  if (s.pin) await refreshPin(env);
+  // 4. snooze wake-ups
+  const sn = await kvJson(env, "snooze", {});
+  let changed = false;
+  for (const [key, v] of Object.entries(sn)) {
+    if (v.until > now || quiet) continue;
+    await send(env, chat, `⏰ <b>Snooze over:</b> ${esc(v.name)}`, { reply_markup: { inline_keyboard: [[{ text: "▶️ Do next", callback_data: "dn:0!" }, { text: "✅ Mark done", callback_data: `m:${key}!` }, { text: "😴 +3h", callback_data: `sz:${key}:3` }]] } });
+    delete sn[key]; changed = true;
+  }
+  if (changed) await kvPut(env, "snooze", sn);
+  // 5. daily review nudge (evening)
+  if (s.review && !quiet && hour >= 18 && (await env.KV.get("srs_ping")) !== today) {
+    const due = srsDue(await kvJson(env, "srs", { cards: {} })).length;
+    if (due) await send(env, chat, `🔁 <b>${due} card${due > 1 ? "s" : ""} to review</b> · ~${Math.max(1, Math.round(due / 3))} min\nThe stuff you missed earlier — reviewing now makes it stick.`, { reply_markup: { inline_keyboard: [[{ text: "▶️ Review now", callback_data: "rv!" }]] } });
+    await env.KV.put("srs_ping", today, { expirationTtl: 2 * 86400 });
+  }
+}
+
+// ---------- friendly errors with a retry button
+function friendlyError(e) {
+  const m = String(e?.message || e);
+  if (/busy|overloaded|rate limit/i.test(m)) return "🤖 Google's free AI is busy right now. Give it a minute and tap retry.";
+  if (/LMS login failed/i.test(m)) return "🔐 I couldn't log in to the LMS. Changed your password? Update the LMS_PASSWORD secret on GitHub, then re-run Deploy.";
+  if (/fetch failed|network|timed? ?out/i.test(m)) return "📡 The LMS didn't respond. It might be slow or down — try again shortly.";
+  return `😵 Something broke: ${m.slice(0, 200)}`;
 }
 
 // -------------------------------------------------------------- Telegram

@@ -73,18 +73,19 @@ jobs:
             --data-urlencode "url=$URL/tg" --data-urlencode "secret_token=$SECRET" \
             --data-urlencode 'allowed_updates=["message","callback_query","poll_answer"]' -d drop_pending_updates=true > /dev/null
           curl -sf "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setMyCommands" -H 'Content-Type: application/json' -d '{"commands":[
-            {"command":"menu","description":"🏠 Dashboard with buttons"},
-            {"command":"study","description":"📚 Study a course file (summary, quiz, flashcards)"},
+            {"command":"menu","description":"🏠 Dashboard"},
+            {"command":"next","description":"▶️ The one thing to do now"},
+            {"command":"study","description":"📚 Study a course file"},
+            {"command":"review","description":"🔁 Review cards you missed"},
+            {"command":"plan","description":"🧭 Where do I start?"},
+            {"command":"pending","description":"📋 Everything pending"},
             {"command":"exam","description":"🎯 Revision plan + mock test"},
-            {"command":"plan","description":"🧭 Where do I start studying?"},
-            {"command":"files","description":"📂 Assignment brief, files, answer template"},
-            {"command":"pending","description":"Everything not yet submitted"},
-            {"command":"today","description":"Due today"},
-            {"command":"week","description":"Due in the next 7 days"},
-            {"command":"grades","description":"Marks and feedback"},
-            {"command":"courses","description":"Your courses"},
-            {"command":"cal","description":"Sync deadlines to Google Calendar"},
-            {"command":"status","description":"Is the bot healthy?"},
+            {"command":"files","description":"📂 Assignment brief, files, template"},
+            {"command":"radar","description":"📡 Weak topics"},
+            {"command":"grades","description":"📊 Marks and feedback"},
+            {"command":"receipts","description":"🧾 Your submissions"},
+            {"command":"settings","description":"⚙️ Notifications, quiet hours"},
+            {"command":"stats","description":"📈 What you actually use"},
             {"command":"stop","description":"Leave study mode"},
             {"command":"help","description":"What can this bot do"}]}' > /dev/null
           sleep 5

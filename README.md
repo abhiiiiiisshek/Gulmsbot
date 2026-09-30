@@ -5,10 +5,10 @@ A personal Telegram assistant for the Galgotias LMS. Runs 100% on free tiers —
 | Part | Runs on | Does |
 |---|---|---|
 | **Watcher** (`lms_watch.py`) | GitHub Actions, hourly | Alerts: new assignments, deadlines, material, announcements, grades + feedback, submission confirmations, nag-until-done reminders, draft trap, quiz windows, AI summaries & breakdowns, morning plan, Sunday report |
-| **Bot** (`worker/`) | Cloudflare Workers | Live chat: `/pending` `/today` `/week` `/grades` `/courses` `/cal` `/status`, AI answers (text + 🎤 voice, Hinglish OK), **submit assignments by sending the file** |
+| **Bot** (`worker/`) | Cloudflare Workers (+ 30-min cron: pinned live dashboard, snooze wake-ups, review nudge, health alerts) | Dashboard (▶️ Do next · 📚 Study · 📤 Submit), study mode, quiz polls, flashcards, spaced repetition, weak-topic radar, receipts, settings, live chat: `/pending` `/today` `/week` `/grades` `/courses` `/cal` `/status`, AI answers (text + 🎤 voice, Hinglish OK), **submit assignments by sending the file** |
 | **AI** | Google Gemini free tier | Summaries, plans, pre-submit checks, chat |
 
-Quiet hours: 11 PM – 7 AM IST, only urgent reminders (≤ 6 h left).
+Quiet hours and digest frequency (hourly / 3× a day / morning) are set in the bot with `/settings`. Urgent reminders (≤ 6 h left) always get through.
 
 ---
 

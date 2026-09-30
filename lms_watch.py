@@ -142,20 +142,46 @@ class Api:
         return data
 
 
-def get_done():
-    """Items marked done in the Telegram bot (stored in the bot's Cloudflare KV). Keys like 'assign:55'."""
+_KV_NS = None
+
+
+def _kv_base():
+    """Cloudflare KV of the Telegram bot (shared brain: done-list, settings, snoozes, health)."""
+    global _KV_NS
     if not (CF_TOKEN and CF_ACCOUNT):
-        return set()
+        return None, None
     h = {"Authorization": f"Bearer {CF_TOKEN}"}
     base = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/storage/kv/namespaces"
-    ns = next((n["id"] for n in requests.get(f"{base}?per_page=100", headers=h, timeout=30).json().get("result", [])
-               if n["title"].endswith("gulmsbot-kv")), None)
-    if not ns:
-        return set()
-    r = requests.get(f"{base}/{ns}/values/done", headers=h, timeout=30)
-    return set(r.json()) if r.ok else set()
+    if _KV_NS is None:
+        _KV_NS = next((n["id"] for n in requests.get(f"{base}?per_page=100", headers=h, timeout=30).json().get("result", [])
+                       if n["title"].endswith("gulmsbot-kv")), "")
+    return (f"{base}/{_KV_NS}", h) if _KV_NS else (None, None)
 
 
+def kv_get(key, default=None):
+    base, h = _kv_base()
+    if not base:
+        return default
+    r = requests.get(f"{base}/values/{key}", headers=h, timeout=30)
+    try:
+        return r.json() if r.ok else default
+    except ValueError:
+        return r.text if r.ok else default
+
+
+def kv_put(key, value):
+    base, h = _kv_base()
+    if base:
+        requests.put(f"{base}/values/{key}", headers=h, data=str(value).encode(), timeout=30)
+
+
+def get_done():
+    """Items marked done in the Telegram bot. Keys like 'assign:55'."""
+    return set(kv_get("done", {}) or {})
+
+
+SETTINGS = {"mode": "hourly", "quiet": "23-7", "plan": True, "summaries": True, "sunday": True}
+SNOOZED = set()
 DONE = set()
 
 
@@ -358,7 +384,7 @@ def nags(new, meta, quiet):
     for aid, a in new["assignments"].items():
         due = a.get("due") or 0
         st = new["subs"].get(aid)
-        if not due or due <= NOW or st is None or st == "submitted" or f"assign:{aid}" in DONE:
+        if not due or due <= NOW or st is None or st == "submitted" or f"assign:{aid}" in DONE or f"assign:{aid}" in SNOOZED:
             continue
         hours = (due - NOW) / 3600
         crossed = [h for h in NAG_HOURS if hours <= h]
@@ -628,8 +654,10 @@ def main():
             old = json.load(f)
     meta = old.get("meta", {})
 
-    global DONE
+    global DONE, SNOOZED
     DONE = safe("done list", get_done, set())
+    SETTINGS.update(safe("settings", lambda: kv_get("settings", {}) or {}, {}))
+    SNOOZED = {k for k, v in (safe("snooze", lambda: kv_get("snooze", {}) or {}, {}) or {}).items() if v.get("until", 0) > NOW}
     try:
         api = Api()
         snap = collect(api)
@@ -641,7 +669,17 @@ def main():
     snap = merge_with_old(snap, old)
     extra = snap.pop("_extra")
     hour = NOW_IST.hour
-    quiet = hour >= 23 or hour < 7
+    q = SETTINGS.get("quiet", "23-7")
+    if q == "off":
+        quiet = False
+    else:
+        qs, qe = (int(x) for x in q.split("-"))
+        quiet = (hour >= qs or hour < qe) if qs > qe else (qs <= hour < qe)
+    # digest frequency: hourly / 3x a day (8, 14, 20) / morning only (first run after quiet hours)
+    slots = {"hourly": list(range(24)), "3x": [8, 14, 20], "morning": [7]}.get(SETTINGS.get("mode"), list(range(24)))
+    past = [x for x in slots if x <= hour]
+    slot_key = f"{NOW_IST.strftime('%Y-%m-%d')}-{past[-1]}" if past else None
+    digest_now = not quiet and slot_key is not None and (SETTINGS.get("mode") == "hourly" or meta.get("digest_slot") != slot_key)
     today = NOW_IST.strftime("%Y-%m-%d")
     messages = []
 
@@ -651,8 +689,8 @@ def main():
     else:
         urgent = nags(snap, meta, quiet) + quiz_alerts(api, snap, meta, quiet)
 
-        if quiet:
-            # hold everything non-urgent until the morning run: keep old data so it's reported later
+        if quiet or not digest_now:
+            # hold everything non-urgent until the next digest slot: keep old data so it's reported later
             for cat in DIGEST + ("grades", "subs"):
                 snap[cat] = old.get(cat, snap[cat])
         else:
@@ -664,7 +702,8 @@ def main():
             for g in grades:
                 meta.setdefault("log_grades", []).append([NOW, f"{g['name']}: {g['grade']}"])
 
-            if hour >= 7 and meta.get("plan_date") != today:
+            meta["digest_slot"] = slot_key
+            if SETTINGS.get("plan", True) and meta.get("plan_date") != today:
                 plan = safe("morning plan", lambda: morning_plan(api))
                 if plan:
                     messages.append((plan, [[("📋 Pending", "v:pending!"), ("🏠 Menu", "home!")]]))
@@ -675,7 +714,7 @@ def main():
                 messages.append((msg, [[("📋 Pending", "v:pending!"), ("🏠 Menu", "home!")]]))
 
             # AI extras for brand-new items
-            if GEMINI_KEY:
+            if GEMINI_KEY and SETTINGS.get("summaries", True):
                 for a in ch["assignments"][:3]:
                     txt = safe("breakdown", lambda: ai_breakdown(api, a, extra["briefs"].get(a["id"], {})))
                     if txt:
@@ -696,7 +735,7 @@ def main():
                                          [[("🧠 Quiz me", f"sa:quiz:{m['id']}!"), ("🃏 Flashcards", f"sa:cards:{m['id']}!")],
                                           [("📖 Study this file", f"sm:{m['id']}!")]]))
 
-            if NOW_IST.weekday() == 6 and hour >= 19 and meta.get("report_week") != NOW_IST.strftime("%G-%V"):
+            if SETTINGS.get("sunday", True) and NOW_IST.weekday() == 6 and hour >= 19 and meta.get("report_week") != NOW_IST.strftime("%G-%V"):
                 messages.append((sunday_report(snap, meta), [[("🎯 Exam prep", "v:exam!"), ("🏠 Menu", "home!")]]))
                 meta["report_week"] = NOW_IST.strftime("%G-%V")
 
@@ -717,6 +756,7 @@ def main():
     for k in ("log_submitted", "log_grades"):
         meta[k] = [x for x in meta.get(k, []) if x[0] > NOW - 30 * 86400]
     meta["last_run"] = NOW
+    safe("heartbeat", lambda: kv_put("watcher_last", int(NOW)))
     snap["meta"] = meta
     snap.pop("_ok", None)
     snap.pop("_failed_courses", None)

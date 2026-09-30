@@ -6,3 +6,7 @@ workers_dev = true
 [[kv_namespaces]]
 binding = "KV"
 id = "__KV_ID__"
+
+# every 30 min: pinned live dashboard, snooze wake-ups, review nudge, health checks
+[triggers]
+crons = ["*/30 * * * *"]
