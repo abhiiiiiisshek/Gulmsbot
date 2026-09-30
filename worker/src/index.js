@@ -23,6 +23,31 @@ export default {
       try { out.ai = (await gemini(env, [{ text: "Reply with just: ok" }], { maxTokens: 400 })).slice(0, 20); } catch (e) { out.ai_error = String(e.message || e).slice(0, 200); }
       return Response.json(out);
     }
+    if (url.pathname === "/bench") {
+      if (url.searchParams.get("k") !== secret) return new Response("forbidden", { status: 403 });
+      const t = {}, time = async (k, fn) => { const a = Date.now(); try { await fn(); t[k] = Date.now() - a; } catch (e) { t[k] = `ERR ${String(e.message).slice(0, 60)}`; } };
+      await time("kv_get", () => env.KV.get("settings"));
+      await time("kv_put", () => env.KV.put("bench", "1"));
+      await time("lms_site_info", () => ws(env, "core_webservice_get_site_info"));
+      await time("lms_courses", () => courses(env));
+      await time("lms_events", () => actionEvents(env, 14, 60));
+      await time("home_view_total", () => homeView(env));
+      await time("tg_getMe", () => tg(env, "getMe", {}));
+      for (const model of ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-flash-lite-latest"]) {
+        for (const think of ["default", "low"]) {
+          await time(`${model}/${think}`, async () => {
+            const gc = { maxOutputTokens: 800 };
+            if (think === "low") gc.thinkingConfig = { thinkingLevel: "low" };
+            const r = await fetch(`${GEMINI}/v1beta/models/${model}:generateContent`, { method: "POST", headers: { "x-goog-api-key": env.GEMINI_API_KEY, "Content-Type": "application/json" },
+              body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "In 2 short sentences: what is database normalization?" }] }], generationConfig: gc }) });
+            if (!r.ok) throw new Error(`${r.status} ${(await r.text()).slice(0, 80)}`);
+            await r.json();
+          });
+        }
+      }
+      t.colo = req.cf?.colo;
+      return Response.json(t);
+    }
     if (url.pathname !== "/tg" || req.method !== "POST") return new Response("GU LMS bot is running 🤖");
     if (req.headers.get("X-Telegram-Bot-Api-Secret-Token") !== secret) return new Response("forbidden", { status: 403 });
 
