@@ -29,7 +29,9 @@ PASS = os.environ.get("LMS_PASSWORD", "")
 TG_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
 TG_CHAT = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODELS = [m for m in [os.environ.get("GEMINI_MODEL")] if m] + [
+    "gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3-flash-preview",
+    "gemini-3.5-flash-lite", "gemini-flash-lite-latest"]
 STATE_FILE = os.environ.get("STATE_FILE", "state.json")
 
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -385,42 +387,28 @@ def quiz_alerts(api, new, meta, quiet):
 
 
 # --------------------------------------------------------------------- AI
-_model = None
-
-
 def gemini(parts, system=None, max_tokens=4096):
-    global _model
+    """Try free-tier models in order; skip ones that are retired (404), out of quota (429) or overloaded (5xx)."""
     if not GEMINI_KEY:
         return None
-    _model = _model or GEMINI_MODEL
     body = {"contents": [{"role": "user", "parts": parts}],
             "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.4}}
     if system:
         body["systemInstruction"] = {"parts": [{"text": system}]}
-    for attempt in range(3):
-        r = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/{_model}:generateContent",
-                          headers={"x-goog-api-key": GEMINI_KEY}, json=body, timeout=120)
-        if r.status_code == 404 and attempt == 0:
-            _model = pick_model() or _model
-            continue
-        if r.status_code in (429, 503):
-            time.sleep(20)
-            continue
-        if not r.ok:
-            warnings.append(f"gemini: {r.status_code} {r.text[:200]}")
-            return None
-        parts_out = (r.json().get("candidates") or [{}])[0].get("content", {}).get("parts", [])
-        return "".join(p.get("text", "") for p in parts_out if not p.get("thought")).strip() or None
+    for attempt in range(2):
+        for model in GEMINI_MODELS:
+            r = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+                              headers={"x-goog-api-key": GEMINI_KEY}, json=body, timeout=120)
+            if r.status_code in (404, 429, 500, 503):
+                continue
+            if not r.ok:
+                warnings.append(f"gemini {model}: {r.status_code} {r.text[:200]}")
+                return None
+            parts_out = (r.json().get("candidates") or [{}])[0].get("content", {}).get("parts", [])
+            return "".join(p.get("text", "") for p in parts_out if not p.get("thought")).strip() or None
+        time.sleep(30)
+    warnings.append("gemini: all models busy")
     return None
-
-
-def pick_model():
-    r = requests.get("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200",
-                     headers={"x-goog-api-key": GEMINI_KEY}, timeout=30)
-    names = [m["name"].split("/")[-1] for m in r.json().get("models", [])
-             if "generateContent" in m.get("supportedGenerationMethods", []) and "flash" in m["name"]
-             and not re.search(r"lite|image|tts|live|audio|preview|exp", m["name"])]
-    return sorted(names, reverse=True)[0] if names else None
 
 
 AI_STYLE = ("You write for a Telegram message read on a phone by Abhi, an MCA first-semester student. "

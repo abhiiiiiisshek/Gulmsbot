@@ -6,7 +6,6 @@
 const BASE = "https://gulms.galgotiasuniversity.org";
 const UA = { "User-Agent": "Mozilla/5.0 (GU-LMS-Bot; personal assistant)" };
 const GEMINI = "https://generativelanguage.googleapis.com";
-const DEFAULT_MODEL = "gemini-2.5-flash";
 
 // ------------------------------------------------------------------ entry
 export default {
@@ -288,41 +287,30 @@ async function onVoice(msg, env) {
   return send(env, chat, mdToHtml(reply));
 }
 
-async function geminiModel(env) {
-  return env.GEMINI_MODEL || (await env.KV.get("gmodel")) || DEFAULT_MODEL;
-}
+// Free-tier models, best first. If one is retired (404), out of quota (429) or overloaded (5xx),
+// the next one is tried. The last model that worked is remembered.
+const MODELS = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3-flash-preview", "gemini-3.5-flash-lite", "gemini-flash-lite-latest"];
 
-async function gemini(env, parts, { system, maxTokens = 4096 } = {}, retried = false) {
+async function gemini(env, parts, { system, maxTokens = 4096 } = {}) {
   if (!env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not set");
-  const model = await geminiModel(env);
   const body = { contents: [{ role: "user", parts }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.5 } };
   if (system) body.systemInstruction = { parts: [{ text: system }] };
-  const r = await fetch(`${GEMINI}/v1beta/models/${model}:generateContent`, {
-    method: "POST", headers: { "x-goog-api-key": env.GEMINI_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify(body),
-  });
-  if (r.status === 404 && !retried) { await pickModel(env); return gemini(env, parts, { system, maxTokens }, true); }
-  if ((r.status === 503 || r.status === 500) && !retried) { // Google overloaded: wait, then retry once
-    await new Promise((res) => setTimeout(res, 3000));
-    return gemini(env, parts, { system, maxTokens }, true);
+  const remembered = await env.KV.get("gmodel");
+  const order = [...new Set([env.GEMINI_MODEL, remembered, ...MODELS].filter(Boolean))];
+  let lastErr = "no model available";
+  for (const model of order) {
+    const r = await fetch(`${GEMINI}/v1beta/models/${model}:generateContent`, {
+      method: "POST", headers: { "x-goog-api-key": env.GEMINI_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify(body),
+    });
+    const j = await r.json().catch(() => ({}));
+    if ([404, 429, 500, 503].includes(r.status)) { lastErr = `${model}: ${r.status}`; continue; }
+    if (!r.ok) throw new Error(`AI error: ${j.error?.message || r.status}`);
+    const text = (j.candidates?.[0]?.content?.parts || []).filter((p) => p.text && !p.thought).map((p) => p.text).join("").trim();
+    if (!text) throw new Error("AI returned an empty answer — try rephrasing.");
+    if (model !== remembered) await env.KV.put("gmodel", model, { expirationTtl: 86400 });
+    return text;
   }
-  if (r.status === 503) throw new Error("Google's AI is overloaded right now. Try again in a minute.");
-  if (r.status === 429) throw new Error("AI is busy (free-tier rate limit). Try again in a minute.");
-  const j = await r.json();
-  if (!r.ok) throw new Error(`AI error: ${j.error?.message || r.status}`);
-  const text = (j.candidates?.[0]?.content?.parts || []).filter((p) => p.text && !p.thought).map((p) => p.text).join("").trim();
-  if (!text) throw new Error("AI returned an empty answer — try rephrasing.");
-  return text;
-}
-
-// If the default model is retired, pick the newest "flash" model available on the free key
-async function pickModel(env) {
-  const r = await fetch(`${GEMINI}/v1beta/models?pageSize=200`, { headers: { "x-goog-api-key": env.GEMINI_API_KEY } });
-  const j = await r.json();
-  const flash = (j.models || [])
-    .filter((m) => (m.supportedGenerationMethods || []).includes("generateContent") && /flash/.test(m.name) && !/lite|image|tts|live|audio|preview|exp/.test(m.name))
-    .map((m) => m.name.replace("models/", ""))
-    .sort().reverse();
-  if (flash[0]) await env.KV.put("gmodel", flash[0], { expirationTtl: 7 * 86400 });
+  throw new Error(`Google's free AI is busy right now (${lastErr}). Try again in a minute.`);
 }
 
 async function geminiUpload(env, bytes, mime, name) {
