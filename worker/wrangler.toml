@@ -10,3 +10,7 @@ id = "__KV_ID__"
 # every 30 min: pinned live dashboard, snooze wake-ups, review nudge, health checks
 [triggers]
 crons = ["*/30 * * * *"]
+
+# run the Worker close to the services it talks to most (the LMS) — cuts round-trip time
+[placement]
+mode = "smart"

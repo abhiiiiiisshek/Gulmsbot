@@ -17,4 +17,4 @@ jobs:
           URL=$(curl -s "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getWebhookInfo" | python3 -c "import sys,json;print(json.load(sys.stdin)['result']['url'].rsplit('/tg',1)[0])")
           INFO=$(curl -s "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getWebhookInfo" | python3 -c "import sys,json;r=json.load(sys.stdin)['result'];print({k:r.get(k) for k in ['pending_update_count','last_error_message','max_connections']})")
           echo "::notice::webhook: $INFO"
-          for i in 1 2; do echo "::notice::run$i $(curl -s --max-time 120 "$URL/bench?k=$SECRET")"; done
+          for i in 1 2; do R=$(curl -s --max-time 150 "$URL/bench?k=$SECRET"); echo "::notice::run$i ${R:-timeout}"; sleep 3; done

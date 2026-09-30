@@ -7,12 +7,26 @@ const BASE = "https://gulms.galgotiasuniversity.org";
 const UA = { "User-Agent": "Mozilla/5.0 (GU-LMS-Bot; personal assistant)" };
 const GEMINI = "https://generativelanguage.googleapis.com";
 
+// Speed: in-memory caches (live as long as the Worker instance) + background tasks
+let CTX = null;
+const bg = (p) => { const q = Promise.resolve(p).catch(() => {}); if (CTX) CTX.waitUntil(q); return q; };
+const MEM = new Map();
+async function memo(key, ttlMs, fn) {
+  const hit = MEM.get(key);
+  if (hit && hit.exp > Date.now()) return hit.val;
+  const val = await fn();
+  MEM.set(key, { val, exp: Date.now() + ttlMs });
+  return val;
+}
+const forget = (prefix) => { for (const k of MEM.keys()) if (k.startsWith(prefix)) MEM.delete(k); };
+
 // ------------------------------------------------------------------ entry
 export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(onCron(env).catch((e) => console.log("cron error", e)));
   },
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
+    CTX = ctx;
     const url = new URL(req.url);
     const secret = await webhookSecret(env);
 
@@ -20,31 +34,20 @@ export default {
       if (url.searchParams.get("k") !== secret) return new Response("forbidden", { status: 403 });
       const out = { worker: "ok" };
       try { out.lms_courses = (await courses(env)).length; } catch (e) { out.lms_error = String(e.message || e); }
-      try { out.ai = (await gemini(env, [{ text: "Reply with just: ok" }], { maxTokens: 400 })).slice(0, 20); } catch (e) { out.ai_error = String(e.message || e).slice(0, 200); }
+      try { out.ai = (await gemini(env, [{ text: "Reply with just: ok" }], { maxTokens: 400, fast: true })).slice(0, 20); } catch (e) { out.ai_error = String(e.message || e).slice(0, 200); }
       return Response.json(out);
     }
     if (url.pathname === "/bench") {
       if (url.searchParams.get("k") !== secret) return new Response("forbidden", { status: 403 });
       const t = {}, time = async (k, fn) => { const a = Date.now(); try { await fn(); t[k] = Date.now() - a; } catch (e) { t[k] = `ERR ${String(e.message).slice(0, 60)}`; } };
-      await time("kv_get", () => env.KV.get("settings"));
-      await time("kv_put", () => env.KV.put("bench", "1"));
-      await time("lms_site_info", () => ws(env, "core_webservice_get_site_info"));
-      await time("lms_courses", () => courses(env));
-      await time("lms_events", () => actionEvents(env, 14, 60));
-      await time("home_view_total", () => homeView(env));
-      await time("tg_getMe", () => tg(env, "getMe", {}));
-      for (const model of ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-flash-lite-latest"]) {
-        for (const think of ["default", "low"]) {
-          await time(`${model}/${think}`, async () => {
-            const gc = { maxOutputTokens: 800 };
-            if (think === "low") gc.thinkingConfig = { thinkingLevel: "low" };
-            const r = await fetch(`${GEMINI}/v1beta/models/${model}:generateContent`, { method: "POST", headers: { "x-goog-api-key": env.GEMINI_API_KEY, "Content-Type": "application/json" },
-              body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "In 2 short sentences: what is database normalization?" }] }], generationConfig: gc }) });
-            if (!r.ok) throw new Error(`${r.status} ${(await r.text()).slice(0, 80)}`);
-            await r.json();
-          });
-        }
-      }
+      MEM.clear();
+      await time("home_first_tap", () => homeView(env));
+      await time("home_repeat_tap", () => homeView(env));
+      await time("pending_after_home", () => namedView(env, "pending"));
+      await time("ai_chat_fast", () => gemini(env, [{ text: "In 2 short sentences: what is database normalization?" }], { fast: true }));
+      await time("ai_chat_fast_again", () => gemini(env, [{ text: "In 2 short sentences: what is a primary key?" }], { fast: true }));
+      await time("ai_smart_task", () => gemini(env, [{ text: "Give 3 bullet points on 2NF vs 3NF." }]));
+      t.skipped_models = [...DOWN.keys()];
       t.colo = req.cf?.colo;
       return Response.json(t);
     }
@@ -52,10 +55,11 @@ export default {
     if (req.headers.get("X-Telegram-Bot-Api-Secret-Token") !== secret) return new Response("forbidden", { status: 403 });
 
     const update = await req.json();
-    // Telegram retries on slow/failed responses: never process the same update twice
+    // Telegram retries on slow/failed responses: never process the same update twice (write runs in the background)
     const seenKey = `u:${update.update_id}`;
-    if (await env.KV.get(seenKey)) return new Response("dup");
-    await env.KV.put(seenKey, "1", { expirationTtl: 86400 });
+    if (MEM.has(seenKey) || (await env.KV.get(seenKey))) return new Response("dup");
+    MEM.set(seenKey, { val: 1, exp: Date.now() + 3600e3 });
+    bg(env.KV.put(seenKey, "1", { expirationTtl: 86400 }));
 
     try {
       await handle(update, env);
@@ -95,13 +99,13 @@ async function handle(update, env) {
   if (update.poll_answer) return onPollAnswer(update.poll_answer, env);
 
   const msg = update.message;
-  if (msg.document || msg.photo) { await track(env, "File sent").catch(() => {}); return onFile(msg, env); }
-  if (msg.voice || msg.audio) { await track(env, "Voice").catch(() => {}); return onVoice(msg, env); }
+  if (msg.document || msg.photo) { bg(track(env, "File sent")); return onFile(msg, env); }
+  if (msg.voice || msg.audio) { bg(track(env, "Voice")); return onVoice(msg, env); }
   const text = (msg.text || "").trim();
   if (!text) return;
 
   const cmd = text.startsWith("/") ? text.split(/[\s@]/)[0].toLowerCase() : null;
-  if (cmd) await track(env, cmd).catch(() => {});
+  if (cmd) bg(track(env, cmd));
   const who = msg.from?.first_name || "";
   switch (cmd) {
     case "/start":
@@ -133,7 +137,7 @@ async function handle(update, env) {
       return sendView(env, chat, { text: "🛑 Left study mode. Back to normal chat.", markup: { inline_keyboard: [NAV] } });
     case null: {
       const s = await getSession(env, chat);
-      await track(env, s?.mode === "ask" ? "Study Q&A" : "AI chat").catch(() => {});
+      bg(track(env, s?.mode === "ask" ? "Study Q&A" : "AI chat"));
       if (s?.mode === "ask") return studyAsk(env, chat, s, text);
       if (/(where|kaha+n?|kidhar).{0,25}(start|shuru|begin)|kya padh|what (should|do) i study|start studying/i.test(text)) return startHere(env, chat);
       return aiChat(env, chat, text);
@@ -181,16 +185,20 @@ function flatten(obj, prefix = "", out = {}) {
 
 async function mtoken(env, fresh = false) {
   if (!fresh) {
+    const m = MEM.get("mtoken");
+    if (m) return m.val;
     const t = await env.KV.get("mtoken");
-    if (t) return t;
+    if (t) { MEM.set("mtoken", { val: t, exp: Infinity }); return t; }
   }
+  MEM.delete("mtoken");
   const r = await fetch(`${BASE}/login/token.php`, {
     method: "POST", headers: UA,
     body: new URLSearchParams({ username: env.LMS_USERNAME, password: env.LMS_PASSWORD, service: "moodle_mobile_app" }),
   });
   const j = await r.json();
   if (!j.token) throw new Error(`LMS login failed: ${j.error || "no token"}`);
-  await env.KV.put("mtoken", j.token, { expirationTtl: 7 * 86400 });
+  MEM.set("mtoken", { val: j.token, exp: Infinity });
+  bg(env.KV.put("mtoken", j.token, { expirationTtl: 7 * 86400 }));
   return j.token;
 }
 
@@ -208,7 +216,9 @@ async function ws(env, fn, params = {}, retried = false) {
 }
 
 async function userId(env) {
+  if (MEM.has("uid")) return MEM.get("uid").val;
   const c = await env.KV.get("uid");
+  if (c) MEM.set("uid", { val: Number(c), exp: Infinity });
   if (c) return Number(c);
   const info = await ws(env, "core_webservice_get_site_info");
   await env.KV.put("uid", String(info.userid), { expirationTtl: 30 * 86400 });
@@ -216,16 +226,29 @@ async function userId(env) {
 }
 
 async function courses(env) {
-  const list = await ws(env, "core_enrol_get_users_courses", { userid: await userId(env) });
-  return list.map((c) => ({ id: c.id, name: shortName(c.fullname) }));
+  return memo("courses", 3600e3, async () => {
+    const cached = await env.KV.get("courses");
+    if (cached) return JSON.parse(cached);
+    const list = (await ws(env, "core_enrol_get_users_courses", { userid: await userId(env) })).map((c) => ({ id: c.id, name: shortName(c.fullname) }));
+    bg(env.KV.put("courses", JSON.stringify(list), { expirationTtl: 12 * 3600 }));
+    return list;
+  });
 }
 
 const shortName = (n) => clean(n).replace(/\s*\([A-Z0-9]+\)\s*$/, "");
 
-// Action events = things that still need doing (Moodle hides them once submitted)
+// Action events = things that still need doing (Moodle hides them once submitted).
+// One wide query (30 days back → 90 ahead), cached for 2 minutes and shared by every screen.
+async function rawEvents(env) {
+  return memo("events", 120e3, async () => {
+    const now = Math.floor(Date.now() / 1000);
+    const r = await ws(env, "core_calendar_get_action_events_by_timesort", { timesortfrom: now - 30 * 86400, timesortto: now + 90 * 86400, limitnum: 50 });
+    return r.events || [];
+  });
+}
 // Items you marked done yourself (submitted offline, no-submit activities…). Stored in KV key "done".
 async function getDone(env) {
-  const d = JSON.parse((await env.KV.get("done")) || "{}");
+  const d = JSON.parse((await memo("kv:done", 30e3, () => env.KV.get("done"))) || "{}");
   const cutoff = Date.now() / 1000 - 90 * 86400;
   for (const k of Object.keys(d)) if (d[k].at < cutoff) delete d[k];
   return d;
@@ -234,16 +257,15 @@ async function setDone(env, key, name, done) {
   const d = await getDone(env);
   if (done) d[key] = { name, at: Math.floor(Date.now() / 1000) };
   else delete d[key];
+  MEM.set("kv:done", { val: JSON.stringify(d), exp: Date.now() + 30e3 });
   await env.KV.put("done", JSON.stringify(d));
 }
 
 async function actionEvents(env, fromDaysAgo, toDays, includeDone = false) {
   const now = Math.floor(Date.now() / 1000);
-  const done = includeDone ? {} : await getDone(env);
-  const r = await ws(env, "core_calendar_get_action_events_by_timesort", {
-    timesortfrom: now - fromDaysAgo * 86400, timesortto: now + toDays * 86400, limitnum: 50,
-  });
-  return (r.events || [])
+  const [done, raw] = await Promise.all([includeDone ? {} : getDone(env), rawEvents(env)]);
+  return raw
+    .filter((e) => e.timesort >= now - fromDaysAgo * 86400 && e.timesort <= now + toDays * 86400)
     .filter((e) => e.action?.actionable !== false)
     .map((e) => ({
       name: clean(e.activityname || e.name.replace(/ is due$| closes$| opens$/i, "")),
@@ -345,14 +367,13 @@ async function statusText(env) {
   const t0 = Date.now();
   let lms = "❌", ai = "❌";
   try { lms = `✅ ${(await courses(env)).length} courses`; } catch (e) { lms = `❌ ${esc(e.message)}`; }
-  try { await gemini(env, [{ text: "Reply: ok" }], { maxTokens: 400 }); ai = "✅"; } catch (e) { ai = `❌ ${esc(String(e.message).slice(0, 150))}`; }
+  try { await gemini(env, [{ text: "Reply: ok" }], { maxTokens: 400, fast: true }); ai = "✅"; } catch (e) { ai = `❌ ${esc(String(e.message).slice(0, 150))}`; }
   return `🩺 <b>Status</b>\nLMS: ${lms}\nAI: ${ai}\n⏱ ${Date.now() - t0} ms`;
 }
 
 // ------------------------------------------------------------------ AI
 async function lmsContext(env) {
-  const [cs, ev] = await Promise.all([courses(env), actionEvents(env, 14, 45)]);
-  const done = await getDone(env);
+  const [cs, ev, done] = await Promise.all([courses(env), actionEvents(env, 14, 45), getDone(env)]);
   const lines = ev.map((e) => `- [id=${e.key}] ${e.overdue ? "[OVERDUE] " : ""}${e.type}: "${e.name}" (${e.course}) due ${fmtTime(e.due)} (${relTime(e.due)})`);
   const doneLines = Object.entries(done).map(([k, v]) => `- [id=${k}] "${v.name}"`);
   return `Today is ${fmtTime(Math.floor(Date.now() / 1000), true)} (IST).
@@ -390,11 +411,11 @@ If he asks to learn/revise a topic from his courses, answer briefly and tell him
 For academic work: help him understand, plan and check — but do not write graded assignment answers for him to submit. If he asks for answers to an assignment, say briefly (no lecture) that you won't write them, and offer: 📂 /files → answer template + "how do I start", explaining the concept, a worked example on a *different* similar problem, or checking his own attempt.`;
 
 async function aiChat(env, chat, text) {
-  await tg(env, "sendChatAction", { chat_id: chat, action: "typing" });
-  const ctx = await lmsContext(env);
-  const history = JSON.parse((await env.KV.get(`h:${chat}`)) || "[]");
-  const reply = await gemini(env, [{ text: `${ctx}\n\nRecent chat:\n${history.join("\n") || "(none)"}\n\nAbhi: ${text}` }], { system: SYSTEM });
-  await saveHistory(env, chat, history, text, reply);
+  bg(tg(env, "sendChatAction", { chat_id: chat, action: "typing" }));
+  const [ctx, histRaw] = await Promise.all([lmsContext(env), env.KV.get(`h:${chat}`)]);
+  const history = JSON.parse(histRaw || "[]");
+  const reply = await gemini(env, [{ text: `${ctx}\n\nRecent chat:\n${history.join("\n") || "(none)"}\n\nAbhi: ${text}` }], { system: SYSTEM, fast: true });
+  bg(saveHistory(env, chat, history, text, reply));
   return send(env, chat, await applyAiActions(env, reply));
 }
 
@@ -405,7 +426,7 @@ async function saveHistory(env, chat, history, q, a) {
 
 async function onVoice(msg, env) {
   const chat = msg.chat.id;
-  await tg(env, "sendChatAction", { chat_id: chat, action: "typing" });
+  bg(tg(env, "sendChatAction", { chat_id: chat, action: "typing" }));
   const v = msg.voice || msg.audio;
   const { bytes } = await tgDownload(env, v.file_id);
   const file = await geminiUpload(env, bytes, v.mime_type || "audio/ogg", "voice.ogg");
@@ -414,33 +435,39 @@ async function onVoice(msg, env) {
   const reply = await gemini(env, [
     { file_data: { mime_type: file.mimeType, file_uri: file.uri } },
     { text: `${ctx}\n\nRecent chat:\n${history.join("\n") || "(none)"}\n\nAbhi sent the voice note above. First line: 🎤 followed by a short transcript in quotes. Then answer it.` },
-  ], { system: SYSTEM });
+  ], { system: SYSTEM, fast: true });
   await saveHistory(env, chat, history, "(voice note)", reply);
   return send(env, chat, await applyAiActions(env, reply));
 }
 
-// Free-tier models, best first. If one is retired (404), out of quota (429) or overloaded (5xx),
-// the next one is tried. The last model that worked is remembered.
-const MODELS = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3-flash-preview", "gemini-3.5-flash-lite", "gemini-flash-lite-latest"];
+// Free-tier models. FAST (≈1 s) for chat/Q&A, SMART (≈4 s, light thinking) for quizzes, summaries, plans.
+// Overloaded/retired models are skipped for 10 minutes instead of being retried on every message.
+const FAST_MODELS = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.1-flash-lite"];
+const SMART_MODELS = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3-flash-preview", ...FAST_MODELS];
+const DOWN = new Map();
 
-async function gemini(env, parts, { system, maxTokens = 8192, json = false } = {}) {
+async function gemini(env, parts, { system, maxTokens = 8192, json = false, fast = false } = {}) {
   if (!env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not set");
-  const body = { contents: [{ role: "user", parts }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.5 } };
-  if (json) body.generationConfig.responseMimeType = "application/json";
-  if (system) body.systemInstruction = { parts: [{ text: system }] };
-  const remembered = await env.KV.get("gmodel");
-  const order = [...new Set([env.GEMINI_MODEL, remembered, ...MODELS].filter(Boolean))];
+  const list = fast ? FAST_MODELS : SMART_MODELS;
+  const order = [env.GEMINI_MODEL, ...list].filter((m, i, a) => m && a.indexOf(m) === i && !((DOWN.get(m) || 0) > Date.now()));
+  if (!order.length) DOWN.clear();
   let lastErr = "no model available";
-  for (const model of order) {
-    const r = await fetch(`${GEMINI}/v1beta/models/${model}:generateContent`, {
-      method: "POST", headers: { "x-goog-api-key": env.GEMINI_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify(body),
+  for (const model of order.length ? order : list) {
+    const gc = { maxOutputTokens: maxTokens, temperature: 0.5 };
+    if (json) gc.responseMimeType = "application/json";
+    if (!/lite/.test(model)) gc.thinkingConfig = { thinkingLevel: "low" };
+    const body = { contents: [{ role: "user", parts }], generationConfig: gc };
+    if (system) body.systemInstruction = { parts: [{ text: system }] };
+    const call = (b) => fetch(`${GEMINI}/v1beta/models/${model}:generateContent`, {
+      method: "POST", headers: { "x-goog-api-key": env.GEMINI_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify(b),
     });
+    let r = await call(body);
+    if (r.status === 400 && gc.thinkingConfig) { delete gc.thinkingConfig; r = await call(body); } // model without thinking levels
     const j = await r.json().catch(() => ({}));
-    if ([404, 429, 500, 503].includes(r.status)) { lastErr = `${model}: ${r.status}`; continue; }
+    if ([404, 429, 500, 503].includes(r.status)) { DOWN.set(model, Date.now() + (r.status === 404 ? 86400e3 : 600e3)); lastErr = `${model}: ${r.status}`; continue; }
     if (!r.ok) throw new Error(`AI error: ${j.error?.message || r.status}`);
     const text = (j.candidates?.[0]?.content?.parts || []).filter((p) => p.text && !p.thought).map((p) => p.text).join("").trim();
     if (!text) throw new Error("AI returned an empty answer — try rephrasing.");
-    if (model !== remembered) await env.KV.put("gmodel", model, { expirationTtl: 86400 });
     return text;
   }
   throw new Error(`Google's free AI is busy right now (${lastErr}). Try again in a minute.`);
@@ -516,10 +543,10 @@ async function onCallback(cq, env) {
   data = data.replace(/!$/, "");
   const [act, aid] = data.split(":");
   const parts = data.split(":");
-  await tg(env, "answerCallbackQuery", { callback_query_id: cq.id }).catch(() => {});
+  bg(tg(env, "answerCallbackQuery", { callback_query_id: cq.id }));
   const show = (v) => (fresh ? sendView(env, chat, v) : edit(env, chat, mid, v.text, v.markup || { inline_keyboard: [] }));
 
-  await track(env, act === "v" ? `View: ${parts[1]}` : FEATURE[act] || act).catch(() => {});
+  bg(track(env, act === "v" ? `View: ${parts[1]}` : FEATURE[act] || act));
   if (act === "home") return show(await homeView(env, cq.from?.first_name || ""));
   if (act === "dn") return show(await doNextView(env, Number(parts[1] || 0)));
   if (act === "sz") return snooze(env, chat, `${parts[1]}:${parts[2]}`, Number(parts[3] || 3));
@@ -582,6 +609,7 @@ async function onCallback(cq, env) {
       const w2 = await ws(env, "mod_assign_submit_for_grading", { assignmentid: Number(aid), acceptsubmissionstatement: 1 });
       if (Array.isArray(w2) && w2.length) return edit(env, chat, mid, `⚠️ Uploaded as draft, but final submit failed: ${esc(w2.map((w) => w.message).join("; "))}\nOpen it on the LMS: ${esc(info.url)}`);
     }
+    forget("events");
     const after = await assignInfo(env, aid);
     const ok = final ? after.status === "submitted" : ["draft", "submitted"].includes(after.status);
     await addReceipt(env, { name: info.name, course: info.course, file: f.name, at: Math.floor(Date.now() / 1000), status: after.status, url: info.url });
@@ -884,7 +912,7 @@ async function studyAction(env, chat, act, cmid) {
   if (act === "quiz") return startQuiz(env, chat, { type: "mat", cmid: m.cmid }, 5);
   if (act === "cards") return startCards(env, chat, { type: "mat", cmid: m.cmid });
   const wait = await send(env, chat, `⏳ Reading <b>${esc(m.name)}</b>… <i>(~15 sec)</i>`);
-  await tg(env, "sendChatAction", { chat_id: chat, action: "typing" }).catch(() => {});
+  bg(tg(env, "sendChatAction", { chat_id: chat, action: "typing" }));
   const parts = await materialParts(env, m);
   const prompt = act === "eli5"
     ? `Explain this material super simply, like to a smart friend who missed the class. Use 1-2 everyday analogies (Indian context welcome), then "🔑 Remember these 3 things". Max 180 words.`
@@ -898,12 +926,13 @@ async function studyAction(env, chat, act, cmid) {
 }
 
 async function studyAsk(env, chat, s, question) {
-  await tg(env, "sendChatAction", { chat_id: chat, action: "typing" }).catch(() => {});
+  bg(tg(env, "sendChatAction", { chat_id: chat, action: "typing" }));
   const m = await findMaterial(env, s.cmid);
   const parts = await materialParts(env, m);
-  const hist = JSON.parse((await env.KV.get(`sh:${chat}`)) || "[]");
-  const out = await gemini(env, [...parts, { text: `${hist.length ? `Earlier in this study chat:\n${hist.join("\n")}\n\n` : ""}Abhi asks: ${question}\nAnswer from the material (mention slide/page when useful). Max 150 words.` }], { system: STUDY_STYLE });
-  await env.KV.put(`sh:${chat}`, JSON.stringify([...hist, `Q: ${question.slice(0, 200)}`, `A: ${out.slice(0, 300)}`].slice(-6)), { expirationTtl: 3 * 3600 });
+  const hist = JSON.parse((await memo(`kv:sh:${chat}`, 5e3, () => env.KV.get(`sh:${chat}`))) || "[]");
+  const out = await gemini(env, [...parts, { text: `${hist.length ? `Earlier in this study chat:\n${hist.join("\n")}\n\n` : ""}Abhi asks: ${question}\nAnswer from the material (mention slide/page when useful). Max 150 words.` }], { system: STUDY_STYLE, fast: true });
+  bg(env.KV.put(`sh:${chat}`, JSON.stringify([...hist, `Q: ${question.slice(0, 200)}`, `A: ${out.slice(0, 300)}`].slice(-6)), { expirationTtl: 3 * 3600 }));
+  MEM.delete(`kv:sh:${chat}`);
   return send(env, chat, `${mdToHtml(out)}\n\n<i>📖 Studying: ${esc(m.name)} · /stop to exit</i>`, { reply_markup: { inline_keyboard: [
     [{ text: "🧠 Quiz me on this", callback_data: `sa:quiz:${m.cmid}` }, { text: "🛑 Stop studying", callback_data: "stop" }],
   ] } });
