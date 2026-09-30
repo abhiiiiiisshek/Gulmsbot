@@ -33,6 +33,8 @@ GEMINI_MODELS = [m for m in [os.environ.get("GEMINI_MODEL")] if m] + [
     "gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3-flash-preview",
     "gemini-3.5-flash-lite", "gemini-flash-lite-latest"]
 STATE_FILE = os.environ.get("STATE_FILE", "state.json")
+CF_TOKEN = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
+CF_ACCOUNT = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
 
 IST = timezone(timedelta(hours=5, minutes=30))
 UA = {"User-Agent": "Mozilla/5.0 (GU-LMS-Watcher; personal notifier)"}
@@ -136,6 +138,23 @@ class Api:
             if len(data) > limit:
                 return None
         return data
+
+
+def get_done():
+    """Items marked done in the Telegram bot (stored in the bot's Cloudflare KV). Keys like 'assign:55'."""
+    if not (CF_TOKEN and CF_ACCOUNT):
+        return set()
+    h = {"Authorization": f"Bearer {CF_TOKEN}"}
+    base = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT}/storage/kv/namespaces"
+    ns = next((n["id"] for n in requests.get(f"{base}?per_page=100", headers=h, timeout=30).json().get("result", [])
+               if n["title"].endswith("gulmsbot-kv")), None)
+    if not ns:
+        return set()
+    r = requests.get(f"{base}/{ns}/values/done", headers=h, timeout=30)
+    return set(r.json()) if r.ok else set()
+
+
+DONE = set()
 
 
 def safe(label, fn, default=None):
@@ -337,7 +356,7 @@ def nags(new, meta, quiet):
     for aid, a in new["assignments"].items():
         due = a.get("due") or 0
         st = new["subs"].get(aid)
-        if not due or due <= NOW or st is None or st == "submitted":
+        if not due or due <= NOW or st is None or st == "submitted" or f"assign:{aid}" in DONE:
             continue
         hours = (due - NOW) / 3600
         crossed = [h for h in NAG_HOURS if hours <= h]
@@ -366,6 +385,8 @@ def quiz_alerts(api, new, meta, quiet):
     last = meta.get("last_run", NOW - 3600)
     flags = meta.setdefault("quiz", {})
     for qid, q in new["quizzes"].items():
+        if f"quiz:{qid}" in DONE:
+            continue
         f = flags.setdefault(qid, [])
         if q["open"] and last < q["open"] <= NOW and "open" not in f and not quiet:
             lim = f", ⏱ {q['limit'] // 60} min limit" if q["limit"] else ""
@@ -449,6 +470,7 @@ def ai_breakdown(api, a, brief):
 def pending_lines(api):
     ev = api.call("core_calendar_get_action_events_by_timesort", timesortfrom=int(NOW) - 14 * 86400,
                   timesortto=int(NOW) + 14 * 86400, limitnum=50).get("events", [])
+    ev = [e for e in ev if f"{e.get('modulename')}:{e.get('instance')}" not in DONE]
     return [f"- {'[OVERDUE] ' if e['timesort'] < NOW else ''}{clean(e['name'])} ({short(e['course']['fullname'])}) "
             f"due {fmt_time(e['timesort'])}" for e in ev]
 
@@ -470,9 +492,11 @@ def sunday_report(new, meta):
     week_ago = NOW - 7 * 86400
     done = [x for x in meta.get("log_submitted", []) if x[0] > week_ago]
     grades = [x for x in meta.get("log_grades", []) if x[0] > week_ago]
-    upcoming = sorted([e for e in new["events"].values() if NOW < e["due"] <= NOW + 7 * 86400], key=lambda e: e["due"])
+    upcoming = sorted([e for e in new["events"].values() if NOW < e["due"] <= NOW + 7 * 86400
+                       and f"{e.get('type')}:{e.get('instance')}" not in DONE], key=lambda e: e["due"])
     pending_now = [a for aid, a in new["assignments"].items()
-                   if a.get("due") and a["due"] > NOW and new["subs"].get(aid) not in (None, "submitted")]
+                   if a.get("due") and a["due"] > NOW and new["subs"].get(aid) not in (None, "submitted")
+                   and f"assign:{aid}" not in DONE]
     msg = "📈 <b>Sunday report</b>\n"
     msg += f"\n✅ Submitted this week: <b>{len(done)}</b>"
     if done:
@@ -571,6 +595,8 @@ def main():
             old = json.load(f)
     meta = old.get("meta", {})
 
+    global DONE
+    DONE = safe("done list", get_done, set())
     try:
         api = Api()
         snap = collect(api)

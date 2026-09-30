@@ -70,9 +70,11 @@ async function handle(update, env) {
   switch (cmd) {
     case "/start":
     case "/help": return send(env, chat, HELP);
-    case "/pending": return send(env, chat, await pendingText(env, 60, "📋 <b>Everything pending</b>"));
-    case "/today": return send(env, chat, await pendingText(env, 1, "📅 <b>Due today</b>"));
-    case "/week": return send(env, chat, await pendingText(env, 7, "🗓 <b>Due this week</b>"));
+    case "/pending":
+    case "/done": return sendView(env, chat, await pendingText(env, 60, "📋 <b>Everything pending</b>"));
+    case "/today": return sendView(env, chat, await pendingText(env, 1, "📅 <b>Due today</b>"));
+    case "/week": return sendView(env, chat, await pendingText(env, 7, "🗓 <b>Due this week</b>"));
+    case "/hidden": return sendView(env, chat, await hiddenView(env));
     case "/grades": return send(env, chat, await gradesText(env));
     case "/courses": return send(env, chat, await coursesText(env));
     case "/cal": return send(env, chat, await calendarText(env));
@@ -93,8 +95,11 @@ const HELP = `🤖 <b>GU LMS assistant</b>
 /week — due in the next 7 days
 /grades — your marks + feedback
 /courses — your courses
+/hidden — things you marked done yourself (undo here)
 /cal — sync all deadlines to Google Calendar
 /status — check the bot is healthy
+
+✅ <b>Mark something done</b> (submitted offline, Wooclap, etc.): tap it under /pending, or just say <i>"ER diagram ho gaya"</i>.
 
 📤 <b>Submit an assignment</b>: just send me the file (PDF, DOC, image…). I'll ask which assignment, can AI-check it against the brief, and only submit after you tap ✅.`;
 
@@ -151,8 +156,23 @@ async function courses(env) {
 const shortName = (n) => clean(n).replace(/\s*\([A-Z0-9]+\)\s*$/, "");
 
 // Action events = things that still need doing (Moodle hides them once submitted)
-async function actionEvents(env, fromDaysAgo, toDays) {
+// Items you marked done yourself (submitted offline, no-submit activities…). Stored in KV key "done".
+async function getDone(env) {
+  const d = JSON.parse((await env.KV.get("done")) || "{}");
+  const cutoff = Date.now() / 1000 - 90 * 86400;
+  for (const k of Object.keys(d)) if (d[k].at < cutoff) delete d[k];
+  return d;
+}
+async function setDone(env, key, name, done) {
+  const d = await getDone(env);
+  if (done) d[key] = { name, at: Math.floor(Date.now() / 1000) };
+  else delete d[key];
+  await env.KV.put("done", JSON.stringify(d));
+}
+
+async function actionEvents(env, fromDaysAgo, toDays, includeDone = false) {
   const now = Math.floor(Date.now() / 1000);
+  const done = includeDone ? {} : await getDone(env);
   const r = await ws(env, "core_calendar_get_action_events_by_timesort", {
     timesortfrom: now - fromDaysAgo * 86400, timesortto: now + toDays * 86400, limitnum: 50,
   });
@@ -162,7 +182,9 @@ async function actionEvents(env, fromDaysAgo, toDays) {
       name: clean(e.activityname || e.name.replace(/ is due$| closes$| opens$/i, "")),
       label: clean(e.name), due: e.timesort, course: shortName(e.course?.fullname || ""),
       type: e.modulename, instance: e.instance, url: e.url, overdue: e.timesort < now,
-    }));
+      key: `${e.modulename}:${e.instance}`,
+    }))
+    .filter((e) => !done[e.key]);
 }
 
 // ------------------------------------------------------------- commands
@@ -172,14 +194,30 @@ async function pendingText(env, days, title) {
     const end = endOfTodayIST();
     items = (await actionEvents(env, 14, 2)).filter((e) => e.due <= end);
   } else items = await actionEvents(env, 14, days);
-  if (!items.length) return `${title}\n\nNothing! 🎉 Go touch grass.`;
+  const hidden = Object.keys(await getDone(env)).length;
+  const hiddenNote = hidden ? `\n\n<i>🙈 ${hidden} item(s) marked done by you — /hidden to see or undo.</i>` : "";
+  if (!items.length) return { text: `${title}\n\nNothing! 🎉 Go touch grass.${hiddenNote}` };
   const overdue = items.filter((e) => e.overdue);
   const upcoming = items.filter((e) => !e.overdue);
   let out = `${title} (${items.length})\n`;
   if (overdue.length) out += `\n🔴 <b>Overdue</b>\n${overdue.map(fmtItem).join("\n")}\n`;
   if (upcoming.length) out += `\n${upcoming.map(fmtItem).join("\n")}`;
-  return out;
+  out += `\n\n<i>Tap to mark something done (e.g. submitted offline):</i>${hiddenNote}`;
+  const kb = items.slice(0, 10).map((e) => [{ text: `✅ ${e.name}`.slice(0, 50), callback_data: `m:${e.key}` }]);
+  return { text: out, markup: { inline_keyboard: kb } };
 }
+
+async function hiddenView(env) {
+  const d = await getDone(env);
+  const keys = Object.keys(d);
+  if (!keys.length) return { text: "🙈 Nothing marked done by you. Everything comes straight from the LMS." };
+  return {
+    text: `🙈 <b>Marked done by you</b> (${keys.length})\n\n${keys.map((k) => `• ${esc(d[k].name)} — ${fmtTime(d[k].at)}`).join("\n")}\n\n<i>Tap to bring one back:</i>`,
+    markup: { inline_keyboard: keys.slice(0, 10).map((k) => [{ text: `↩️ ${d[k].name}`.slice(0, 50), callback_data: `u:${k}` }]) },
+  };
+}
+
+const sendView = (env, chat, v) => send(env, chat, v.text, v.markup ? { reply_markup: v.markup } : {});
 
 function fmtItem(e) {
   const icon = { assign: "📝", quiz: "❓", forum: "💬" }[e.type] || "📌";
@@ -244,17 +282,40 @@ async function statusText(env) {
 // ------------------------------------------------------------------ AI
 async function lmsContext(env) {
   const [cs, ev] = await Promise.all([courses(env), actionEvents(env, 14, 45)]);
-  const lines = ev.map((e) => `- ${e.overdue ? "[OVERDUE] " : ""}${e.type}: "${e.name}" (${e.course}) due ${fmtTime(e.due)} (${relTime(e.due)})`);
+  const done = await getDone(env);
+  const lines = ev.map((e) => `- [id=${e.key}] ${e.overdue ? "[OVERDUE] " : ""}${e.type}: "${e.name}" (${e.course}) due ${fmtTime(e.due)} (${relTime(e.due)})`);
+  const doneLines = Object.entries(done).map(([k, v]) => `- [id=${k}] "${v.name}"`);
   return `Today is ${fmtTime(Math.floor(Date.now() / 1000), true)} (IST).
 Enrolled courses: ${cs.map((c) => c.name).join("; ")}.
 Pending items not yet submitted/attempted (${ev.length}):
-${lines.join("\n") || "- none"}`;
+${lines.join("\n") || "- none"}
+Items Abhi already marked done himself (hidden from the list):
+${doneLines.join("\n") || "- none"}`;
+}
+
+// The AI may append [[DONE:id]] / [[UNDONE:id]] tags; apply them and strip them from the reply
+async function applyAiActions(env, reply) {
+  const notes = [];
+  const all = [...reply.matchAll(/\[\[(DONE|UNDONE):([a-z_]+:\d+)\]\]/g)];
+  if (all.length) {
+    const ev = await actionEvents(env, 30, 90, true);
+    const done = await getDone(env);
+    for (const [, act, key] of all) {
+      const name = ev.find((e) => e.key === key)?.name || done[key]?.name;
+      if (!name) continue;
+      await setDone(env, key, name, act === "DONE");
+      notes.push(act === "DONE" ? `✅ Marked done: <b>${esc(name)}</b>` : `↩️ Back on your list: <b>${esc(name)}</b>`);
+    }
+  }
+  const text = mdToHtml(reply.replace(/\[\[(DONE|UNDONE):[^\]]*\]\]/g, "").trim());
+  return notes.length ? `${text}\n\n${notes.join("\n")}` : text;
 }
 
 const SYSTEM = `You are Abhi's personal study assistant inside a Telegram bot connected to his Galgotias University LMS (MCA, first semester).
 Style: friendly peer, witty but brief, reply in the same language/mix he uses (English or Hinglish). Keep answers short and scannable for a phone screen.
 Formatting: plain text only. Use "•" for bullets and *single asterisks* for bold. No markdown headings, no tables.
 Use ONLY the LMS data provided for facts about deadlines; never invent assignments or dates. If something isn't in the data, say so and suggest the right command (/grades, /pending, /cal).
+If Abhi clearly says a pending item is finished/submitted/done (e.g. "ER diagram ho gaya", "mark SQL lab done"), confirm briefly and append [[DONE:<id>]] using the item's id from the data. If he says to bring one back / it's not done, append [[UNDONE:<id>]]. Only use ids that appear in the data; if unclear which item, ask instead of tagging.
 For academic work: help him understand, plan and check — but do not write graded assignment answers for him to submit.`;
 
 async function aiChat(env, chat, text) {
@@ -263,7 +324,7 @@ async function aiChat(env, chat, text) {
   const history = JSON.parse((await env.KV.get(`h:${chat}`)) || "[]");
   const reply = await gemini(env, [{ text: `${ctx}\n\nRecent chat:\n${history.join("\n") || "(none)"}\n\nAbhi: ${text}` }], { system: SYSTEM });
   await saveHistory(env, chat, history, text, reply);
-  return send(env, chat, mdToHtml(reply));
+  return send(env, chat, await applyAiActions(env, reply));
 }
 
 async function saveHistory(env, chat, history, q, a) {
@@ -284,7 +345,7 @@ async function onVoice(msg, env) {
     { text: `${ctx}\n\nRecent chat:\n${history.join("\n") || "(none)"}\n\nAbhi sent the voice note above. First line: 🎤 followed by a short transcript in quotes. Then answer it.` },
   ], { system: SYSTEM });
   await saveHistory(env, chat, history, "(voice note)", reply);
-  return send(env, chat, mdToHtml(reply));
+  return send(env, chat, await applyAiActions(env, reply));
 }
 
 // Free-tier models, best first. If one is retired (404), out of quota (429) or overloaded (5xx),
@@ -382,6 +443,19 @@ async function onCallback(cq, env) {
   await tg(env, "answerCallbackQuery", { callback_query_id: cq.id }).catch(() => {});
 
   if (act === "x") return edit(env, chat, mid, "❌ Cancelled. Nothing was uploaded.");
+  if (act === "m" || act === "u") {
+    const key = cq.data.slice(2);
+    const all = await actionEvents(env, 30, 90, true);
+    const item = all.find((e) => e.key === key);
+    const name = item?.name || (await getDone(env))[key]?.name || key;
+    await setDone(env, key, name, act === "m");
+    const note = act === "m"
+      ? `✅ Marked done: <b>${esc(name)}</b>${key.startsWith("assign:") ? "\n<i>Heads-up: this only hides it in the bot and stops reminders. The LMS still shows it as not submitted.</i>" : ""}`
+      : `↩️ Back on your list: <b>${esc(name)}</b>`;
+    await send(env, chat, note);
+    const v = act === "m" ? await pendingText(env, 60, "📋 <b>Everything pending</b>") : await hiddenView(env);
+    return edit(env, chat, mid, v.text, v.markup || { inline_keyboard: [] });
+  }
   if (!orig || !(orig.document || orig.photo)) return edit(env, chat, mid, "⚠️ I lost track of the file — please send it again.");
   const f = fileOf(orig);
 
