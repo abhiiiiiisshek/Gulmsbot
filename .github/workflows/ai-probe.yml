@@ -1,0 +1,37 @@
+name: AI probe
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Test Gemini models
+        env:
+          KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re, urllib.request
+          K = os.environ["KEY"].strip()
+          def note(m): print("::notice::" + m[:900])
+          def req(url, body=None):
+              r = urllib.request.Request(url, json.dumps(body).encode() if body else None,
+                                         {"x-goog-api-key": K, "Content-Type": "application/json"})
+              try:
+                  with urllib.request.urlopen(r, timeout=40) as x: return x.status, json.load(x)
+              except urllib.error.HTTPError as e:
+                  return e.code, json.load(e)
+          st, j = req("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200")
+          if st != 200:
+              note(f"LIST FAILED {st}: {j.get('error',{}).get('message')}"); raise SystemExit
+          names = [m["name"].split("/")[-1] for m in j["models"] if "generateContent" in m.get("supportedGenerationMethods", [])]
+          note("models: " + ", ".join(n for n in names if re.search(r"gemini|gemma", n))[:850])
+          cands = [n for n in names if re.search(r"flash|gemma-3-27b|pro", n) and not re.search(r"image|tts|live|audio|embedding|computer", n)]
+          for n in cands[:14]:
+              st, j = req(f"https://generativelanguage.googleapis.com/v1beta/models/{n}:generateContent",
+                          {"contents": [{"parts": [{"text": "Reply with: ok"}]}]})
+              msg = "OK" if st == 200 else f"{st} {j.get('error',{}).get('message','')[:140]}"
+              note(f"{n}: {msg}")
+          PY
