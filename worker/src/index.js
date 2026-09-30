@@ -239,11 +239,17 @@ const shortName = (n) => clean(n).replace(/\s*\([A-Z0-9]+\)\s*$/, "");
 
 // Action events = things that still need doing (Moodle hides them once submitted).
 // One wide query (30 days back → 90 ahead), cached for 2 minutes and shared by every screen.
-async function rawEvents(env) {
+async function rawEvents(env, live = false) {
   return memo("events", 120e3, async () => {
+    if (!live) { // copy kept fresh by the 10-min cron -> first tap doesn't wait for the slow LMS
+      const c = JSON.parse((await env.KV.get("evcache")) || "null");
+      if (c && Date.now() - c.at < 15 * 60e3) return c.events;
+    }
     const now = Math.floor(Date.now() / 1000);
     const r = await ws(env, "core_calendar_get_action_events_by_timesort", { timesortfrom: now - 30 * 86400, timesortto: now + 90 * 86400, limitnum: 50 });
-    return r.events || [];
+    const events = r.events || [];
+    bg(env.KV.put("evcache", JSON.stringify({ at: Date.now(), events }), { expirationTtl: 3600 }));
+    return events;
   });
 }
 // Items you marked done yourself (submitted offline, no-submit activities…). Stored in KV key "done".
@@ -460,11 +466,12 @@ async function gemini(env, parts, { system, maxTokens = 8192, json = false, fast
     if (system) body.systemInstruction = { parts: [{ text: system }] };
     const call = (b) => fetch(`${GEMINI}/v1beta/models/${model}:generateContent`, {
       method: "POST", headers: { "x-goog-api-key": env.GEMINI_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify(b),
-    });
+      signal: AbortSignal.timeout(fast ? 12000 : 25000),
+    }).catch((e) => new Response("{}", { status: e.name === "TimeoutError" ? 504 : 502 }));
     let r = await call(body);
     if (r.status === 400 && gc.thinkingConfig) { delete gc.thinkingConfig; r = await call(body); } // model without thinking levels
     const j = await r.json().catch(() => ({}));
-    if ([404, 429, 500, 503].includes(r.status)) { DOWN.set(model, Date.now() + (r.status === 404 ? 86400e3 : 600e3)); lastErr = `${model}: ${r.status}`; continue; }
+    if ([404, 429, 500, 502, 503, 504, 524].includes(r.status)) { DOWN.set(model, Date.now() + (r.status === 404 ? 86400e3 : 600e3)); lastErr = `${model}: ${r.status}`; continue; }
     if (!r.ok) throw new Error(`AI error: ${j.error?.message || r.status}`);
     const text = (j.candidates?.[0]?.content?.parts || []).filter((p) => p.text && !p.thought).map((p) => p.text).join("").trim();
     if (!text) throw new Error("AI returned an empty answer — try rephrasing.");
@@ -610,6 +617,7 @@ async function onCallback(cq, env) {
       if (Array.isArray(w2) && w2.length) return edit(env, chat, mid, `⚠️ Uploaded as draft, but final submit failed: ${esc(w2.map((w) => w.message).join("; "))}\nOpen it on the LMS: ${esc(info.url)}`);
     }
     forget("events");
+    await env.KV.delete("evcache");
     const after = await assignInfo(env, aid);
     const ok = final ? after.status === "submitted" : ["draft", "submitted"].includes(after.status);
     await addReceipt(env, { name: info.name, course: info.course, file: f.name, at: Math.floor(Date.now() / 1000), status: after.status, url: info.url });
@@ -1482,8 +1490,9 @@ async function onCron(env) {
 
   // 1. LMS health (alert once when it breaks, once when it recovers)
   let lmsOk = true;
-  try { await ws(env, "core_webservice_get_site_info"); } catch { lmsOk = false; }
+  try { MEM.delete("events"); await rawEvents(env, true); } catch { lmsOk = false; }
   const h = await kvJson(env, "health", { lmsFails: 0, lmsAlerted: false, watcherAlerted: false });
+  const hBefore = JSON.stringify(h);
   if (!lmsOk) {
     h.lmsFails += 1;
     if (h.lmsFails >= 3 && !h.lmsAlerted) { await send(env, chat, "🚨 <b>I can't reach the LMS</b> for ~1.5 hours.\nIf you changed your LMS password, update the <code>LMS_PASSWORD</code> secret on GitHub and re-run <b>Deploy Telegram bot</b>. Otherwise the LMS is probably down — I'll tell you when it's back."); h.lmsAlerted = true; }
@@ -1497,7 +1506,7 @@ async function onCron(env) {
     await send(env, chat, "⚠️ <b>Hourly LMS checks stopped</b> (no run for 3h+).\nOpen GitHub → your repo → <b>Actions → GU LMS watcher</b>. If it says the workflow is disabled, click <b>Enable workflow</b>.");
     h.watcherAlerted = true;
   } else if (wl && now - wl < 2 * 3600) h.watcherAlerted = false;
-  await kvPut(env, "health", h);
+  if (JSON.stringify(h) !== hBefore) await kvPut(env, "health", h);
   if (!lmsOk) return;
 
   // 3. pinned live dashboard

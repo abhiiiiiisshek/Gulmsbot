@@ -7,9 +7,9 @@ workers_dev = true
 binding = "KV"
 id = "__KV_ID__"
 
-# every 30 min: pinned live dashboard, snooze wake-ups, review nudge, health checks
+# every 10 min: fresh deadline copy (fast first tap), pinned live dashboard, snooze wake-ups, review nudge, health checks
 [triggers]
-crons = ["*/30 * * * *"]
+crons = ["*/10 * * * *"]
 
 # run the Worker close to the services it talks to most (the LMS) — cuts round-trip time
 [placement]
