@@ -217,7 +217,7 @@
  },
  "grades": {},
  "meta": {
-  "last_run": 1790757701.9903843,
+  "last_run": 1790783915.7092373,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -1286,10 +1286,6 @@
   }
  },
  "notifications": {
-  "23391613": {
-   "name": "Assignment submission confirmation - Practice Questions 1 for Sec-2 and 6",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=442238"
-  },
   "23403211": {
    "name": "Overdue: Lab 4: List, Set, Tuple",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=439176&action=view"
@@ -1363,6 +1359,10 @@
    "url": ""
   },
   "24060027": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24069542": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
