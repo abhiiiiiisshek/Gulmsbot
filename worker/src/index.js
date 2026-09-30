@@ -84,12 +84,16 @@ async function handle(update, env) {
     case "/status": return sendView(env, chat, await namedView(env, "status"));
     case "/study": return sendView(env, chat, withNav(await coursePicker(env, "📚 <b>Study mode</b>\nPick a course:", "sc")));
     case "/exam": return sendView(env, chat, await namedView(env, "exam"));
+    case "/start_here":
+    case "/plan": return startHere(env, chat);
+    case "/files": return sendView(env, chat, await assignListView(env));
     case "/stop":
       await env.KV.delete(`s:${chat}`); await env.KV.delete(`sh:${chat}`);
       return sendView(env, chat, { text: "🛑 Left study mode. Back to normal chat.", markup: { inline_keyboard: [NAV] } });
     case null: {
       const s = await getSession(env, chat);
       if (s?.mode === "ask") return studyAsk(env, chat, s, text);
+      if (/(where|kaha+n?|kidhar).{0,25}(start|shuru|begin)|kya padh|what (should|do) i study|start studying/i.test(text)) return startHere(env, chat);
       return aiChat(env, chat, text);
     }
     default: return send(env, chat, "Unknown command. Try /help — or just ask me in plain words.");
@@ -101,6 +105,8 @@ const HELP = `🤖 <b>GU LMS assistant</b>
 🏠 /menu — your dashboard with buttons
 📚 /study — pick a course file → summary, explain simply, quiz, flashcards, Q&A
 🎯 /exam — revision plan + 10-question mock test for a course
+🧭 /plan — "where do I start?" — a study plan for right now
+📂 /files — assignment brief + attachments, answer template (.docx), how-to-start
 
 <b>Ask anything</b> — in English or Hinglish, text or 🎤 voice:
 <i>"kal kya submit karna hai?"</i>, <i>"plan my week"</i>, <i>"which subject am I behind in?"</i>
@@ -336,7 +342,7 @@ Formatting: plain text only. Use "•" for bullets and *single asterisks* for bo
 Use ONLY the LMS data provided for facts about deadlines; never invent assignments or dates. If something isn't in the data, say so and suggest the right command (/grades, /pending, /cal).
 If Abhi clearly says a pending item is finished/submitted/done (e.g. "ER diagram ho gaya", "mark SQL lab done"), confirm briefly and append [[DONE:<id>]] using the item's id from the data. If he says to bring one back / it's not done, append [[UNDONE:<id>]]. Only use ids that appear in the data; if unclear which item, ask instead of tagging.
 If he asks to learn/revise a topic from his courses, answer briefly and tell him he can open 📚 Study (/study) to learn from the actual course slides, or /exam for a mock test.
-For academic work: help him understand, plan and check — but do not write graded assignment answers for him to submit.`;
+For academic work: help him understand, plan and check — but do not write graded assignment answers for him to submit. If he asks for answers to an assignment, say briefly (no lecture) that you won't write them, and offer: 📂 /files → answer template + "how do I start", explaining the concept, a worked example on a *different* similar problem, or checking his own attempt.`;
 
 async function aiChat(env, chat, text) {
   await tg(env, "sendChatAction", { chat_id: chat, action: "typing" });
@@ -478,6 +484,11 @@ async function onCallback(cq, env) {
   if (act === "eq") return startQuiz(env, chat, { type: "exam", cid: parts[1] }, 10);
   if (act === "ec") return startCards(env, chat, { type: "exam", cid: parts[1] });
   if (act === "fc") return onCard(env, chat, mid, parts);
+  if (act === "go") return startHere(env, chat);
+  if (act === "af") return assignFiles(env, chat, parts[1]);
+  if (act === "at") return answerTemplate(env, chat, parts[1]);
+  if (act === "hs") return howToStart(env, chat, parts[1]);
+  if (act === "dl") return downloadMaterial(env, chat, parts[1]);
   if (act === "stop") { await env.KV.delete(`s:${chat}`); await env.KV.delete(`sh:${chat}`); return send(env, chat, "🛑 Left study mode.", { reply_markup: { inline_keyboard: [NAV] } }); }
 
   if (act === "x") return edit(env, chat, mid, "❌ Cancelled. Nothing was uploaded.");
@@ -634,8 +645,10 @@ async function homeView(env, who = "") {
   text += `\n<i>💬 Ask anything · 🎤 voice note · 📎 drop a file to submit</i>`;
   const kb = [
     [{ text: `📋 Pending (${ev.length})`, callback_data: "v:pending" }, { text: "📅 Today", callback_data: "v:today" }],
-    [{ text: "🗓 This week", callback_data: "v:week" }, { text: "📊 Grades", callback_data: "v:grades" }],
+    [{ text: "🗓 This week", callback_data: "v:week" }],
+    [{ text: "🧭 Where do I start?", callback_data: "go" }],
     [{ text: "📚 Study", callback_data: "st" }, { text: "🎯 Exam prep", callback_data: "v:exam" }],
+    [{ text: "📂 Assignment files", callback_data: "v:assign" }, { text: "📊 Grades", callback_data: "v:grades" }],
     [{ text: "🗓 Calendar sync", callback_data: "v:cal" }, { text: "🙈 Hidden", callback_data: "v:hidden" }],
     [{ text: "🩺 Status", callback_data: "v:status" }, { text: "❓ Help", callback_data: "v:help" }],
   ];
@@ -653,6 +666,7 @@ async function namedView(env, name) {
     case "cal": return withNav({ text: await calendarText(env) });
     case "status": return withNav({ text: await statusText(env) });
     case "help": return withNav({ text: HELP });
+    case "assign": return assignListView(env);
     case "exam": return withNav(await coursePicker(env, "🎯 <b>Exam prep</b>\nPick a course — I'll read its latest material and build a revision plan + mock test.", "ex"));
     default: return homeView(env);
   }
@@ -720,7 +734,7 @@ function materialCard(m) {
     markup: { inline_keyboard: [
       [{ text: "📝 Summary", callback_data: `sa:sum:${m.cmid}` }, { text: "💡 Explain simply", callback_data: `sa:eli5:${m.cmid}` }],
       [{ text: "🧠 Quiz me (5)", callback_data: `sa:quiz:${m.cmid}` }, { text: "🃏 Flashcards", callback_data: `sa:cards:${m.cmid}` }],
-      [{ text: "💬 Ask questions about it", callback_data: `sa:ask:${m.cmid}` }],
+      [{ text: "💬 Ask questions about it", callback_data: `sa:ask:${m.cmid}` }, { text: "⬇️ Download", callback_data: `dl:${m.cmid}` }],
       [{ text: "⬅️ Files", callback_data: `sc:${m.cid}:0` }, ...NAV],
     ] },
   };
@@ -957,6 +971,201 @@ async function onCard(env, chat, mid, parts) {
   }
   await env.KV.put(`fc:${chat}`, JSON.stringify(d), { expirationTtl: 86400 });
   return edit(env, chat, mid, cardText(d, false), cardKb(d, false));
+}
+
+// ================================================================ Files: send to Telegram, build .docx
+async function tgSendFile(env, chat, bytes, filename, caption = "", markup) {
+  const fd = new FormData();
+  fd.append("chat_id", String(chat));
+  fd.append("document", new Blob([bytes]), filename);
+  if (caption) { fd.append("caption", caption.slice(0, 1000)); fd.append("parse_mode", "HTML"); }
+  if (markup) fd.append("reply_markup", JSON.stringify(markup));
+  const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendDocument`, { method: "POST", body: fd });
+  const j = await r.json();
+  if (!j.ok) throw new Error(`Telegram sendDocument: ${j.description}`);
+  return j.result;
+}
+
+async function lmsFile(env, url, limit = 45 * 1024 * 1024) {
+  const token = await mtoken(env);
+  const r = await fetch(`${url}${url.includes("?") ? "&" : "?"}token=${token}`, { headers: UA });
+  if (!r.ok) throw new Error(`LMS file download failed (${r.status})`);
+  const b = await r.arrayBuffer();
+  if (b.byteLength > limit) throw new Error("File too big for Telegram (50 MB max) — open it on the LMS.");
+  return b;
+}
+
+const CRC_TABLE = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(u8) { let c = 0xffffffff; for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
+
+// Minimal zip writer (no compression) — enough to build a .docx
+function makeZip(files) {
+  const enc = new TextEncoder(), chunks = [], central = [];
+  let offset = 0;
+  for (const f of files) {
+    const name = enc.encode(f.name), data = typeof f.data === "string" ? enc.encode(f.data) : f.data, crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint32(14, crc, true);
+    lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, name.length, true);
+    chunks.push(new Uint8Array(lh.buffer), name, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint32(16, crc, true);
+    ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, name.length, true); ch.setUint32(42, offset, true);
+    central.push(new Uint8Array(ch.buffer), name);
+    offset += 30 + name.length + data.length;
+  }
+  const cdSize = central.reduce((s, c) => s + c.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+  end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
+  const all = [...chunks, ...central, new Uint8Array(end.buffer)];
+  const out = new Uint8Array(all.reduce((s, c) => s + c.length, 0));
+  let p = 0; for (const c of all) { out.set(c, p); p += c.length; }
+  return out;
+}
+
+const xesc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+function para(text, { bold = false, size = 22, color, italic = false, space = 120 } = {}) {
+  const rpr = `<w:rPr>${bold ? "<w:b/>" : ""}${italic ? "<w:i/>" : ""}${color ? `<w:color w:val="${color}"/>` : ""}<w:sz w:val="${size}"/></w:rPr>`;
+  return `<w:p><w:pPr><w:spacing w:after="${space}"/></w:pPr><w:r>${rpr}<w:t xml:space="preserve">${xesc(text)}</w:t></w:r></w:p>`;
+}
+function buildDocx(paragraphsXml) {
+  return makeZip([
+    { name: "[Content_Types].xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>` },
+    { name: "_rels/.rels", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>` },
+    { name: "word/document.xml", data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${paragraphsXml}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>` },
+  ]);
+}
+const safeName = (s) => String(s).replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "_").slice(0, 60) || "file";
+
+// ================================================================ Assignment files, templates, "how to start"
+async function assignListView(env) {
+  const open = (await actionEvents(env, 14, 60)).filter((e) => e.type === "assign");
+  if (!open.length) return withNav({ text: "📂 No open assignments right now. 🎉" });
+  return withNav({
+    text: `📂 <b>Assignment files</b>\nTap one to get its brief + attachments, an answer template, or a "how to start" plan:`,
+    markup: { inline_keyboard: open.slice(0, 12).map((e) => [{ text: `${urgency(e)} ${e.name} · ${e.course}`.slice(0, 60), callback_data: `af:${e.instance}` }]) },
+  });
+}
+
+async function assignFiles(env, chat, aid) {
+  const info = await assignInfo(env, aid);
+  const brief = info.intro ? esc(info.intro.slice(0, 2500)) : "<i>(no text brief — see attached files)</i>";
+  await send(env, chat, `📝 <b>${esc(info.name)}</b> — ${esc(info.course)}\n⏳ ${info.due ? `${fmtTime(info.due)} · <b>${relTime(info.due)}</b>` : "no due date"} · status <b>${esc(info.status)}</b>\n\n${brief}`, { reply_markup: { inline_keyboard: [
+    [{ text: "📄 Answer template (.docx)", callback_data: `at:${aid}` }, { text: "🧭 How do I start?", callback_data: `hs:${aid}` }],
+    [{ text: "🔗 Open on LMS", url: info.url }], NAV,
+  ] } });
+  for (const f of info.introFiles.slice(0, 5)) {
+    try { await tgSendFile(env, chat, await lmsFile(env, f.fileurl), f.filename, `📎 ${esc(info.name)}`); }
+    catch (e) { await send(env, chat, `⚠️ Couldn't send ${esc(f.filename)}: ${esc(e.message)}`); }
+  }
+}
+
+async function briefParts(env, info) {
+  const parts = [{ text: `ASSIGNMENT "${info.name}" (${info.course}). Brief from the LMS:\n"""${info.intro || "(see attachment)"}"""` }];
+  for (const f of info.introFiles.slice(0, 2)) {
+    try {
+      const buf = await lmsFile(env, f.fileurl, 15 * 1024 * 1024);
+      if (/pdf|image/.test(f.mimetype || "")) { const up = await geminiUpload(env, buf, f.mimetype, f.filename); parts.push({ file_data: { mime_type: up.mimeType, file_uri: up.uri } }); }
+      else if (/officedocument|text\/plain/.test(f.mimetype || "")) parts.push({ text: `ATTACHMENT "${f.filename}":\n${(await officeText(buf, f.mimetype)).slice(0, 40000)}` });
+    } catch { /* skip unreadable attachment */ }
+  }
+  return parts;
+}
+
+async function answerTemplate(env, chat, aid) {
+  const wait = await send(env, chat, "📄 Building your answer template… <i>(~15 sec)</i>");
+  const info = await assignInfo(env, aid);
+  const raw = await gemini(env, [...await briefParts(env, info), { text: `Extract the structure of this assignment so the student can fill it in. Do NOT answer anything.
+Return ONLY JSON: {"title": "assignment title", "instructions": ["general submission rules/format, max 5"], "questions": [{"label": "Q1 (or section name)", "text": "the exact question/task as written", "checklist": ["what the answer must include, max 4 short items"]}]}` }], { json: true });
+  let t;
+  try { const s = raw.replace(/^```(?:json)?\s*|\s*```$/g, ""); t = JSON.parse(s.slice(s.indexOf("{"), s.lastIndexOf("}") + 1)); } catch { t = null; }
+  if (!t?.questions?.length) return edit(env, chat, wait.message_id, "😵 I couldn't find clear questions in this brief. Open it with 📂 and check the attachment.", { inline_keyboard: [NAV] });
+  let x = para(t.title || info.name, { bold: true, size: 36, color: "1F3864", space: 60 });
+  x += para(`${info.course}${info.due ? `  ·  Due ${fmtTime(info.due)}` : ""}`, { size: 20, color: "666666", space: 240 });
+  x += para("Name: ______________________    Roll No: ______________    Section: ______", { size: 22, space: 300 });
+  if (t.instructions?.length) {
+    x += para("Instructions", { bold: true, size: 26, color: "1F3864" });
+    for (const i of t.instructions) x += para(`•  ${i}`, { size: 21, space: 60 });
+    x += para("", { space: 200 });
+  }
+  for (const q of t.questions) {
+    x += para(q.label || "Question", { bold: true, size: 28, color: "1F3864", space: 80 });
+    x += para(q.text || "", { size: 22, space: 100 });
+    for (const c of q.checklist || []) x += para(`☐  ${c}`, { size: 20, color: "555555", italic: true, space: 40 });
+    x += para("Answer:", { bold: true, size: 22, space: 80 });
+    for (let k = 0; k < 6; k++) x += para("", { space: 120 });
+  }
+  x += para("Before submitting: tick every ☐, re-read the brief, export to PDF if asked.", { italic: true, size: 18, color: "888888" });
+  await tgSendFile(env, chat, buildDocx(x), `${safeName(info.name)}_template.docx`, `📄 <b>Answer template</b> — ${esc(info.name)}\n${t.questions.length} questions laid out with checklists. Fill it in, then send it back here to submit ✅`);
+  return edit(env, chat, wait.message_id, `✅ Template ready for <b>${esc(info.name)}</b> ⬇️`, { inline_keyboard: [[{ text: "🧭 How do I start?", callback_data: `hs:${aid}` }], NAV] });
+}
+
+async function materialsIndex(env, onlyCourse) {
+  const cs = await courses(env);
+  const out = [];
+  for (const c of cs) {
+    if (onlyCourse && c.name !== onlyCourse) continue;
+    for (const m of (await listMaterials(env, c.id)).slice(-12)) out.push({ cmid: m.cmid, name: m.name, course: c.name });
+  }
+  return out;
+}
+
+async function howToStart(env, chat, aid) {
+  const wait = await send(env, chat, "🧭 Figuring out your game plan… <i>(~20 sec)</i>");
+  const info = await assignInfo(env, aid);
+  const mats = await materialsIndex(env, info.course);
+  const raw = await gemini(env, [...await briefParts(env, info), { text: `Course files available (id: title): ${mats.map((m) => `${m.cmid}: ${m.name}`).join("; ") || "none"}
+Help the student START this assignment himself. Do NOT give answers, code or final content.
+Return ONLY JSON: {"gist": "what they're really asking, 1-2 lines", "steps": ["4-6 concrete steps in order, each max 20 words"], "revise": [{"cmid": id from the list or null, "why": "which concept to revise there, max 12 words"}], "time": "realistic time estimate", "trap": "one common mistake to avoid"}. Pick at most 3 files for "revise", only ids that exist in the list.` }], { json: true, system: STUDY_STYLE });
+  let g;
+  try { const s = raw.replace(/^```(?:json)?\s*|\s*```$/g, ""); g = JSON.parse(s.slice(s.indexOf("{"), s.lastIndexOf("}") + 1)); } catch { g = null; }
+  if (!g) return edit(env, chat, wait.message_id, "😵 Couldn't build a plan this time — tap again.", { inline_keyboard: [NAV] });
+  const valid = (g.revise || []).filter((r) => mats.some((m) => String(m.cmid) === String(r.cmid))).slice(0, 3);
+  let t = `🧭 <b>How to start: ${esc(info.name)}</b>\n\n🎯 ${esc(g.gist)}\n\n`;
+  t += (g.steps || []).map((s, i) => `<b>${i + 1}.</b> ${esc(s)}`).join("\n");
+  if (valid.length) t += `\n\n📚 <b>Revise first</b>\n${valid.map((r) => `• ${esc(mats.find((m) => String(m.cmid) === String(r.cmid)).name)} — ${esc(r.why)}`).join("\n")}`;
+  t += `\n\n⏱ ${esc(g.time || "")}\n⚠️ ${esc(g.trap || "")}`;
+  const rows = valid.map((r) => [{ text: `📖 ${mats.find((m) => String(m.cmid) === String(r.cmid)).name}`.slice(0, 55), callback_data: `sm:${r.cmid}!` }]);
+  rows.push([{ text: "📄 Answer template (.docx)", callback_data: `at:${aid}` }], NAV);
+  return edit(env, chat, wait.message_id, t, { inline_keyboard: rows });
+}
+
+// ================================================================ "Where do I start?" — overall study plan
+async function startHere(env, chat) {
+  const wait = await send(env, chat, "🧭 Looking at your deadlines, quizzes and course files… <i>(~20 sec)</i>");
+  const [ev, mats] = await Promise.all([actionEvents(env, 14, 21), materialsIndex(env)]);
+  const pending = ev.map((e) => `- ${e.type} "${e.name}" (${e.course}) ${e.overdue ? "OVERDUE" : `due in ${countdown(e.due)}`}`).join("\n") || "- nothing pending";
+  const raw = await gemini(env, [{ text: `Today: ${fmtTime(Math.floor(Date.now() / 1000), true)} IST.
+Pending on the LMS:
+${pending}
+Course files (id | course | title), most recent last per course:
+${mats.map((m) => `${m.cmid} | ${m.course} | ${m.name}`).join("\n")}
+
+Abhi asks: "Where should I start studying?" Build a focused plan for the next study session, prioritising overdue work, then the nearest deadlines/quizzes, then the course that seems furthest behind.
+Return ONLY JSON: {"why": "1 line on the priority logic", "steps": [{"title": "max 8 words", "do": "what exactly to do, max 20 words", "minutes": 25, "cmid": id of the file to open or null}]}. 3-4 steps, only cmids from the list.` }], { json: true, system: STUDY_STYLE });
+  let p;
+  try { const s = raw.replace(/^```(?:json)?\s*|\s*```$/g, ""); p = JSON.parse(s.slice(s.indexOf("{"), s.lastIndexOf("}") + 1)); } catch { p = null; }
+  if (!p?.steps?.length) return edit(env, chat, wait.message_id, "😵 Couldn't build a plan right now — try again in a minute.", { inline_keyboard: [NAV] });
+  const find = (id) => mats.find((m) => String(m.cmid) === String(id));
+  let total = 0;
+  const lines = p.steps.slice(0, 4).map((s, i) => {
+    total += Number(s.minutes) || 0;
+    const f = find(s.cmid);
+    return `<b>${i + 1}. ${esc(s.title)}</b>  ⏱ ${Number(s.minutes) || 25} min\n   ${esc(s.do)}${f ? `\n   📖 <i>${esc(f.name)}</i>` : ""}`;
+  });
+  const rows = p.steps.slice(0, 4).filter((s) => find(s.cmid)).map((s, i) => [{ text: `▶️ ${i + 1}. ${find(s.cmid).name}`.slice(0, 55), callback_data: `sm:${s.cmid}!` }]);
+  rows.push([{ text: "📋 Pending", callback_data: "v:pending!" }], NAV);
+  return edit(env, chat, wait.message_id, `🧭 <b>Start here</b>  ·  ~${total} min session\n<i>${esc(p.why || "")}</i>\n\n${lines.join("\n\n")}\n\n<i>Tip: phone away, one step at a time. You got this 💪</i>`, { inline_keyboard: rows });
+}
+
+async function downloadMaterial(env, chat, cmid) {
+  const m = await findMaterial(env, cmid);
+  await tg(env, "sendChatAction", { chat_id: chat, action: "upload_document" }).catch(() => {});
+  for (const f of m.files) {
+    try { await tgSendFile(env, chat, await lmsFile(env, f.url), f.name, `${KIND(f.mime)} ${esc(m.name)} · ${esc(m.course)}`); }
+    catch (e) { await send(env, chat, `⚠️ ${esc(f.name)}: ${esc(e.message)}`); }
+  }
 }
 
 // -------------------------------------------------------------- Telegram

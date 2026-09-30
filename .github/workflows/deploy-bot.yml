@@ -76,6 +76,8 @@ jobs:
             {"command":"menu","description":"🏠 Dashboard with buttons"},
             {"command":"study","description":"📚 Study a course file (summary, quiz, flashcards)"},
             {"command":"exam","description":"🎯 Revision plan + mock test"},
+            {"command":"plan","description":"🧭 Where do I start studying?"},
+            {"command":"files","description":"📂 Assignment brief, files, answer template"},
             {"command":"pending","description":"Everything not yet submitted"},
             {"command":"today","description":"Due today"},
             {"command":"week","description":"Due in the next 7 days"},

@@ -679,7 +679,9 @@ def main():
                 for a in ch["assignments"][:3]:
                     txt = safe("breakdown", lambda: ai_breakdown(api, a, extra["briefs"].get(a["id"], {})))
                     if txt:
-                        messages.append((f"🧩 <b>Breakdown:</b> {link(a['name'], a['url'])}\n\n{md_to_html(txt)}", [[("📋 Pending", "v:pending!"), ("🏠 Menu", "home!")]]))
+                        messages.append((f"🧩 <b>Breakdown:</b> {link(a['name'], a['url'])}\n\n{md_to_html(txt)}",
+                                         [[("📂 Brief + files", f"af:{a['id']}!"), ("📄 Answer template", f"at:{a['id']}!")],
+                                          [("🧭 How do I start?", f"hs:{a['id']}!")]]))
                 done = 0
                 for m in ch["modules"]:
                     if done >= MAX_AI_SUMMARIES:
