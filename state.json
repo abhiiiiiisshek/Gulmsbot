@@ -193,8 +193,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-01-7",
-  "last_run": 1790819838.0628002,
+  "digest_slot": "2026-10-01-12",
+  "last_run": 1790838880.63501,
   "log_grades": [],
   "log_submitted": [
    [
@@ -1266,17 +1266,16 @@
    "section": "Unit 2",
    "type": "resource",
    "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=453252"
+  },
+  "454098": {
+   "course": "Introduction to Information Technology",
+   "name": "Unit_2_Lecture_3 PPT",
+   "section": "Rajendra Kumar Patel",
+   "type": "wooflash",
+   "url": "https://gulms.galgotiasuniversity.org/mod/wooflash/view.php?id=454098"
   }
  },
  "notifications": {
-  "23493267": {
-   "name": "Overdue: Lab Cancelled P1 Section 6 (24-09-2026)Assignment",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=447348&action=view"
-  },
-  "23510321": {
-   "name": "Overdue: Practice Question for section-2(P2)",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=447499&action=view"
-  },
   "23580650": {
    "name": "Overdue: Assignment _Unit 1",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=442586&action=view"
@@ -1346,6 +1345,14 @@
    "url": ""
   },
   "24099973": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24100048": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24103346": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
