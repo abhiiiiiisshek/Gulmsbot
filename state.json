@@ -166,22 +166,6 @@
   "29725": "Programming with Python"
  },
  "events": {
-  "134565": {
-   "course": "Introduction to Information Technology",
-   "due": 1790706600,
-   "instance": 442586,
-   "name": "Assignment _Unit 1 is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=442586"
-  },
-  "136119": {
-   "course": "Programming with Python",
-   "due": 1790706600,
-   "instance": 445703,
-   "name": "LAB 5: String Manipulation is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=445703"
-  },
   "137008": {
    "course": "Computational Mathematics and Statistics",
    "due": 1791656760,
@@ -198,14 +182,6 @@
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=449226"
   },
-  "138714": {
-   "course": "Programming with Python",
-   "due": 1790706600,
-   "instance": 450667,
-   "name": "Assignment 1 is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=450667"
-  },
   "139959": {
    "course": "Programming with Python",
    "due": 1791311400,
@@ -217,15 +193,22 @@
  },
  "grades": {},
  "meta": {
-  "last_run": 1790815001.7515466,
+  "digest_slot": "2026-10-01-7",
+  "last_run": 1790819838.0628002,
   "log_grades": [],
-  "log_submitted": [],
+  "log_submitted": [
+   [
+    1790819838.0628002,
+    "Assignment 1"
+   ]
+  ],
   "nag": {
    "29296": [
+    24,
     72
    ]
   },
-  "plan_date": "2026-09-30",
+  "plan_date": "2026-10-01",
   "quiz": {
    "32268": [],
    "33978": [],
@@ -1286,22 +1269,6 @@
   }
  },
  "notifications": {
-  "23403211": {
-   "name": "Overdue: Lab 4: List, Set, Tuple",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=439176&action=view"
-  },
-  "23456404": {
-   "name": "Overdue: CLASS TEST 1",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=443452&action=view"
-  },
-  "23457007": {
-   "name": "Overdue: Class Test 1",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=443627&action=view"
-  },
-  "23480376": {
-   "name": "Overdue: Lab Cancelled Group 2 Section 5 (24-09-2026)",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=446794&action=view"
-  },
   "23493267": {
    "name": "Overdue: Lab Cancelled P1 Section 6 (24-09-2026)Assignment",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=447348&action=view"
@@ -1365,6 +1332,22 @@
   "24069542": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
+  },
+  "24086886": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24091280": {
+   "name": "Assignment submission confirmation - Assignment 1",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=450667"
+  },
+  "24095163": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24099973": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
   }
  },
  "quizzes": {
@@ -1405,7 +1388,7 @@
   "28535": "new",
   "28869": "new",
   "29296": "new",
-  "29488": "new",
+  "29488": "submitted",
   "29791": "new"
  }
 }
