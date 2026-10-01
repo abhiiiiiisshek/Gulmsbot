@@ -37,6 +37,39 @@ export default {
       try { out.ai = (await gemini(env, [{ text: "Reply with just: ok" }], { maxTokens: 400, fast: true })).slice(0, 20); } catch (e) { out.ai_error = String(e.message || e).slice(0, 200); }
       return Response.json(out);
     }
+    if (url.pathname === "/agentprobe") { // live check of the agent loop with real Gemini + LMS, no Telegram messages
+      if (url.searchParams.get("k") !== secret) return new Response("forbidden", { status: 403 });
+      const q = url.searchParams.get("q") || "What's my nearest deadline, and which DBMS topic should I study first? Use your tools.";
+      const trace = [], actions = [];
+      const ctx = { ...(await agentContext(env, "probe")), status: () => {} };
+      const conv = [{ role: "user", parts: [{ text: q }] }];
+      const t0 = Date.now();
+      for (const model of SMART_MODELS) {
+        let ok = true;
+        for (let step = 0; step < 6; step++) {
+          const gc = { temperature: 0.4, maxOutputTokens: 2048 };
+          if (!/lite/.test(model)) gc.thinkingConfig = { thinkingLevel: "low" };
+          const r = await fetch(`${GEMINI}/v1beta/models/${model}:generateContent`, { method: "POST", headers: { "x-goog-api-key": env.GEMINI_API_KEY, "Content-Type": "application/json" },
+            body: JSON.stringify({ systemInstruction: { parts: [{ text: AGENT_SYSTEM(ctx) }] }, contents: conv, tools: [{ functionDeclarations: AGENT_TOOLS }], generationConfig: gc }) });
+          const j = await r.json().catch(() => ({}));
+          if (!r.ok) { trace.push(`${model} step${step}: HTTP ${r.status} ${String(j.error?.message || "").slice(0, 160)}`); ok = false; break; }
+          const content = j.candidates?.[0]?.content || { parts: [] };
+          const calls = (content.parts || []).filter((p) => p.functionCall);
+          if (!calls.length) { trace.push(`${model} FINAL (${Date.now() - t0} ms): ${(content.parts || []).filter((p) => p.text && !p.thought).map((p) => p.text).join("").slice(0, 600)}`); return Response.json({ trace }); }
+          conv.push(content);
+          const resp = [];
+          for (const c of calls) {
+            let result; try { result = await runTool(env, "probe", c.functionCall.name, c.functionCall.args || {}, actions, ctx); } catch (e) { result = { error: String(e.message) }; }
+            trace.push(`${model} step${step}: ${c.functionCall.name}(${JSON.stringify(c.functionCall.args || {}).slice(0, 80)}) -> ${JSON.stringify(result).slice(0, 120)}`);
+            resp.push({ functionResponse: { name: c.functionCall.name, response: { result } } });
+          }
+          conv.push({ role: "user", parts: resp });
+        }
+        if (ok) break;
+        conv.splice(1);
+      }
+      return Response.json({ trace });
+    }
     if (url.pathname === "/bench") {
       if (url.searchParams.get("k") !== secret) return new Response("forbidden", { status: 403 });
       const t = {}, time = async (k, fn) => { const a = Date.now(); try { await fn(); t[k] = Date.now() - a; } catch (e) { t[k] = `ERR ${String(e.message).slice(0, 60)}`; } };
@@ -100,7 +133,7 @@ async function handle(update, env) {
 
   const msg = update.message;
   if (msg.document || msg.photo) { bg(track(env, "File sent")); return onFile(msg, env); }
-  if (msg.voice || msg.audio) { bg(track(env, "Voice")); return onVoice(msg, env); }
+  if (msg.voice || msg.audio) { bg(track(env, "Voice")); return voiceToAgent(msg, env); }
   const text = (msg.text || "").trim();
   if (!text) return;
 
@@ -130,6 +163,10 @@ async function handle(update, env) {
     case "/study_now": return letsStudy(env, chat);
     case "/files": return sendView(env, chat, await assignListView(env));
     case "/next": return sendView(env, chat, await doNextView(env, 0));
+    case "/memory":
+    case "/notes": return sendView(env, chat, await notesView(env));
+    case "/new":
+    case "/reset": await env.KV.delete(`h2:${chat}`); await env.KV.delete(`s:${chat}`); return send(env, chat, "🧹 Fresh conversation. (Long-term memory kept — see /memory.)");
     case "/settings": return sendView(env, chat, await settingsView(env));
     case "/review": return startReview(env, chat);
     case "/radar": return sendView(env, chat, await radarView(env));
@@ -141,11 +178,8 @@ async function handle(update, env) {
       return sendView(env, chat, { text: "🛑 Left study mode. Back to normal chat.", markup: { inline_keyboard: [NAV] } });
     case null: {
       const s = await getSession(env, chat);
-      bg(track(env, s?.mode === "ask" ? "Study Q&A" : "AI chat"));
-      if (s?.mode === "ask") return studyAsk(env, chat, s, text);
-      if (/let'?s (study|start)|chalo padh|padhai shuru|start (a )?lesson|teach me/i.test(text)) return letsStudy(env, chat);
-      if (/(where|kaha+n?|kidhar).{0,25}(start|shuru|begin)|kya padh|what (should|do) i (study|learn)|start studying|today'?s plan/i.test(text)) return planOrFallback(env, chat, true);
-      return aiChat(env, chat, text);
+      bg(track(env, "AI chat"));
+      return agentChat(env, chat, text);
     }
     default: return send(env, chat, "Unknown command. Try /help — or just ask me in plain words.");
   }
@@ -153,6 +187,8 @@ async function handle(update, env) {
 
 const HELP = `🤖 <b>GU LMS assistant</b>
 
+💬 <b>Just ask me anything</b> — I look things up myself (deadlines, grades, your course files, progress) and can start lessons, quizzes, plans. E.g. <i>"2 ghante hai, kal DBMS quiz hai — kya karu?"</i>, <i>"explain slide 5 of normalization"</i>, <i>"which subject am I weakest in?"</i>
+🧠 /memory — what I remember about you · /new — fresh conversation
 🏠 /menu — dashboard · ▶️ /next — the one thing to do now
 ⚙️ /settings — how often I ping you, quiet hours, extras
 🔁 /review — cards you missed, spaced out so they stick · 📡 /radar — weak topics
@@ -1780,6 +1816,249 @@ async function brainContext(env) {
   const weak = await weakTopicsLine(env);
   if (weak) out += `\nWeak topics: ${weak}`;
   return out ? `\nSTUDY BRAIN:${out}` : "";
+}
+
+// ================================================================ AGENT: the bot's brain
+// The AI decides, per message, which tools it needs (deadlines, grades, maps, progress, course files…),
+// calls them, reasons over the results, and can take actions (start lessons/quizzes, save plans, remember things).
+const T = (name, description, properties = {}, required = []) => ({ name, description, parameters: { type: "OBJECT", properties, required } });
+const S = (description) => ({ type: "STRING", description });
+const N = (description) => ({ type: "INTEGER", description });
+const AGENT_TOOLS = [
+  T("get_deadlines", "Pending LMS items (assignments, quizzes) not yet submitted, incl. overdue. Returns ids usable with mark_done/get_assignment.", { days_ahead: N("how many days ahead, default 30") }),
+  T("get_assignment", "Full brief, due date, submission status and attachment names of one assignment.", { assignment_id: N("the number after 'assign:' in a deadline id") }, ["assignment_id"]),
+  T("get_grades", "Marks and teacher feedback, optionally for one course.", { course_id: N("optional course id") }),
+  T("get_course_map", "The topic map of a course (units → topics in teaching order) with Abhi's status per topic (new/seen/studied/mastered/weak), 🆕 recently taught flag, minutes, exam weight, and the file ids that teach each topic.", { course_id: N("course id") }, ["course_id"]),
+  T("get_progress", "Abhi's study progress: per-course counts, weak topics with accuracy, recent lessons, review cards due.", {}),
+  T("search_materials", "Search all course files (slides, PDFs, notes) by keywords. Returns file ids, names, course, section and related topics.", { query: S("keywords, e.g. 'normalization 3NF'"), course_id: N("optional course id") }, ["query"]),
+  T("read_material", "Read the actual content of a course file (by file id). Use before explaining, summarising or answering questions about course content.", { file_id: N("file id"), focus: S("what you need from it, e.g. 'slide 5' or 'definition of 2NF with example'") }, ["file_id"]),
+  T("start_lesson", "Start an interactive guided lesson (steps + check questions + quiz) on a topic, after your reply.", { topic_id: S("topic id from a course map, like '123-4'") }, ["topic_id"]),
+  T("start_quiz", "Send a quiz (Telegram quiz polls) after your reply. Give file_id for a quiz on one file, or course_id for a mixed course quiz.", { file_id: N("file id"), course_id: N("course id"), questions: N("5 or 10") }),
+  T("start_flashcards", "Start a flashcard deck after your reply, from a file or a course.", { file_id: N("file id"), course_id: N("course id") }),
+  T("start_review", "Start the spaced-repetition review of cards Abhi got wrong before.", {}),
+  T("set_today_plan", "Save a custom study plan for today (shows in /plan with ▶️ buttons). Use when Abhi asks for a plan for his situation.", {
+    headline: S("one line"),
+    blocks: { type: "ARRAY", description: "study blocks in order", items: { type: "OBJECT", properties: { topic_id: S("topic id, or 'review'"), minutes: N("minutes"), why: S("short reason") }, required: ["topic_id", "minutes"] } },
+  }, ["blocks"]),
+  T("mark_done", "Mark a pending item as done (e.g. submitted offline). Stops reminders.", { item_id: S("deadline id like 'assign:55'") }, ["item_id"]),
+  T("send_file", "Send Abhi the original course file(s) in Telegram after your reply.", { file_id: N("file id") }, ["file_id"]),
+  T("assignment_help", "After your reply, send an assignment's brief + attachments, a .docx answer template, or a how-to-start plan.", { assignment_id: N("assignment id"), kind: S("'files', 'template' or 'how_to_start'") }, ["assignment_id", "kind"]),
+  T("remember", "Save a durable fact about Abhi for future conversations (exam dates, goals, preferences, struggles). Only things he states.", { note: S("the fact, short") }, ["note"]),
+  T("forget", "Delete remembered facts containing this text.", { text: S("text to match") }, ["text"]),
+];
+
+const AGENT_SYSTEM = (ctx) => `You are Abhi's study brain inside his Telegram bot. He's an MCA 1st-semester student at Galgotias University; you are connected to his university LMS (Moodle) and his study data through tools.
+Now: ${ctx.now} IST.
+His courses (id: name): ${ctx.courses}
+${ctx.notes ? `Things Abhi told you before (remembered):\n${ctx.notes}\n` : ""}${ctx.session ? `He is currently studying the file "${ctx.session.name}" (file id ${ctx.session.cmid}) — questions are probably about it.\n` : ""}
+How to work:
+• Understand what he specifically needs right now, then use tools to get the real facts. Don't guess deadlines, grades, topics or file contents — look them up. Chain tools when needed (e.g. search_materials → read_material; get_deadlines → get_course_map → set_today_plan).
+• For content questions, read the relevant course file and answer from it (mention the file/slide). If the files don't cover it, say so and explain from general knowledge, clearly labelled.
+• For plans: combine his stated situation/time with deadlines, progress, weak topics and recently taught topics; be specific (topic names, minutes, why); save it with set_today_plan when it's a plan for today, then offer to start.
+• Prefer doing over describing: if he wants to study/quiz/revise, start it with the action tools.
+• When he shares a durable fact (exam date, goal, struggle, preference), call remember.
+• Never write graded assignment answers for him to submit; help him understand, plan, and check instead.
+Style: friendly sharp peer, match his language (English/Hinglish), short and scannable for a phone. Plain text with "•" bullets and *single asterisks* for bold, no headings or tables.`;
+
+const toolLabel = (name, a, ctx) => ({
+  get_deadlines: "📋 Checking your deadlines…", get_assignment: "📝 Opening the assignment…", get_grades: "📊 Checking your grades…",
+  get_course_map: `🗺 Opening your ${ctx.courseName(a.course_id) || "course"} map…`, get_progress: "📈 Checking your progress…",
+  search_materials: `🔎 Searching your files for “${a.query || ""}”…`, read_material: "📖 Reading the file…",
+  set_today_plan: "📅 Saving your plan…", remember: "🧠 Noting that…", mark_done: "✅ Marking it done…",
+  start_lesson: "▶️ Setting up your lesson…", start_quiz: "🧠 Getting a quiz ready…", start_flashcards: "🃏 Getting flashcards ready…",
+  start_review: "🔁 Opening your review cards…", send_file: "📎 Getting the file…", assignment_help: "📝 Preparing that…", forget: "🧹 Forgetting that…",
+}[name] || "⚙️ Working…");
+
+async function runTool(env, chat, name, a, actions, ctx) {
+  const now = Date.now() / 1000;
+  switch (name) {
+    case "get_deadlines": {
+      const ev = await actionEvents(env, 30, Number(a.days_ahead) || 30);
+      return ev.map((e) => ({ id: e.key, type: e.type, name: e.name, course: e.course, due: fmtTime(e.due), hours_left: Math.round((e.due - now) / 3600), overdue: e.overdue }));
+    }
+    case "get_assignment": {
+      const i = await assignInfo(env, a.assignment_id);
+      return { name: i.name, course: i.course, due: i.due ? fmtTime(i.due) : null, status: i.status, brief: i.intro, attachments: i.introFiles.map((f) => f.filename), drafts_enabled: i.drafts };
+    }
+    case "get_grades": {
+      const uid = await userId(env);
+      const cs = (await courses(env)).filter((c) => !a.course_id || c.id === Number(a.course_id));
+      const out = [];
+      for (const c of cs) {
+        const r = await ws(env, "gradereport_user_get_grade_items", { courseid: c.id, userid: uid }).catch(() => null);
+        for (const g of r?.usergrades?.[0]?.gradeitems || []) if (g.gradeformatted && g.gradeformatted !== "-")
+          out.push({ course: c.name, item: g.itemtype === "course" ? "COURSE TOTAL" : clean(g.itemname), grade: g.gradeformatted, max: g.grademax, feedback: clean(g.feedback).slice(0, 200) });
+      }
+      return out.length ? out : "No grades published yet.";
+    }
+    case "get_course_map": {
+      const [mp, prog] = await Promise.all([getMap(env, a.course_id), getProgress(env)]);
+      if (!mp) return "No map for this course yet (built each morning).";
+      return { course: mp.course, units: mp.units.map((u) => ({ unit: u.name, topics: u.topics.map((t) => ({ topic_id: t.id, name: t.name, status: prog[t.id]?.status || "new", recently_taught: !!t.fresh, minutes: t.minutes, exam_weight: t.weight, file_ids: t.cmids, summary: t.summary })) })) };
+    }
+    case "get_progress": {
+      const [idx, prog, srs] = await Promise.all([kvJson(env, "maps:index", []), getProgress(env), kvJson(env, "srs", { cards: {} })]);
+      const per = idx.map((c) => { const m = Object.entries(prog).filter(([k]) => k.startsWith(`${c.cid}-`)); const n = (s) => m.filter(([, v]) => v.status === s).length;
+        return { course: c.course, course_id: c.cid, topics: c.topics, mastered: n("mastered"), studied: n("studied"), seen: n("seen"), weak: n("weak") }; });
+      const recent = Object.entries(prog).filter(([, v]) => v.at > now - 7 * 86400).sort((x, y) => y[1].at - x[1].at).slice(0, 10).map(([k, v]) => ({ topic_id: k, status: v.status, when: fmtTime(v.at) }));
+      return { per_course: per, weak_topics: await weakTopicsLine(env), recent_activity: recent, review_cards_due: srsDue(srs).length };
+    }
+    case "search_materials": {
+      const words = String(a.query || "").toLowerCase().split(/\W+/).filter((x) => x.length > 1);
+      const cs = (await courses(env)).filter((c) => !a.course_id || c.id === Number(a.course_id));
+      const hits = [];
+      for (const c of cs) {
+        const [list, mp] = await Promise.all([listMaterials(env, c.id), getMap(env, c.id)]);
+        for (const m of list) {
+          const topics = (mp?.units || []).flatMap((u) => u.topics.filter((t) => (t.cmids || []).includes(m.cmid)).map((t) => ({ id: t.id, name: t.name, summary: t.summary || "" })));
+          const hay = `${m.name} ${m.section} ${m.files.map((f) => f.name).join(" ")} ${topics.map((t) => `${t.name} ${t.summary}`).join(" ")}`.toLowerCase();
+          const score = words.reduce((s, w) => s + (hay.includes(w) ? 1 : 0), 0);
+          if (score) hits.push({ score, file_id: m.cmid, name: m.name, course: c.name, section: m.section, kind: m.files.map((f) => f.name.split(".").pop()).join(","), topics: topics.map((t) => `${t.id}: ${t.name}`) });
+        }
+      }
+      return hits.sort((x, y) => y.score - x.score).slice(0, 8).map(({ score, ...h }) => h);
+    }
+    case "read_material": {
+      const m = await findMaterial(env, a.file_id);
+      ctx.status(`📖 Reading “${m.name}”…`);
+      const parts = await materialParts(env, m);
+      if (parts.some((p) => p.file_data)) { // PDFs: let a sub-call read the file and pull out what's needed
+        const notes = await gemini(env, [...parts, { text: `Extract everything relevant to: "${a.focus || "the main content"}". Detailed study notes, keep definitions/examples/page numbers. Max 700 words.` }]);
+        return { file: m.name, course: m.course, notes };
+      }
+      return { file: m.name, course: m.course, content: parts.map((p) => p.text).join("\n").slice(0, 30000) };
+    }
+    case "start_lesson": actions.push(() => startLesson(env, chat, String(a.topic_id))); return "Lesson will start right after your reply.";
+    case "start_quiz":
+      actions.push(() => a.file_id ? startQuiz(env, chat, { type: "mat", cmid: Number(a.file_id) }, Number(a.questions) || 5) : startQuiz(env, chat, { type: "exam", cid: Number(a.course_id) }, Number(a.questions) || 10));
+      return "Quiz will be sent right after your reply.";
+    case "start_flashcards":
+      actions.push(() => a.file_id ? startCards(env, chat, { type: "mat", cmid: Number(a.file_id) }) : startCards(env, chat, { type: "exam", cid: Number(a.course_id) }));
+      return "Flashcards will start right after your reply.";
+    case "start_review": actions.push(() => startReview(env, chat)); return "Review will start right after your reply.";
+    case "set_today_plan": {
+      const blocks = [];
+      for (const b of a.blocks || []) {
+        if (b.topic_id === "review") { blocks.push({ tid: "review", mode: "review", minutes: Number(b.minutes) || 10, why: b.why || "", name: "Review cards", course: "" }); continue; }
+        const t = await findTopic(env, String(b.topic_id));
+        if (t) blocks.push({ tid: t.id, mode: "learn", minutes: Number(b.minutes) || t.minutes || 30, why: b.why || "", name: t.name, course: t.course, fresh: !!t.fresh });
+      }
+      if (!blocks.length) return "No valid topic ids — get them from get_course_map first.";
+      await kvPut(env, "plan:today", { date: new Date(Date.now() + IST_MS).toISOString().slice(0, 10), headline: a.headline || "Your plan", tip: "", minutes: blocks.reduce((s, b) => s + b.minutes, 0), blocks, done: [], custom: true }, 2 * 86400);
+      actions.push(async () => { const v = await todayPlanView(env); if (v) await sendView(env, chat, v); });
+      return `Saved ${blocks.length} blocks; the plan card with ▶️ buttons will be shown after your reply.`;
+    }
+    case "mark_done": {
+      const all = await actionEvents(env, 30, 120, true);
+      const item = all.find((e) => e.key === a.item_id);
+      if (!item) return "Unknown item id — use get_deadlines.";
+      await setDone(env, item.key, item.name, true);
+      return `Marked done: ${item.name}`;
+    }
+    case "send_file": actions.push(() => downloadMaterial(env, chat, Number(a.file_id))); return "File(s) will be sent after your reply.";
+    case "assignment_help": {
+      const fn = { files: assignFiles, template: answerTemplate, how_to_start: howToStart }[a.kind] || assignFiles;
+      actions.push(() => fn(env, chat, Number(a.assignment_id)));
+      return "Will be sent after your reply.";
+    }
+    case "remember": {
+      const notes = await kvJson(env, "notes", []);
+      notes.push({ note: String(a.note).slice(0, 200), at: Math.floor(now) });
+      await kvPut(env, "notes", notes.slice(-60));
+      return "Saved.";
+    }
+    case "forget": {
+      const notes = await kvJson(env, "notes", []);
+      const keep = notes.filter((n) => !n.note.toLowerCase().includes(String(a.text).toLowerCase()));
+      await kvPut(env, "notes", keep);
+      return `Removed ${notes.length - keep.length} note(s).`;
+    }
+    default: return `Unknown tool ${name}`;
+  }
+}
+
+async function agentContext(env, chat) {
+  const [cs, notes, session] = await Promise.all([courses(env), kvJson(env, "notes", []), getSession(env, chat)]);
+  return {
+    now: fmtTime(Math.floor(Date.now() / 1000), true),
+    courses: cs.map((c) => `${c.id}: ${c.name}`).join("; "),
+    courseName: (id) => cs.find((c) => c.id === Number(id))?.name,
+    notes: notes.map((n) => `- ${n.note} (${fmtTime(n.at).split(",")[0]})`).join("\n"),
+    session,
+  };
+}
+
+async function agentChat(env, chat, text, extraParts = [], header = "") {
+  const statusMsg = await send(env, chat, `${header}🤔 Thinking…`);
+  let lastStatus = "";
+  const status = (s) => { if (s !== lastStatus) { lastStatus = s; bg(tg(env, "editMessageText", { chat_id: chat, message_id: statusMsg.message_id, text: `${header}${s}`, parse_mode: "HTML" })); } };
+  const ctx = { ...(await agentContext(env, chat)), status };
+  const history = await kvJson(env, `h2:${chat}`, []);
+  const contents = [...history, { role: "user", parts: [...extraParts, { text }] }];
+  const system = AGENT_SYSTEM(ctx);
+
+  let reply = null, actions = [];
+  const order = SMART_MODELS.filter((m) => !((DOWN.get(m) || 0) > Date.now()));
+  for (const model of order.length ? order : SMART_MODELS) {
+    actions = [];
+    const conv = [...contents];
+    let failed = false;
+    for (let step = 0; step < 8 && reply === null; step++) {
+      const gc = { temperature: 0.4, maxOutputTokens: 4096 };
+      if (!/lite/.test(model)) gc.thinkingConfig = { thinkingLevel: "low" };
+      const body = { systemInstruction: { parts: [{ text: system }] }, contents: conv, tools: [{ functionDeclarations: AGENT_TOOLS }], generationConfig: gc };
+      if (step === 7) body.toolConfig = { functionCallingConfig: { mode: "NONE" } }; // force a final answer
+      let r = await fetch(`${GEMINI}/v1beta/models/${model}:generateContent`, {
+        method: "POST", headers: { "x-goog-api-key": env.GEMINI_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(40000),
+      }).catch((e) => new Response("{}", { status: e.name === "TimeoutError" ? 504 : 502 }));
+      if (r.status === 400 && gc.thinkingConfig) { delete gc.thinkingConfig; r = await fetch(`${GEMINI}/v1beta/models/${model}:generateContent`, { method: "POST", headers: { "x-goog-api-key": env.GEMINI_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify(body) }); }
+      if ([404, 429, 500, 502, 503, 504, 524].includes(r.status)) { DOWN.set(model, Date.now() + (r.status === 404 ? 86400e3 : 600e3)); failed = true; break; }
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(`AI error: ${j.error?.message || r.status}`);
+      const content = j.candidates?.[0]?.content || { role: "model", parts: [] };
+      const calls = (content.parts || []).filter((p) => p.functionCall);
+      if (!calls.length) { reply = (content.parts || []).filter((p) => p.text && !p.thought).map((p) => p.text).join("").trim() || "🤔 I couldn't come up with an answer — try rephrasing?"; break; }
+      conv.push(content); // keep the model's turn exactly (thought signatures)
+      const responses = [];
+      for (const c of calls) {
+        const { name, args = {} } = c.functionCall;
+        status(toolLabel(name, args, ctx));
+        let result;
+        try { result = await runTool(env, chat, name, args, actions, ctx); } catch (e) { result = { error: String(e.message || e).slice(0, 300) }; }
+        responses.push({ functionResponse: { name, response: { result } } });
+      }
+      conv.push({ role: "user", parts: responses });
+    }
+    if (reply !== null || !failed) break;
+  }
+  if (reply === null && !actions.length) {
+    const allBusy = SMART_MODELS.every((m) => (DOWN.get(m) || 0) > Date.now());
+    if (allBusy) { await edit(env, chat, statusMsg.message_id, `${header}${friendlyError(new Error("busy"))}`, { inline_keyboard: [[{ text: "🔁 Try again", callback_data: "rt" }]] }); await env.KV.put("lastmsg", text, { expirationTtl: 3600 }); return; }
+    reply = "🌀 I went round in circles on that one. Can you make it a bit more specific (which course / topic / deadline)?";
+  }
+  reply = reply ?? "Done 👇";
+
+  const html = `${header}${mdToHtml(reply)}`;
+  const chunks = splitMsg(html);
+  await edit(env, chat, statusMsg.message_id, chunks[0]);
+  for (const c of chunks.slice(1)) await send(env, chat, c);
+  bg(kvPut(env, `h2:${chat}`, [...history, { role: "user", parts: [{ text: text.slice(0, 1500) }] }, { role: "model", parts: [{ text: reply.slice(0, 2000) }] }].slice(-12), 12 * 3600));
+  for (const act of actions) { try { await act(); } catch (e) { await send(env, chat, friendlyError(e)); } }
+}
+
+async function voiceToAgent(msg, env) {
+  const chat = msg.chat.id;
+  const v = msg.voice || msg.audio;
+  bg(tg(env, "sendChatAction", { chat_id: chat, action: "typing" }));
+  const { bytes } = await tgDownload(env, v.file_id);
+  const file = await geminiUpload(env, bytes, v.mime_type || "audio/ogg", "voice.ogg");
+  const transcript = (await gemini(env, [{ file_data: { mime_type: file.mimeType, file_uri: file.uri } }, { text: "Transcribe this voice note exactly as spoken (English/Hindi/Hinglish, in Latin script). Output only the transcript." }], { fast: true })).trim();
+  return agentChat(env, chat, transcript, [], `🎤 <i>“${esc(transcript.slice(0, 300))}”</i>\n\n`);
+}
+
+async function notesView(env) {
+  const notes = await kvJson(env, "notes", []);
+  return withNav({ text: notes.length ? `🧠 <b>What I remember about you</b>\n\n${notes.map((n) => `• ${esc(n.note)}`).join("\n")}\n\n<i>Say "forget …" to remove something.</i>` : "🧠 I haven't saved anything about you yet. Tell me things like your exam dates, goals or what you find hard — I'll remember." });
 }
 
 // -------------------------------------------------------------- Telegram

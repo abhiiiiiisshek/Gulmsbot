@@ -1,0 +1,25 @@
+name: Agent probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      question:
+        description: "Question for the agent (no Telegram messages are sent)"
+        default: "What's my nearest deadline, and which DBMS topic should I study first? Use your tools."
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ask the agent
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          Q: ${{ inputs.question }}
+        run: |
+          SECRET=$(printf '%s' "$TELEGRAM_BOT_TOKEN:gulms-webhook" | sha256sum | cut -c1-48)
+          echo "::add-mask::$SECRET"
+          URL=$(curl -s "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getWebhookInfo" | python3 -c "import sys,json;print(json.load(sys.stdin)['result']['url'].rsplit('/tg',1)[0])")
+          curl -s --max-time 180 -G "$URL/agentprobe" --data-urlencode "k=$SECRET" --data-urlencode "q=$Q" | python3 -c "
+          import sys,json
+          for i,t in enumerate(json.load(sys.stdin)['trace']): print(f'::notice::{i:02d} {t}')"
