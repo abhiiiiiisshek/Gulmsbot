@@ -313,4 +313,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:  # surface the reason in the Actions summary
+        import traceback
+        tb = traceback.format_exc().strip().splitlines()
+        print("::error::" + " | ".join(tb[-6:])[:900])
+        raise
