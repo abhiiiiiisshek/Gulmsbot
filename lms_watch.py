@@ -169,10 +169,12 @@ def kv_get(key, default=None):
         return r.text if r.ok else default
 
 
-def kv_put(key, value):
+def kv_put(key, value, ttl=None):
     base, h = _kv_base()
     if base:
-        requests.put(f"{base}/values/{key}", headers=h, data=str(value).encode(), timeout=30)
+        data = value if isinstance(value, (str, int, float)) else json.dumps(value, ensure_ascii=False)
+        requests.put(f"{base}/values/{key}", headers=h, data=str(data).encode(), timeout=60,
+                     params={"expiration_ttl": ttl} if ttl else None).raise_for_status()
 
 
 def get_done():
@@ -446,8 +448,11 @@ def gemini(parts, system=None, max_tokens=4096):
         body["systemInstruction"] = {"parts": [{"text": system}]}
     for attempt in range(2):
         for model in GEMINI_MODELS:
-            r = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-                              headers={"x-goog-api-key": GEMINI_KEY}, json=body, timeout=120)
+            try:
+                r = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+                                  headers={"x-goog-api-key": GEMINI_KEY}, json=body, timeout=300)
+            except requests.RequestException:
+                continue
             if r.status_code in (404, 429, 500, 503):
                 continue
             if not r.ok:
@@ -703,6 +708,9 @@ def main():
                 meta.setdefault("log_grades", []).append([NOW, f"{g['name']}: {g['grade']}"])
 
             meta["digest_slot"] = slot_key
+            brain_plan = safe("brain plan", lambda: kv_get("plan:today", {}) or {}, {}) or {}
+            if brain_plan.get("date") == today:
+                meta["plan_date"] = today  # the study brain already sent today's plan
             if SETTINGS.get("plan", True) and meta.get("plan_date") != today:
                 plan = safe("morning plan", lambda: morning_plan(api))
                 if plan:

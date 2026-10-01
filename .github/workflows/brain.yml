@@ -1,0 +1,35 @@
+name: Study brain
+
+on:
+  schedule:
+    - cron: "35 1 * * *"     # 07:05 AM IST: rebuild changed course maps, today's plan, lessons
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Rebuild ALL course maps"
+        type: boolean
+        default: false
+
+concurrency: brain
+
+jobs:
+  brain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Think
+        env:
+          LMS_USERNAME: ${{ secrets.LMS_USERNAME }}
+          LMS_PASSWORD: ${{ secrets.LMS_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: python brain.py ${{ inputs.force && '--force' || '' }}

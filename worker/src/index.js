@@ -123,7 +123,11 @@ async function handle(update, env) {
     case "/study": return sendView(env, chat, withNav(await coursePicker(env, "📚 <b>Study mode</b>\nPick a course:", "sc")));
     case "/exam": return sendView(env, chat, await namedView(env, "exam"));
     case "/start_here":
-    case "/plan": return startHere(env, chat);
+    case "/plan": return planOrFallback(env, chat, true);
+    case "/map":
+    case "/maps": return sendView(env, chat, await mapsPicker(env));
+    case "/learn":
+    case "/study_now": return letsStudy(env, chat);
     case "/files": return sendView(env, chat, await assignListView(env));
     case "/next": return sendView(env, chat, await doNextView(env, 0));
     case "/settings": return sendView(env, chat, await settingsView(env));
@@ -139,7 +143,8 @@ async function handle(update, env) {
       const s = await getSession(env, chat);
       bg(track(env, s?.mode === "ask" ? "Study Q&A" : "AI chat"));
       if (s?.mode === "ask") return studyAsk(env, chat, s, text);
-      if (/(where|kaha+n?|kidhar).{0,25}(start|shuru|begin)|kya padh|what (should|do) i study|start studying/i.test(text)) return startHere(env, chat);
+      if (/let'?s (study|start)|chalo padh|padhai shuru|start (a )?lesson|teach me/i.test(text)) return letsStudy(env, chat);
+      if (/(where|kaha+n?|kidhar).{0,25}(start|shuru|begin)|kya padh|what (should|do) i (study|learn)|start studying|today'?s plan/i.test(text)) return planOrFallback(env, chat, true);
       return aiChat(env, chat, text);
     }
     default: return send(env, chat, "Unknown command. Try /help — or just ask me in plain words.");
@@ -153,6 +158,8 @@ const HELP = `🤖 <b>GU LMS assistant</b>
 🔁 /review — cards you missed, spaced out so they stick · 📡 /radar — weak topics
 🧾 /receipts — your submissions · 📈 /stats — what you actually use
 📚 /study — pick a course file → summary, explain simply, quiz, flashcards, Q&A
+📅 /plan — today's study plan (made every morning from your syllabus, progress, deadlines)
+▶️ "let's study" — starts the next guided lesson · 🗺 /map — topic map of every course
 🎯 /exam — revision plan + 10-question mock test for a course
 🧭 /plan — "where do I start?" — a study plan for right now
 📂 /files — assignment brief + attachments, answer template (.docx), how-to-start
@@ -413,14 +420,16 @@ Style: friendly peer, witty but brief, reply in the same language/mix he uses (E
 Formatting: plain text only. Use "•" for bullets and *single asterisks* for bold. No markdown headings, no tables.
 Use ONLY the LMS data provided for facts about deadlines; never invent assignments or dates. If something isn't in the data, say so and suggest the right command (/grades, /pending, /cal).
 If Abhi clearly says a pending item is finished/submitted/done (e.g. "ER diagram ho gaya", "mark SQL lab done"), confirm briefly and append [[DONE:<id>]] using the item's id from the data. If he says to bring one back / it's not done, append [[UNDONE:<id>]]. Only use ids that appear in the data; if unclear which item, ask instead of tagging.
+Use the STUDY BRAIN data (today's plan, per-course progress, weak topics) to give specific, prioritised advice — name the actual topic and why. Tell him "let's study" starts the next lesson in today's plan, and /map shows each course's topic map.
 If he asks to learn/revise a topic from his courses, answer briefly and tell him he can open 📚 Study (/study) to learn from the actual course slides, or /exam for a mock test.
 For academic work: help him understand, plan and check — but do not write graded assignment answers for him to submit. If he asks for answers to an assignment, say briefly (no lecture) that you won't write them, and offer: 📂 /files → answer template + "how do I start", explaining the concept, a worked example on a *different* similar problem, or checking his own attempt.`;
 
 async function aiChat(env, chat, text) {
   bg(tg(env, "sendChatAction", { chat_id: chat, action: "typing" }));
-  const [ctx, histRaw] = await Promise.all([lmsContext(env), env.KV.get(`h:${chat}`)]);
+  const [ctx0, brain, histRaw] = await Promise.all([lmsContext(env), brainContext(env), env.KV.get(`h:${chat}`)]);
+  const ctx = ctx0 + brain;
   const history = JSON.parse(histRaw || "[]");
-  const reply = await gemini(env, [{ text: `${ctx}\n\nRecent chat:\n${history.join("\n") || "(none)"}\n\nAbhi: ${text}` }], { system: SYSTEM, fast: true });
+  const reply = await gemini(env, [{ text: `${ctx}\n\nRecent chat:\n${history.join("\n") || "(none)"}\n\nAbhi: ${text}` }], { system: SYSTEM, fast: !/plan|priorit|behind|focus|weak|progress|strategy|kya karu|samjha|explain|why|how/i.test(text) });
   bg(saveHistory(env, chat, history, text, reply));
   return send(env, chat, await applyAiActions(env, reply));
 }
@@ -559,6 +568,11 @@ async function onCallback(cq, env) {
   if (act === "sz") return snooze(env, chat, `${parts[1]}:${parts[2]}`, Number(parts[3] || 3));
   if (act === "se") return show(await onSetting(env, chat, parts));
   if (act === "rv") return startReview(env, chat);
+  if (act === "tp") return planOrFallback(env, chat, fresh, mid);
+  if (act === "mp") return show(await mapView(env, parts[1]));
+  if (act === "mi") return mindMapImage(env, chat, parts[1]);
+  if (act === "ls") return startLesson(env, chat, parts[1]);
+  if (act === "la" || act === "ln" || act === "lq") return onLesson(env, chat, mid, parts);
   if (act === "rt") { const t = await env.KV.get("lastmsg"); if (t) return handle({ message: { ...cq.message, from: cq.from, text: t, message_id: mid } }, env); return; }
   if (act === "v") return show(await namedView(env, parts[1]));
   if (act === "st") return show(withNav(await coursePicker(env, "📚 <b>Study mode</b>\nPick a course:", "sc")));
@@ -736,7 +750,8 @@ async function homeView(env, who = "") {
   const kb = [
     [{ text: `▶️ Do next${next || overdue ? "" : " ✨"}`, callback_data: "dn:0" }],
     [{ text: "📚 Study", callback_data: "st" }, { text: "📤 Submit", callback_data: "v:sub" }],
-    [{ text: `🧭 Where do I start?`, callback_data: "go" }, { text: "➕ More", callback_data: "v:more" }],
+    [{ text: "📅 Today's plan", callback_data: "tp" }, { text: "🗺 Maps", callback_data: "v:map" }],
+    [{ text: "➕ More", callback_data: "v:more" }],
   ];
   return { text, markup: { inline_keyboard: kb } };
 }
@@ -754,6 +769,7 @@ async function namedView(env, name) {
     case "help": return withNav({ text: HELP });
     case "assign": return assignListView(env);
     case "settings": return settingsView(env);
+    case "map": return mapsPicker(env);
     case "receipts": return receiptsView(env);
     case "radar": return radarView(env);
     case "stats": return statsView(env);
@@ -1011,8 +1027,14 @@ async function onPollAnswer(pa, env) {
   if (p.t) await perfAdd(env, p.t, p.src, right ? 1 : 0, 1);
   await env.KV.put(`qz:${chat}`, JSON.stringify(s), { expirationTtl: 2 * 86400 });
   if (s.answered < s.total) return;
+  bg(topicQuizDone(env, s));
   const frac = s.score / s.total;
   const verdict = frac === 1 ? "🏆 Perfect! Topper energy." : frac >= 0.8 ? "🌟 Solid! Almost there." : frac >= 0.5 ? "👍 Decent — review the ones you missed." : "📚 Time to revise this one. You got this.";
+  if (s.src.type === "topic") {
+    const label = frac >= 0.8 ? "✅ Topic <b>mastered</b>!" : frac < 0.5 ? "🔴 Marked as <b>weak</b> — it'll come back in your plan." : "📗 Topic <b>studied</b>. One more pass later will lock it in.";
+    return send(env, chat, `🏁 <b>Quiz done — ${esc(s.title)}</b>\n\nScore: <b>${s.score}/${s.total}</b>\n${bar(frac)} ${Math.round(frac * 100)}%\n${label}`, { reply_markup: { inline_keyboard: [
+      [{ text: "▶️ Next in today's plan", callback_data: "tp" }], NAV] } });
+  }
   const again = s.src.type === "mat" ? `sa:quiz:${s.src.cmid}` : `eq:${s.src.cid}`;
   const cards = s.src.type === "mat" ? `sa:cards:${s.src.cmid}` : `ec:${s.src.cid}`;
   return send(env, chat, `🏁 <b>Quiz done — ${esc(s.title)}</b>\n\nScore: <b>${s.score}/${s.total}</b>\n${bar(frac)} ${Math.round(frac * 100)}%\n${verdict}`, { reply_markup: { inline_keyboard: [
@@ -1280,7 +1302,8 @@ const kvJson = async (env, k, dflt) => JSON.parse((await env.KV.get(k)) || "null
 const kvPut = (env, k, v, ttl) => env.KV.put(k, JSON.stringify(v), ttl ? { expirationTtl: ttl } : undefined);
 
 // ---------- settings (the hourly watcher reads the same KV key)
-const DEFAULT_SETTINGS = { mode: "hourly", quiet: "23-7", pin: true, plan: true, summaries: true, sunday: true, review: true };
+const DEFAULT_SETTINGS = { mode: "hourly", quiet: "23-7", pin: true, plan: true, summaries: true, sunday: true, review: true, minutes: 90 };
+const MINUTE_OPTIONS = [30, 60, 90, 120, 180];
 const QUIET_OPTIONS = ["22-7", "23-7", "0-8", "off"];
 const getSettings = async (env) => ({ ...DEFAULT_SETTINGS, ...(await kvJson(env, "settings", {})) });
 
@@ -1294,6 +1317,7 @@ async function settingsView(env) {
     markup: { inline_keyboard: [
       [mode("hourly", "Hourly"), mode("3x", "3× a day"), mode("morning", "Morning")],
       [{ text: `🌙 Quiet hours: ${qLabel} — tap to change`, callback_data: "se:q" }],
+      [{ text: `⏱ Daily study time: ${s.minutes} min — tap to change`, callback_data: "se:min" }],
       tog("pin", "📌 Pinned live dashboard"),
       tog("plan", "☀️ Morning plan"),
       tog("summaries", "📄 AI summaries of new files"),
@@ -1307,6 +1331,7 @@ async function settingsView(env) {
 async function onSetting(env, chat, parts) {
   const s = await getSettings(env);
   if (parts[1] === "mode") s.mode = parts[2];
+  if (parts[1] === "min") s.minutes = MINUTE_OPTIONS[(MINUTE_OPTIONS.indexOf(Number(s.minutes)) + 1) % MINUTE_OPTIONS.length];
   if (parts[1] === "q") s.quiet = QUIET_OPTIONS[(QUIET_OPTIONS.indexOf(s.quiet) + 1) % QUIET_OPTIONS.length];
   if (parts[1] === "t") s[parts[2]] = !s[parts[2]];
   await kvPut(env, "settings", s);
@@ -1385,7 +1410,8 @@ function moreView() {
   const b = (text, cb) => ({ text, callback_data: cb });
   return withNav({ text: "➕ <b>More</b>", markup: { inline_keyboard: [
     [b("📋 Pending", "v:pending"), b("📅 Today", "v:today"), b("🗓 Week", "v:week")],
-    [b("🧭 Where do I start?", "go"), b("🎯 Exam prep", "v:exam")],
+    [b("📅 Today's plan", "tp"), b("🗺 Course maps", "v:map")],
+    [b("🧭 Plan a session now", "go"), b("🎯 Exam prep", "v:exam")],
     [b("🔁 Review cards", "rv"), b("📡 Weak topics", "v:radar")],
     [b("📂 Assignment files", "v:assign"), b("📊 Grades", "v:grades")],
     [b("🧾 Receipts", "v:receipts"), b("🙈 Hidden", "v:hidden")],
@@ -1461,7 +1487,7 @@ async function weakTopicsLine(env) {
 // ---------- private usage counters
 const FEATURE = { home: "Menu", v: "Views", st: "Study", sc: "Study", sm: "Study", sa: "Study actions", ex: "Exam prep", eq: "Mock test", ec: "Exam flashcards",
   fc: "Flashcards", go: "Where do I start", af: "Assignment files", at: "Answer template", hs: "How to start", dl: "Downloads", m: "Mark done", u: "Undo done",
-  p: "Submit", f: "Submit", d: "Draft", c: "AI check", dn: "Do next", rv: "Review", se: "Settings", sz: "Snooze", sub: "Submit screen", more: "More" };
+  p: "Submit", f: "Submit", d: "Draft", c: "AI check", dn: "Do next", rv: "Review", se: "Settings", sz: "Snooze", tp: "Today's plan", mp: "Course map", mi: "Mind map image", ls: "Lesson", la: "Lesson", ln: "Lesson", lq: "Lesson quiz", sub: "Submit screen", more: "More" };
 async function track(env, name) {
   const s = await kvJson(env, "stats", { since: Math.floor(Date.now() / 1000), n: {} });
   s.n[name] = (s.n[name] || 0) + 1;
@@ -1535,6 +1561,225 @@ function friendlyError(e) {
   if (/LMS login failed/i.test(m)) return "🔐 I couldn't log in to the LMS. Changed your password? Update the LMS_PASSWORD secret on GitHub, then re-run Deploy.";
   if (/fetch failed|network|timed? ?out/i.test(m)) return "📡 The LMS didn't respond. It might be slow or down — try again shortly.";
   return `😵 Something broke: ${m.slice(0, 200)}`;
+}
+
+// ================================================================ Study brain (maps, plan, lessons, progress)
+// Course maps + today's plan + pre-built lessons are written to KV every morning by brain.py (GitHub Actions).
+const STATUS_ICON = { new: "⬜", seen: "👀", studied: "📗", mastered: "✅", weak: "🔴" };
+const getProgress = (env) => kvJson(env, "progress", {});
+async function setProgress(env, tid, patch) {
+  const p = await getProgress(env);
+  const cur = p[tid] || { status: "new" };
+  const rank = { new: 0, seen: 1, weak: 2, studied: 3, mastered: 4 };
+  const next = { ...cur, ...patch, at: Math.floor(Date.now() / 1000) };
+  if (patch.status && rank[patch.status] < rank[cur.status] && patch.status !== "weak") next.status = cur.status; // never downgrade (except to weak)
+  p[tid] = next;
+  await kvPut(env, "progress", p);
+}
+const getMap = (env, cid) => memo(`map:${cid}`, 600e3, () => kvJson(env, `map:${cid}`, null));
+async function findTopic(env, tid) {
+  const cid = String(tid).split("-")[0];
+  const mp = await getMap(env, cid);
+  for (const u of mp?.units || []) for (const t of u.topics) if (t.id === tid) return { ...t, unit: u.name, course: mp.course, cid };
+  return null;
+}
+
+async function mapsPicker(env) {
+  const idx = await kvJson(env, "maps:index", []);
+  if (!idx.length) return withNav({ text: "🗺 <b>Course maps</b>\n\n🧠 Your study brain hasn't built the maps yet. It runs every morning at ~7 AM (first run reads all your files, takes a few minutes)." });
+  const prog = await getProgress(env);
+  const rows = idx.map((c) => {
+    const done = Object.entries(prog).filter(([k, v]) => k.startsWith(`${c.cid}-`) && ["studied", "mastered"].includes(v.status)).length;
+    return [{ text: `${c.course.slice(0, 34)} · ${done}/${c.topics}`, callback_data: `mp:${c.cid}` }];
+  });
+  return withNav({ text: "🗺 <b>Course maps</b>\nEvery course broken into units → topics, with your progress.\n<i>⬜ new · 👀 seen · 📗 studied · ✅ mastered · 🔴 weak · 🆕 taught recently</i>", markup: { inline_keyboard: rows } });
+}
+
+async function mapView(env, cid) {
+  const [mp, prog] = await Promise.all([getMap(env, cid), getProgress(env)]);
+  if (!mp) return withNav({ text: "🗺 No map for this course yet — it'll be built in the next morning run." });
+  let total = 0, done = 0, next = null;
+  const lines = [];
+  for (const u of mp.units) {
+    lines.push(`\n📦 <b>${esc(u.name)}</b>`);
+    for (const t of u.topics) {
+      const st = prog[t.id]?.status || "new";
+      total += 1; if (["studied", "mastered"].includes(st)) done += 1;
+      if (!next && ["new", "seen", "weak"].includes(st)) next = t;
+      lines.push(`   ${STATUS_ICON[st]} ${esc(t.name)}${t.fresh ? " 🆕" : ""}`);
+    }
+  }
+  const rows = [];
+  if (next) rows.push([{ text: `▶️ Study next: ${next.name}`.slice(0, 55), callback_data: `ls:${next.id}` }]);
+  rows.push([{ text: "🖼 Mind map image", callback_data: `mi:${cid}` }, { text: "⬅️ Courses", callback_data: "v:map" }]);
+  return withNav({ text: `🗺 <b>${esc(mp.course)}</b>\n${bar(done / Math.max(1, total))} ${done}/${total} topics studied${lines.join("\n")}`, markup: { inline_keyboard: rows } });
+}
+
+async function mindMapImage(env, chat, cid) {
+  const [mp, prog] = await Promise.all([getMap(env, cid), getProgress(env)]);
+  if (!mp) return send(env, chat, "No map yet.");
+  const color = { new: "#E8EAED", seen: "#D2E3FC", studied: "#A8DAB5", mastered: "#34A853", weak: "#F28B82" };
+  const q = (s) => `"${String(s).replace(/"/g, "'").slice(0, 40)}"`;
+  let dot = `digraph G { rankdir=LR; bgcolor="white"; node [shape=box style="rounded,filled" fontname="Helvetica" fontsize=11 color="#999999"]; edge [color="#BBBBBB"];\n`;
+  dot += `root [label=${q(mp.course)} fillcolor="#1F3864" fontcolor="white" fontsize=14];\n`;
+  mp.units.forEach((u, i) => {
+    dot += `u${i} [label=${q(u.name)} fillcolor="#C6DAFC"]; root -> u${i};\n`;
+    u.topics.forEach((t, j) => {
+      const st = prog[t.id]?.status || "new";
+      dot += `t${i}_${j} [label=${q(t.name + (t.fresh ? " 🆕" : ""))} fillcolor="${color[st]}"]; u${i} -> t${i}_${j};\n`;
+    });
+  });
+  dot += "}";
+  bg(tg(env, "sendChatAction", { chat_id: chat, action: "upload_photo" }));
+  const r = await fetch("https://quickchart.io/graphviz", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ graph: dot, format: "png" }) });
+  if (!r.ok) return send(env, chat, "😵 Couldn't draw the image right now — the text map above has everything.");
+  const png = await r.arrayBuffer();
+  const fd = new FormData();
+  fd.append("chat_id", String(chat));
+  fd.append("photo", new Blob([png], { type: "image/png" }), "map.png");
+  fd.append("caption", `🗺 ${mp.course}\n⬜ new · 🟦 seen · 🟩 studied/mastered · 🟥 weak`);
+  const res = await (await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: "POST", body: fd })).json();
+  if (!res.ok) await tgSendFile(env, chat, png, `${safeName(mp.course)}_map.png`, `🗺 ${esc(mp.course)} (open for full size)`);
+}
+
+// ---------- today's plan
+async function todayPlanView(env) {
+  const plan = await kvJson(env, "plan:today", null);
+  const today = new Date(Date.now() + IST_MS).toISOString().slice(0, 10);
+  if (!plan || plan.date !== today) return null;
+  const prog = await getProgress(env);
+  const icon = { learn: "📘", revise: "🔁", practice: "✍️", review: "🃏" };
+  let mins = 0, doneMins = 0;
+  const lines = plan.blocks.map((b, i) => {
+    const done = (plan.done || []).includes(b.tid) || (b.tid !== "review" && prog[b.tid]?.at > Date.now() / 1000 - 18 * 3600 && ["studied", "mastered"].includes(prog[b.tid]?.status));
+    mins += b.minutes; if (done) doneMins += b.minutes;
+    return `${done ? "✔️" : icon[b.mode] || "📘"} <b>${i + 1}. ${esc(b.name)}</b> · ${b.minutes} min${b.fresh ? " 🆕" : ""}\n   ${b.course ? `${esc(b.course)} · ` : ""}<i>${esc(b.why)}</i>`;
+  });
+  const rows = plan.blocks.map((b, i) => [{ text: `▶️ ${i + 1}. ${b.name}`.slice(0, 55), callback_data: b.tid === "review" ? "rv" : `ls:${b.tid}` }]);
+  rows.push([{ text: "🗺 Course maps", callback_data: "v:map" }, { text: "🧭 Plan something else", callback_data: "go" }]);
+  return withNav({ text: `📅 <b>Today's study plan</b> · ${mins} min\n<i>${esc(plan.headline)}</i>\n${bar(doneMins / Math.max(1, mins))} ${doneMins}/${mins} min done\n\n${lines.join("\n\n")}${plan.tip ? `\n\n💡 ${esc(plan.tip)}` : ""}`, markup: { inline_keyboard: rows } });
+}
+async function planOrFallback(env, chat, fresh, mid) {
+  const v = await todayPlanView(env);
+  if (!v) return startHere(env, chat);
+  return fresh || !mid ? sendView(env, chat, v) : edit(env, chat, mid, v.text, v.markup);
+}
+
+// ---------- guided lessons: teach in steps -> check question per step -> recap -> quiz
+const LESSON_PROMPT = (t, material) => `Teach the topic "${t.name}" (${t.summary || ""}) from the course "${t.course}" to Abhi, an MCA 1st-semester student, using the course material below as the source (add a standard example if the slides are thin).
+Return ONLY JSON: {"goal": "By the end you can ... (one line)", "steps": [{"title": "short", "explain": "clear explanation with a concrete example, max 110 words, plain text", "check": {"q": "question that checks understanding", "options": ["4 options, max 70 chars each"], "answer": 0, "why": "max 140 chars"}}], "recap": ["3-5 one-line takeaways"], "quiz": [{"q": "exam-style question", "options": ["4 options"], "answer": 0, "why": "max 160 chars"}]}
+Use 3-4 steps and exactly 3 quiz questions. Simple English (Hinglish words ok). Vary the correct option position.`;
+
+async function startLesson(env, chat, tid) {
+  const t = await findTopic(env, tid);
+  if (!t) return send(env, chat, "😵 I can't find that topic anymore — open 🗺 Course maps.", { reply_markup: { inline_keyboard: [NAV] } });
+  let lesson = await kvJson(env, `lesson:${tid}`, null);
+  let wait = null;
+  if (!lesson) {
+    wait = await send(env, chat, `🧠 Preparing your lesson on <b>${esc(t.name)}</b>… <i>(~15 sec — lessons in today's plan are pre-made and instant)</i>`);
+    const parts = [];
+    for (const cmid of (t.cmids || []).slice(0, 2)) { try { parts.push(...(await materialParts(env, await findMaterial(env, cmid)))); } catch { /* skip */ } }
+    const raw = await gemini(env, [...parts, { text: LESSON_PROMPT(t) }], { json: true, system: STUDY_STYLE });
+    try { const s = raw.replace(/^```(?:json)?\s*|\s*```$/g, ""); lesson = JSON.parse(s.slice(s.indexOf("{"), s.lastIndexOf("}") + 1)); } catch { lesson = null; }
+    const ok = (q) => q?.q && Array.isArray(q.options) && q.options[q.answer] !== undefined;
+    if (lesson) { lesson.steps = (lesson.steps || []).filter((s) => s.explain && ok(s.check)).slice(0, 4); lesson.quiz = (lesson.quiz || []).filter(ok).slice(0, 3); }
+    if (!lesson?.steps?.length) return edit(env, chat, wait.message_id, "😵 Couldn't build this lesson right now — try again in a minute.", { inline_keyboard: [[{ text: "🔁 Try again", callback_data: `ls:${tid}` }], NAV] });
+    bg(kvPut(env, `lesson:${tid}`, lesson, 3 * 86400));
+  }
+  const ses = { tid, name: t.name, course: t.course, cid: t.cid, cmids: t.cmids || [], lesson, i: 0, right: 0, answered: false };
+  await kvPut(env, `lsn:${chat}`, ses, 86400);
+  bg(setProgress(env, tid, { status: "seen" }));
+  const v = lessonStepView(ses);
+  return wait ? edit(env, chat, wait.message_id, v.text, v.markup) : send(env, chat, v.text, { reply_markup: v.markup });
+}
+
+function lessonStepView(ses, picked = null) {
+  const L = ses.lesson, n = L.steps.length, st = L.steps[ses.i];
+  const head = `📖 <b>${esc(ses.name)}</b> · ${esc(ses.course)}\n${"●".repeat(ses.i)}◉${"○".repeat(n - ses.i - 1)}  step ${ses.i + 1}/${n}`;
+  const goal = ses.i === 0 && L.goal ? `\n🎯 <i>${esc(L.goal)}</i>\n` : "";
+  let text = `${head}\n${goal}\n<b>${esc(st.title || "")}</b>\n${esc(st.explain)}\n\n❓ <b>${esc(st.check.q)}</b>`;
+  const letters = "ABCD";
+  if (picked === null) {
+    return { text, markup: { inline_keyboard: st.check.options.slice(0, 4).map((o, k) => [{ text: `${letters[k]}) ${String(o)}`.slice(0, 64), callback_data: `la:${k}` }]) } };
+  }
+  const right = picked === Number(st.check.answer);
+  text += `\n\n${right ? "✅ <b>Correct!</b>" : `❌ <b>Not quite</b> — answer: ${letters[st.check.answer]}) ${esc(st.check.options[st.check.answer])}`}\n💡 ${esc(st.check.why || "")}`;
+  const last = ses.i + 1 >= n;
+  return { text, markup: { inline_keyboard: [[{ text: last ? "🏁 Finish lesson" : "Next step ▶️", callback_data: "ln" }]] } };
+}
+
+async function onLesson(env, chat, mid, parts) {
+  const ses = await kvJson(env, `lsn:${chat}`, null);
+  if (!ses) return edit(env, chat, mid, "This lesson expired — start it again from 📅 Today's plan.", { inline_keyboard: [NAV] });
+  if (parts[0] === "la") {
+    if (ses.answered) return; // ignore double taps
+    const k = Number(parts[1]), st = ses.lesson.steps[ses.i];
+    ses.answered = true;
+    if (k === Number(st.check.answer)) ses.right += 1;
+    else bg(srsAdd(env, st.check.q, `${st.check.options[st.check.answer]} — ${st.check.why || ""}`, ses.name, { type: "topic", tid: ses.tid }));
+    await kvPut(env, `lsn:${chat}`, ses, 86400);
+    const v = lessonStepView(ses, k);
+    return edit(env, chat, mid, v.text, v.markup);
+  }
+  if (parts[0] === "ln") {
+    ses.i += 1; ses.answered = false;
+    await kvPut(env, `lsn:${chat}`, ses, 86400);
+    if (ses.i < ses.lesson.steps.length) { const v = lessonStepView(ses); return edit(env, chat, mid, v.text, v.markup); }
+    const acc = ses.right / ses.lesson.steps.length;
+    await setProgress(env, ses.tid, { status: "studied", lessonAcc: acc });
+    bg(perfAdd(env, ses.name, { type: "topic", tid: ses.tid }, ses.right, ses.lesson.steps.length));
+    const plan = await kvJson(env, "plan:today", null);
+    if (plan?.blocks?.some((b) => b.tid === ses.tid)) { plan.done = [...new Set([...(plan.done || []), ses.tid])]; bg(kvPut(env, "plan:today", plan, 2 * 86400)); }
+    const rows = [];
+    if (ses.lesson.quiz?.length) rows.push([{ text: `🧠 Final quiz (${ses.lesson.quiz.length} Qs)`, callback_data: "lq" }]);
+    rows.push([{ text: "📅 Back to today's plan", callback_data: "tp" }], NAV);
+    return edit(env, chat, mid, `🏁 <b>Lesson done: ${esc(ses.name)}</b>\nChecks: ${ses.right}/${ses.lesson.steps.length} ${bar(acc, 6)}\n\n📝 <b>Remember</b>\n${(ses.lesson.recap || []).map((r) => `• ${esc(r)}`).join("\n")}\n\n<i>Missed checks were added to your review deck 🔁</i>`, { inline_keyboard: rows });
+  }
+  if (parts[0] === "lq") {
+    const qs = ses.lesson.quiz || [];
+    const src = { type: "topic", tid: ses.tid };
+    await kvPut(env, `qz:${chat}`, { total: qs.length, answered: 0, score: 0, title: ses.name, src }, 2 * 86400);
+    for (let i = 0; i < qs.length; i++) {
+      const q = qs[i];
+      const poll = await tg(env, "sendPoll", { chat_id: chat, question: `${i + 1}/${qs.length}. ${q.q}`.slice(0, 300), options: q.options.slice(0, 10).map((o) => ({ text: String(o).slice(0, 100) })),
+        type: "quiz", correct_option_id: Number(q.answer), explanation: String(q.why || "").slice(0, 200), is_anonymous: false });
+      await env.KV.put(`poll:${poll.poll.id}`, JSON.stringify({ c: Number(q.answer), q: q.q, a: `${q.options[q.answer]} — ${q.why || ""}`, t: ses.name, src }), { expirationTtl: 2 * 86400 });
+    }
+  }
+}
+
+// After a topic quiz: mastered (≥80%) / weak (<50%)
+async function topicQuizDone(env, s) {
+  if (s.src?.type !== "topic") return;
+  const frac = s.score / Math.max(1, s.total);
+  await setProgress(env, s.src.tid, { status: frac >= 0.8 ? "mastered" : frac < 0.5 ? "weak" : "studied", quizAcc: frac });
+}
+
+// "let's study" -> first unfinished block of today's plan
+async function letsStudy(env, chat) {
+  const plan = await kvJson(env, "plan:today", null);
+  const today = new Date(Date.now() + IST_MS).toISOString().slice(0, 10);
+  if (plan?.date === today) {
+    const b = plan.blocks.find((x) => !(plan.done || []).includes(x.tid));
+    if (b) return b.tid === "review" ? startReview(env, chat) : startLesson(env, chat, b.tid);
+    return send(env, chat, "🎉 Today's plan is done! Want more? Open 🗺 Course maps and pick the next topic.", { reply_markup: { inline_keyboard: [[{ text: "🗺 Course maps", callback_data: "v:map" }], NAV] } });
+  }
+  return startHere(env, chat);
+}
+
+// Compact brain summary for the chat AI, so its answers use the real analysis
+async function brainContext(env) {
+  const [plan, idx, prog] = await Promise.all([kvJson(env, "plan:today", null), kvJson(env, "maps:index", []), getProgress(env)]);
+  let out = "";
+  if (plan) out += `\nToday's study plan (${plan.date}): ${plan.blocks.map((b) => `${b.name} [${b.course}] ${b.minutes}min${(plan.done || []).includes(b.tid) ? " DONE" : ""}`).join("; ")}`;
+  for (const c of idx) {
+    const mine = Object.entries(prog).filter(([k]) => k.startsWith(`${c.cid}-`));
+    const count = (s) => mine.filter(([, v]) => v.status === s).length;
+    out += `\n${c.course}: ${c.topics} topics — ${count("mastered")} mastered, ${count("studied")} studied, ${count("weak")} weak`;
+  }
+  const weak = await weakTopicsLine(env);
+  if (weak) out += `\nWeak topics: ${weak}`;
+  return out ? `\nSTUDY BRAIN:${out}` : "";
 }
 
 // -------------------------------------------------------------- Telegram
