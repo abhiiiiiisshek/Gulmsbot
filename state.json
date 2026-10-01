@@ -193,8 +193,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-01-12",
-  "last_run": 1790838880.63501,
+  "digest_slot": "2026-10-01-20",
+  "last_run": 1790865261.1625412,
   "log_grades": [],
   "log_submitted": [
    [
@@ -204,6 +204,7 @@
   ],
   "nag": {
    "29296": [
+    6,
     24,
     72
    ]
@@ -1273,13 +1274,65 @@
    "section": "Rajendra Kumar Patel",
    "type": "wooflash",
    "url": "https://gulms.galgotiasuniversity.org/mod/wooflash/view.php?id=454098"
+  },
+  "454319": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture 8",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=454319"
+  },
+  "454324": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture-9",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=454324"
+  },
+  "454325": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture-10",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=454325"
+  },
+  "454328": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture-11",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=454328"
+  },
+  "454334": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture-12",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=454334"
+  },
+  "454337": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture-13",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=454337"
+  },
+  "454340": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture-14",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=454340"
+  },
+  "454360": {
+   "course": "Programming with Python",
+   "name": "Python Strings",
+   "section": "Unit 2",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=454360"
   }
  },
  "notifications": {
-  "23580650": {
-   "name": "Overdue: Assignment _Unit 1",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=442586&action=view"
-  },
   "23634020": {
    "name": "Digital Computer Organization(E1PA107T) new content",
    "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=448795"
@@ -1353,6 +1406,10 @@
    "url": ""
   },
   "24103346": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24107830": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
