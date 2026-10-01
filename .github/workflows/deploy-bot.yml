@@ -74,7 +74,7 @@ jobs:
             --data-urlencode 'allowed_updates=["message","callback_query","poll_answer"]' -d drop_pending_updates=true > /dev/null
           curl -sf "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setMyCommands" -H 'Content-Type: application/json' -d '{"commands":[
             {"command":"menu","description":"🏠 Dashboard"},
-            {"command":"plan","description":"📅 Today's study plan"},
+            {"command":"plan","description":"📅 Today’s study plan"},
             {"command":"learn","description":"▶️ Start the next lesson"},
             {"command":"map","description":"🗺 Topic map of each course"},
             {"command":"next","description":"⏭ The one deadline to do now"},
