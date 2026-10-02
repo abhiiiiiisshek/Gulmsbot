@@ -174,14 +174,6 @@
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=447632"
   },
-  "137875": {
-   "course": "Introduction to Information Technology",
-   "due": 1790875800,
-   "instance": 449226,
-   "name": "Assignment on Unit-1 is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=449226"
-  },
   "139959": {
    "course": "Programming with Python",
    "due": 1791311400,
@@ -193,17 +185,21 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-01-20",
-  "last_run": 1790902384.7737231,
+  "digest_slot": "2026-10-02-12",
+  "last_run": 1790924688.6686919,
   "log_grades": [],
   "log_submitted": [
    [
     1790819838.0628002,
     "Assignment 1"
+   ],
+   [
+    1790924688.6686919,
+    "Assignment on Unit-1"
    ]
   ],
   "nag": {},
-  "plan_date": "2026-10-01",
+  "plan_date": "2026-10-02",
   "quiz": {
    "32268": [],
    "33978": [],
@@ -1327,22 +1323,6 @@
   }
  },
  "notifications": {
-  "23634020": {
-   "name": "Digital Computer Organization(E1PA107T) new content",
-   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=448795"
-  },
-  "23705698": {
-   "name": "Overdue: Assignment_on_unit_01",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=442252&action=view"
-  },
-  "23769121": {
-   "name": "Overdue: lab 02",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=442481&action=view"
-  },
-  "24053489": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "24053549": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -1406,6 +1386,22 @@
   "24107830": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
+  },
+  "24113858": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24116230": {
+   "name": "Assignment submission confirmation - Assignment on Unit-1",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=449226"
+  },
+  "24118928": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24122175": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
   }
  },
  "quizzes": {
@@ -1445,7 +1441,7 @@
  "subs": {
   "28535": "new",
   "28869": "new",
-  "29296": "new",
+  "29296": "submitted",
   "29488": "submitted",
   "29791": "new"
  }
