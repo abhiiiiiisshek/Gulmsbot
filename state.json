@@ -185,8 +185,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-03-10",
-  "last_run": 1791005222.7492788,
+  "digest_slot": "2026-10-03-17",
+  "last_run": 1791028115.177164,
   "log_grades": [],
   "log_submitted": [
    [
@@ -1334,17 +1334,23 @@
    "section": "Priya Pandey (sec-2, 6)",
    "type": "wooclap",
    "url": "https://gulms.galgotiasuniversity.org/mod/wooclap/view.php?id=454689"
+  },
+  "455434": {
+   "course": "Introduction to Information Technology",
+   "name": "pre session assessment -8",
+   "section": "Priya Pandey-Sec-1 and 5",
+   "type": "wooflash",
+   "url": "https://gulms.galgotiasuniversity.org/mod/wooflash/view.php?id=455434"
+  },
+  "455440": {
+   "course": "Introduction to Information Technology",
+   "name": "post session assessment 8",
+   "section": "Priya Pandey-Sec-1 and 5",
+   "type": "wooclap",
+   "url": "https://gulms.galgotiasuniversity.org/mod/wooclap/view.php?id=455440"
   }
  },
  "notifications": {
-  "24059333": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24059710": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "24060027": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -1414,6 +1420,14 @@
    "url": ""
   },
   "24145599": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24151586": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24152566": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
