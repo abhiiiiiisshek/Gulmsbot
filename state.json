@@ -185,8 +185,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-02-19",
-  "last_run": 1790985071.1883955,
+  "digest_slot": "2026-10-03-10",
+  "last_run": 1791005222.7492788,
   "log_grades": [],
   "log_submitted": [
    [
@@ -199,7 +199,7 @@
    ]
   ],
   "nag": {},
-  "plan_date": "2026-10-02",
+  "plan_date": "2026-10-03",
   "quiz": {
    "32268": [],
    "33978": [],
@@ -1320,21 +1320,23 @@
    "section": "Unit 2",
    "type": "resource",
    "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=454360"
+  },
+  "454687": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Pre session assessment -9",
+   "section": "Priya Pandey (sec-2, 6)",
+   "type": "wooflash",
+   "url": "https://gulms.galgotiasuniversity.org/mod/wooflash/view.php?id=454687"
+  },
+  "454689": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Post session assessment 9",
+   "section": "Priya Pandey (sec-2, 6)",
+   "type": "wooclap",
+   "url": "https://gulms.galgotiasuniversity.org/mod/wooclap/view.php?id=454689"
   }
  },
  "notifications": {
-  "24053910": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24053970": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24059064": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "24059333": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -1402,6 +1404,18 @@
   "24124575": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
+  },
+  "24130275": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24133607": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24145599": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
   }
  },
  "quizzes": {
@@ -1439,10 +1453,7 @@
   }
  },
  "subs": {
-  "28535": "new",
-  "28869": "new",
   "29296": "submitted",
-  "29488": "submitted",
   "29791": "new"
  }
 }
