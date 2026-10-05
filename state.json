@@ -200,8 +200,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-05-7",
-  "last_run": 1791166020.2131343,
+  "digest_slot": "2026-10-05-14",
+  "last_run": 1791191608.491516,
   "log_grades": [],
   "log_submitted": [
    [
@@ -1473,6 +1473,20 @@
    "section": "General",
    "type": "resource",
    "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=456191"
+  },
+  "456627": {
+   "course": "Digital Computer Organization",
+   "name": "Assignment -1",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=456627"
+  },
+  "456805": {
+   "course": "Introduction to Information Technology",
+   "name": "Lecture_04_Quiz",
+   "section": "Rajendra Kumar Patel",
+   "type": "wooflash",
+   "url": "https://gulms.galgotiasuniversity.org/mod/wooflash/view.php?id=456805"
   }
  },
  "notifications": {
