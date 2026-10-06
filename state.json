@@ -193,8 +193,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-06-13",
-  "last_run": 1791272309.851295,
+  "digest_slot": "2026-10-06-20",
+  "last_run": 1791299837.7919807,
   "log_grades": [],
   "log_submitted": [
    [
@@ -208,6 +208,7 @@
   ],
   "nag": {
    "29791": [
+    6,
     24,
     72
    ]
@@ -1726,6 +1727,13 @@
    "section": "Priya Pandey (sec-2, 6)",
    "type": "wooflash",
    "url": "https://gulms.galgotiasuniversity.org/mod/wooflash/view.php?id=457983"
+  },
+  "458559": {
+   "course": "Introduction to Information Technology",
+   "name": "Quiz 5",
+   "section": "Rajendra Kumar Patel",
+   "type": "wooflash",
+   "url": "https://gulms.galgotiasuniversity.org/mod/wooflash/view.php?id=458559"
   }
  },
  "notifications": {
