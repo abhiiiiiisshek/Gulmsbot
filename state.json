@@ -170,17 +170,10 @@
   "29722": "English Proficiency and Aptitude Building",
   "29723": "Digital Computer Organization",
   "29724": "Introduction to Information Technology",
-  "29725": "Programming with Python"
+  "29725": "Programming with Python",
+  "30208": "Student Medical Document Submission (SMDS - Fall 2026-2027)"
  },
  "events": {
-  "137008": {
-   "course": "Computational Mathematics and Statistics",
-   "due": 1791656760,
-   "instance": 447632,
-   "name": "Internal Assesment 1 closes",
-   "type": "quiz",
-   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=447632"
-  },
   "139959": {
    "course": "Programming with Python",
    "due": 1791311400,
@@ -200,8 +193,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-05-14",
-  "last_run": 1791247920.9684236,
+  "digest_slot": "2026-10-06-13",
+  "last_run": 1791272309.851295,
   "log_grades": [],
   "log_submitted": [
    [
@@ -215,10 +208,11 @@
   ],
   "nag": {
    "29791": [
+    24,
     72
    ]
   },
-  "plan_date": "2026-10-05",
+  "plan_date": "2026-10-06",
   "quiz": {
    "32268": [],
    "33978": [],
@@ -395,6 +389,181 @@
    "section": "Shivani Tripathi",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=428580"
+  },
+  "429182": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Announcements",
+   "section": "General",
+   "type": "forum",
+   "url": "https://gulms.galgotiasuniversity.org/mod/forum/view.php?id=429182"
+  },
+  "429183": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "Department of Civil Engineering",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429183"
+  },
+  "429184": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "Department of Electrical Electronics & Communication Engineering",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429184"
+  },
+  "429185": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "Department of Mechanical Engineering",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429185"
+  },
+  "429186": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "Galgotias Polytechnic",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429186"
+  },
+  "429187": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Agriculture",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429187"
+  },
+  "429188": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Allied & Health Sciences",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429188"
+  },
+  "429189": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Basic Sciences",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429189"
+  },
+  "429190": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School Of Biological Sciences & Technology",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429190"
+  },
+  "429191": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School Of Biomedical Sciences",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429191"
+  },
+  "429192": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Business",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429192"
+  },
+  "429193": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Computer Application and Technology",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429193"
+  },
+  "429194": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Computer Science & Engineering",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429194"
+  },
+  "429195": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Design",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429195"
+  },
+  "429196": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Education",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429196"
+  },
+  "429197": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Finance & Commerce",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429197"
+  },
+  "429198": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Hospitality",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429198"
+  },
+  "429199": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Law",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429199"
+  },
+  "429200": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Liberal Education",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429200"
+  },
+  "429201": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Media & Communication Studies",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429201"
+  },
+  "429202": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Medical and Allied Sciences",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429202"
+  },
+  "429203": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Nursing",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429203"
+  },
+  "429204": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Language",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429204"
+  },
+  "429205": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Aviation, Logistic & Tourism Management",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429205"
+  },
+  "429206": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Artificial Intelligence",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429206"
   },
   "429368": {
    "course": "Digital Computer Organization",
@@ -1180,6 +1349,13 @@
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=447632"
   },
+  "447745": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission(MBA- Students Only)",
+   "section": "School of Business (MBA- Students Only)",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=447745"
+  },
   "448795": {
    "course": "Digital Computer Organization",
    "name": "DCO_Lecture_16",
@@ -1469,7 +1645,7 @@
   },
   "456191": {
    "course": "Programming with Python",
-   "name": "QUESTION BANK",
+   "name": "Practice Set 1",
    "section": "General",
    "type": "resource",
    "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=456191"
@@ -1487,6 +1663,69 @@
    "section": "Rajendra Kumar Patel",
    "type": "wooflash",
    "url": "https://gulms.galgotiasuniversity.org/mod/wooflash/view.php?id=456805"
+  },
+  "457413": {
+   "course": "Database Management System",
+   "name": "Lecture 11",
+   "section": "Relationship Types ,Cardinality Ratio",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=457413"
+  },
+  "457414": {
+   "course": "Database Management System",
+   "name": "Lecture 12",
+   "section": "Generalization ,Specialization and Aggregation",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=457414"
+  },
+  "457415": {
+   "course": "Database Management System",
+   "name": "Lecture 12A",
+   "section": "Generalization ,Specialization and Aggregation",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=457415"
+  },
+  "457416": {
+   "course": "Database Management System",
+   "name": "Lecture 13",
+   "section": "Extended Entity Relationship (EER) Model",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=457416"
+  },
+  "457417": {
+   "course": "Database Management System",
+   "name": "Lecture 14",
+   "section": "Relational data model concepts",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=457417"
+  },
+  "457418": {
+   "course": "Database Management System",
+   "name": "Lecture 15",
+   "section": "Integrity Constraints and Its Types : Entity Integrity ,Referential Integrity",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=457418"
+  },
+  "457783": {
+   "course": "Programming with Python",
+   "name": "p1",
+   "section": "Faculty wise extra activity",
+   "type": "wooclap",
+   "url": "https://gulms.galgotiasuniversity.org/mod/wooclap/view.php?id=457783"
+  },
+  "457823": {
+   "course": "Programming with Python",
+   "name": "User Defined Functions",
+   "section": "Unit 2",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=457823"
+  },
+  "457983": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Pre session assessment 10",
+   "section": "Priya Pandey (sec-2, 6)",
+   "type": "wooflash",
+   "url": "https://gulms.galgotiasuniversity.org/mod/wooflash/view.php?id=457983"
   }
  },
  "notifications": {
