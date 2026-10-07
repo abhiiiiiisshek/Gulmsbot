@@ -208,8 +208,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-07-12",
-  "last_run": 1791357547.11429,
+  "digest_slot": "2026-10-07-20",
+  "last_run": 1791383792.920658,
   "log_grades": [],
   "log_submitted": [
    [
@@ -1430,7 +1430,7 @@
   },
   "451858": {
    "course": "Problem Solving and Computer Programming",
-   "name": "Lecture -13_Activity_1",
+   "name": "Week_5_Activity(Problem Based MCQ)",
    "section": "Dr Sudheer Kumar SIngh Section 4",
    "type": "wooclap",
    "url": "https://gulms.galgotiasuniversity.org/mod/wooclap/view.php?id=451858"
@@ -1756,6 +1756,20 @@
    "section": "Section 5: Group 1 Lab Assignments",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=459122"
+  },
+  "459546": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Week_6_Activity(Think Pair Share)",
+   "section": "Dr Sudheer Kumar SIngh Section 4",
+   "type": "wooclap",
+   "url": "https://gulms.galgotiasuniversity.org/mod/wooclap/view.php?id=459546"
+  },
+  "459579": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Week_6_Activity(Probem Based)",
+   "section": "Dr Sudheer Kumar SIngh Section 4",
+   "type": "wooclap",
+   "url": "https://gulms.galgotiasuniversity.org/mod/wooclap/view.php?id=459579"
   }
  },
  "notifications": {
