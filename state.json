@@ -196,28 +196,12 @@
    "name": "Lab 7 Functions is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=459122"
-  },
-  "143886": {
-   "course": "English Proficiency and Aptitude Building",
-   "due": 1791450600,
-   "instance": 459922,
-   "name": "Module Test - 1 closes",
-   "type": "quiz",
-   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=459922"
-  },
-  "143919": {
-   "course": "English Proficiency and Aptitude Building",
-   "due": 1791450300,
-   "instance": 460085,
-   "name": "Percentage_Quiz closes",
-   "type": "quiz",
-   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-08-13",
-  "last_run": 1791444616.4492922,
+  "digest_slot": "2026-10-08-21",
+  "last_run": 1791474146.019109,
   "log_grades": [],
   "log_submitted": [
    [
@@ -1849,14 +1833,6 @@
   }
  },
  "notifications": {
-  "24107830": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24113858": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "24116230": {
    "name": "Assignment submission confirmation - Assignment on Unit-1",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=449226"
@@ -1928,6 +1904,14 @@
   "24297796": {
    "name": "Opens on Thursday, 8 October 2026, 12:50 PM: Quiz October 8 , 2026",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460031"
+  },
+  "24298368": {
+   "name": "Opens on Thursday, 8 October 2026, 12:50 PM: Quiz October 8,2026",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460039"
+  },
+  "24298943": {
+   "name": "Opens on Thursday, 8 October 2026, 12:50 PM: Percentage_Quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
   }
  },
  "quizzes": {
