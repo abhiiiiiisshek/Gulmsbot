@@ -181,14 +181,6 @@
   "30208": "Student Medical Document Submission (SMDS - Fall 2026-2027)"
  },
  "events": {
-  "139959": {
-   "course": "Programming with Python",
-   "due": 1791311400,
-   "instance": 453143,
-   "name": "Lab 6 Dictionary and Loops is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=453143"
-  },
   "141498": {
    "course": "Programming with Python",
    "due": 1791657000,
@@ -204,12 +196,28 @@
    "name": "Lab 7 Functions is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=459122"
+  },
+  "143886": {
+   "course": "English Proficiency and Aptitude Building",
+   "due": 1791450600,
+   "instance": 459922,
+   "name": "Module Test - 1 closes",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=459922"
+  },
+  "143919": {
+   "course": "English Proficiency and Aptitude Building",
+   "due": 1791450300,
+   "instance": 460085,
+   "name": "Percentage_Quiz closes",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-07-20",
-  "last_run": 1791421423.253272,
+  "digest_slot": "2026-10-08-13",
+  "last_run": 1791444616.4492922,
   "log_grades": [],
   "log_submitted": [
    [
@@ -226,14 +234,26 @@
     6,
     24,
     72
+   ],
+   "30186": [
+    72
    ]
   },
-  "plan_date": "2026-10-07",
+  "plan_date": "2026-10-08",
   "quiz": {
    "32268": [],
    "33978": [],
    "34033": [],
-   "34678": []
+   "34678": [],
+   "36265": [],
+   "36291": [
+    "open",
+    "closing"
+   ],
+   "36315": [
+    "open",
+    "closing"
+   ]
   },
   "report_week": "2026-40"
  },
@@ -1770,13 +1790,65 @@
    "section": "Dr Sudheer Kumar SIngh Section 4",
    "type": "wooclap",
    "url": "https://gulms.galgotiasuniversity.org/mod/wooclap/view.php?id=459579"
+  },
+  "459734": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Pre Assessment Percentage (copy)",
+   "section": "Active Learning Space_Monu Kumar",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=459734"
+  },
+  "459735": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Post Assessment Percentage (copy)",
+   "section": "Active Learning Space_Monu Kumar",
+   "type": "folder",
+   "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=459735"
+  },
+  "459737": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Pre Assessment Profit and Loss (copy)",
+   "section": "Active Learning Space_Monu Kumar",
+   "type": "folder",
+   "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=459737"
+  },
+  "459739": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Post Assessment Profit and Loss (copy)",
+   "section": "Active Learning Space_Monu Kumar",
+   "type": "folder",
+   "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=459739"
+  },
+  "459742": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Pre Assessment Coding Decoding (copy)",
+   "section": "Active Learning Space_Monu Kumar",
+   "type": "folder",
+   "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=459742"
+  },
+  "459744": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Post Assessment Coding Decoding (copy)",
+   "section": "Active Learning Space_Monu Kumar",
+   "type": "folder",
+   "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=459744"
+  },
+  "459922": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Module Test - 1",
+   "section": "Active Learning Space_Monu Kumar",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=459922"
+  },
+  "460085": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Percentage_Quiz",
+   "section": "Anshuman Singh_ Active Learning Space",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
   }
  },
  "notifications": {
-  "24103346": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "24107830": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -1852,6 +1924,10 @@
   "24183991": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
+  },
+  "24297796": {
+   "name": "Opens on Thursday, 8 October 2026, 12:50 PM: Quiz October 8 , 2026",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460031"
   }
  },
  "quizzes": {
@@ -1886,6 +1962,30 @@
    "name": "Internal Assesment 1",
    "open": 1790245560,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=447632"
+  },
+  "36265": {
+   "close": 0,
+   "course": "English Proficiency and Aptitude Building",
+   "limit": 0,
+   "name": "Pre Assessment Percentage (copy)",
+   "open": 0,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=459734"
+  },
+  "36291": {
+   "close": 1791450600,
+   "course": "English Proficiency and Aptitude Building",
+   "limit": 1800,
+   "name": "Module Test - 1",
+   "open": 1791439800,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=459922"
+  },
+  "36315": {
+   "close": 1791450300,
+   "course": "English Proficiency and Aptitude Building",
+   "limit": 3600,
+   "name": "Percentage_Quiz",
+   "open": 1791444000,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
   }
  },
  "subs": {
