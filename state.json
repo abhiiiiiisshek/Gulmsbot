@@ -168,6 +168,20 @@
    "due": 1791916200,
    "name": "Lab 7 Functions",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=459122"
+  },
+  "30991": {
+   "cmid": 461795,
+   "course": "Programming with Python",
+   "due": 1792002600,
+   "name": "Assignment - 1",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461795"
+  },
+  "31002": {
+   "cmid": 461907,
+   "course": "Introduction to Information Technology",
+   "due": 1791916200,
+   "name": "Assignment_2",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461907"
   }
  },
  "courses": {
@@ -196,12 +210,28 @@
    "name": "Lab 7 Functions is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=459122"
+  },
+  "144961": {
+   "course": "Programming with Python",
+   "due": 1792002600,
+   "instance": 461795,
+   "name": "Assignment - 1 is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461795"
+  },
+  "145017": {
+   "course": "Introduction to Information Technology",
+   "due": 1791916200,
+   "instance": 461907,
+   "name": "Assignment_2 is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461907"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-10-7",
-  "last_run": 1791596911.0433033,
+  "digest_slot": "2026-10-10-14",
+  "last_run": 1791621506.4781055,
   "log_grades": [],
   "log_submitted": [
    [
@@ -1882,6 +1912,20 @@
    "section": "Geetanjali Pratap Verma",
    "type": "resource",
    "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=461489"
+  },
+  "461795": {
+   "course": "Programming with Python",
+   "name": "Assignment - 1",
+   "section": "Assignments",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461795"
+  },
+  "461907": {
+   "course": "Introduction to Information Technology",
+   "name": "Assignment_2",
+   "section": "Unit-2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461907"
   }
  },
  "notifications": {
@@ -1968,7 +2012,7 @@
  },
  "quizzes": {
   "32268": {
-   "close": 1789021560,
+   "close": 1791613560,
    "course": "Computational Mathematics and Statistics",
    "limit": 1800,
    "name": "Pre-Visit Quiz",
@@ -2026,6 +2070,8 @@
  },
  "subs": {
   "30186": "new",
-  "30553": "new"
+  "30553": "new",
+  "30991": "new",
+  "31002": "new"
  }
 }
