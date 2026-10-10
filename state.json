@@ -182,6 +182,13 @@
    "due": 1791916200,
    "name": "Assignment_2",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461907"
+  },
+  "31009": {
+   "cmid": 461986,
+   "course": "Database Management System",
+   "due": 1792002600,
+   "name": "Assignment - 1",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461986"
   }
  },
  "courses": {
@@ -226,12 +233,20 @@
    "name": "Assignment_2 is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461907"
+  },
+  "145077": {
+   "course": "Database Management System",
+   "due": 1792002600,
+   "instance": 461986,
+   "name": "Assignment - 1 is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461986"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-10-14",
-  "last_run": 1791621506.4781055,
+  "digest_slot": "2026-10-10-20",
+  "last_run": 1791646043.3413036,
   "log_grades": [],
   "log_submitted": [
    [
@@ -250,6 +265,7 @@
     72
    ],
    "30186": [
+    6,
     24,
     72
    ]
@@ -270,6 +286,9 @@
    "36315": [
     "open",
     "closing"
+   ],
+   "36564": [
+    "open"
    ]
   },
   "report_week": "2026-40"
@@ -866,7 +885,7 @@
   "432751": {
    "course": "Introduction to Information Technology",
    "name": "Pre-Session 7",
-   "section": "Section 18",
+   "section": "Section 19",
    "type": "wooflash",
    "url": "https://gulms.galgotiasuniversity.org/mod/wooflash/view.php?id=432751"
   },
@@ -1926,6 +1945,20 @@
    "section": "Unit-2",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461907"
+  },
+  "461943": {
+   "course": "Introduction to Information Technology",
+   "name": "IA-1 for section-5",
+   "section": "IA-1 for Sec-5",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=461943"
+  },
+  "461986": {
+   "course": "Database Management System",
+   "name": "Assignment - 1",
+   "section": "Sec - 8",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461986"
   }
  },
  "notifications": {
@@ -2066,12 +2099,21 @@
    "name": "Percentage_Quiz",
    "open": 1791444000,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
+  },
+  "36564": {
+   "close": 1791624300,
+   "course": "Introduction to Information Technology",
+   "limit": 0,
+   "name": "IA-1 for section-5",
+   "open": 1791623400,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=461943"
   }
  },
  "subs": {
   "30186": "new",
   "30553": "new",
   "30991": "new",
-  "31002": "new"
+  "31002": "new",
+  "31009": "new"
  }
 }
