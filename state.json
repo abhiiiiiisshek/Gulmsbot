@@ -95,7 +95,7 @@
   "28535": {
    "cmid": 442586,
    "course": "Introduction to Information Technology",
-   "due": 1790706600,
+   "due": 0,
    "name": "Assignment _Unit 1",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=442586"
   },
@@ -260,8 +260,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-11-11",
-  "last_run": 1791698351.0585425,
+  "digest_slot": "2026-10-11-18",
+  "last_run": 1791723882.6377792,
   "log_grades": [],
   "log_submitted": [
    [
@@ -2138,6 +2138,7 @@
   }
  },
  "subs": {
+  "28535": "new",
   "30186": "new",
   "30553": "new",
   "30991": "new",
