@@ -260,8 +260,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-11-18",
-  "last_run": 1791768275.3998127,
+  "digest_slot": "2026-10-12-14",
+  "last_run": 1791797012.5308092,
   "log_grades": [],
   "log_submitted": [
    [
@@ -287,11 +287,17 @@
    "30553": [
     72
    ],
+   "30991": [
+    72
+   ],
    "31002": [
+    72
+   ],
+   "31009": [
     72
    ]
   },
-  "plan_date": "2026-10-11",
+  "plan_date": "2026-10-12",
   "quiz": {
    "32268": [],
    "33978": [],
@@ -2097,7 +2103,7 @@
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=441157"
   },
   "34678": {
-   "close": 1791656760,
+   "close": 1792088760,
    "course": "Computational Mathematics and Statistics",
    "limit": 2400,
    "name": "Internal Assesment 1",
