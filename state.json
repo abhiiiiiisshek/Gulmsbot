@@ -207,7 +207,7 @@
   "31277": {
    "cmid": 463974,
    "course": "Problem Solving and Computer Programming",
-   "due": 1791902400,
+   "due": 1791988800,
    "name": "MCA_SEC_1_Pattern_Problems",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=463974"
   },
@@ -231,6 +231,13 @@
    "due": 1792434600,
    "name": "Assignment1",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=464328"
+  },
+  "31390": {
+   "cmid": 465901,
+   "course": "Database Management System",
+   "due": 1791988200,
+   "name": "Practical 5",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=465901"
   }
  },
  "courses": {
@@ -294,7 +301,7 @@
   },
   "146438": {
    "course": "Problem Solving and Computer Programming",
-   "due": 1791902400,
+   "due": 1791988800,
    "instance": 463974,
    "name": "MCA_SEC_1_Pattern_Problems is due",
    "type": "assign",
@@ -324,19 +331,19 @@
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=464328"
   },
-  "146711": {
-   "course": "Introduction to Information Technology",
-   "due": 1791951300,
-   "instance": 464444,
-   "name": "IA-1 for section-1 closes",
-   "type": "quiz",
-   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=464444"
+  "147004": {
+   "course": "Database Management System",
+   "due": 1791988200,
+   "instance": 465901,
+   "name": "Practical 5 is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=465901"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-14-7",
-  "last_run": 1791943131.891252,
+  "digest_slot": "2026-10-14-13",
+  "last_run": 1791963989.9099655,
   "log_grades": [],
   "log_submitted": [
    [
@@ -388,6 +395,10 @@
     6,
     24,
     72
+   ],
+   "31390": [
+    24,
+    72
    ]
   },
   "plan_date": "2026-10-14",
@@ -411,7 +422,8 @@
     "open"
    ],
    "36935": [
-    "closing"
+    "closing",
+    "open"
    ]
   },
   "report_week": "2026-40"
@@ -2145,6 +2157,27 @@
    "section": "IA-1 for Sec-5",
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=464444"
+  },
+  "464600": {
+   "course": "Introduction to Information Technology",
+   "name": "Question Bank",
+   "section": "Siddharth Shravan Jha",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=464600"
+  },
+  "465859": {
+   "course": "Introduction to Information Technology",
+   "name": "IA_Quiz",
+   "section": "Rajendra Kumar Patel",
+   "type": "wooflash",
+   "url": "https://gulms.galgotiasuniversity.org/mod/wooflash/view.php?id=465859"
+  },
+  "465901": {
+   "course": "Database Management System",
+   "name": "Practical 5",
+   "section": "DBMS Lab Sec 5 P2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=465901"
   }
  },
  "notifications": {
@@ -2315,6 +2348,7 @@
   "31277": "new",
   "31285": "new",
   "31332": "new",
-  "31340": "new"
+  "31340": "new",
+  "31390": "new"
  }
 }
