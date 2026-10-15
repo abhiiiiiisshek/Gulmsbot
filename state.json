@@ -273,14 +273,6 @@
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=456172"
   },
-  "143288": {
-   "course": "Programming with Python",
-   "due": 1791916200,
-   "instance": 459122,
-   "name": "Lab 7 Functions is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=459122"
-  },
   "144961": {
    "course": "Programming with Python",
    "due": 1792002600,
@@ -288,14 +280,6 @@
    "name": "Assignment - 1 is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461795"
-  },
-  "145017": {
-   "course": "Introduction to Information Technology",
-   "due": 1791916200,
-   "instance": 461907,
-   "name": "Assignment_2 is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461907"
   },
   "145077": {
    "course": "Database Management System",
@@ -320,14 +304,6 @@
    "name": "MCA_SEC_1_Pattern_Problems is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=463974"
-  },
-  "146468": {
-   "course": "Database Management System",
-   "due": 1791901800,
-   "instance": 464015,
-   "name": "Practical 5 is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=464015"
   },
   "146636": {
    "course": "Introduction to Information Technology",
@@ -372,8 +348,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-14-19",
-  "last_run": 1792016547.0845673,
+  "digest_slot": "2026-10-15-7",
+  "last_run": 1792028008.6292148,
   "log_grades": [],
   "log_submitted": [
    [
@@ -418,6 +394,9 @@
     24,
     72
    ],
+   "31057": [
+    72
+   ],
    "31277": [
     2,
     6,
@@ -427,6 +406,9 @@
    "31285": [
     6,
     24,
+    72
+   ],
+   "31332": [
     72
    ],
    "31390": [
@@ -442,7 +424,7 @@
     72
    ]
   },
-  "plan_date": "2026-10-14",
+  "plan_date": "2026-10-15",
   "quiz": {
    "32268": [],
    "33978": [],
@@ -2233,6 +2215,13 @@
    "section": "Manish Kumar (sec - 1)",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466171"
+  },
+  "466440": {
+   "course": "Programming with Python",
+   "name": "Activity",
+   "section": "Shivani Tripathi",
+   "type": "wooclap",
+   "url": "https://gulms.galgotiasuniversity.org/mod/wooclap/view.php?id=466440"
   }
  },
  "notifications": {
