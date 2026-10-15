@@ -252,6 +252,13 @@
    "due": 1791992100,
    "name": "MCA_LAB_14_OCT_LAB_ASSIGNMENT",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466171"
+  },
+  "31493": {
+   "cmid": 466973,
+   "course": "Programming with Python",
+   "due": 1792076400,
+   "name": "Assignment 1",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466973"
   }
  },
  "courses": {
@@ -265,14 +272,6 @@
   "30208": "Student Medical Document Submission (SMDS - Fall 2026-2027)"
  },
  "events": {
-  "141498": {
-   "course": "Programming with Python",
-   "due": 1792175400,
-   "instance": 456172,
-   "name": "Assignment - 2 is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=456172"
-  },
   "144961": {
    "course": "Programming with Python",
    "due": 1792002600,
@@ -288,14 +287,6 @@
    "name": "Assignment - 1 is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461986"
-  },
-  "145288": {
-   "course": "Digital Computer Organization",
-   "due": 1792261800,
-   "instance": 462322,
-   "name": "Assignment 1 is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=462322"
   },
   "146438": {
    "course": "Problem Solving and Computer Programming",
@@ -344,12 +335,20 @@
    "name": "MCA_LAB_14_OCT_LAB_ASSIGNMENT is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466171"
+  },
+  "147666": {
+   "course": "Programming with Python",
+   "due": 1792076400,
+   "instance": 466973,
+   "name": "Assignment 1 is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466973"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-15-7",
-  "last_run": 1792028008.6292148,
+  "digest_slot": "2026-10-15-19",
+  "last_run": 1792071099.3160493,
   "log_grades": [],
   "log_submitted": [
    [
@@ -359,21 +358,26 @@
    [
     1790924688.6686919,
     "Assignment on Unit-1"
+   ],
+   [
+    1792071099.3160493,
+    "Assignment - 2"
+   ],
+   [
+    1792071099.3160493,
+    "Lab 7 Functions"
+   ],
+   [
+    1792071099.3160493,
+    "Assignment_2"
+   ],
+   [
+    1792071099.3160493,
+    "Assignment 1"
    ]
   ],
   "nag": {
    "29791": [
-    6,
-    24,
-    72
-   ],
-   "30186": [
-    6,
-    24,
-    72
-   ],
-   "30553": [
-    2,
     6,
     24,
     72
@@ -383,18 +387,9 @@
     24,
     72
    ],
-   "31002": [
-    2,
-    6,
-    24,
-    72
-   ],
    "31009": [
     6,
     24,
-    72
-   ],
-   "31057": [
     72
    ],
    "31277": [
@@ -422,11 +417,18 @@
     6,
     24,
     72
+   ],
+   "31493": [
+    2,
+    6,
+    24,
+    72
    ]
   },
   "plan_date": "2026-10-15",
   "quiz": {
    "32268": [],
+   "33241": [],
    "33978": [],
    "34033": [],
    "34678": [
@@ -447,7 +449,10 @@
    "36935": [
     "closing",
     "open"
-   ]
+   ],
+   "37130": [],
+   "37131": [],
+   "37134": []
   },
   "report_week": "2026-40"
  },
@@ -991,6 +996,13 @@
    "type": "wooclap",
    "url": "https://gulms.galgotiasuniversity.org/mod/wooclap/view.php?id=432323"
   },
+  "432344": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Module Test 1",
+   "section": "General",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=432344"
+  },
   "432363": {
    "course": "Introduction to Information Technology",
    "name": "Assignment -1",
@@ -1372,42 +1384,42 @@
   "441157": {
    "course": "English Proficiency and Aptitude Building",
    "name": "Pre Assessment Percentage",
-   "section": "Anshuman Singh_ Active Learning Space",
+   "section": "Anshuman_ Active Learning Space",
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=441157"
   },
   "441161": {
    "course": "English Proficiency and Aptitude Building",
    "name": "Post Assessment Percentage",
-   "section": "Anshuman Singh_ Active Learning Space",
+   "section": "Anshuman_ Active Learning Space",
    "type": "folder",
    "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=441161"
   },
   "441163": {
    "course": "English Proficiency and Aptitude Building",
    "name": "Pre Assessment Profit and Loss",
-   "section": "Anshuman Singh_ Active Learning Space",
+   "section": "Anshuman_ Active Learning Space",
    "type": "folder",
    "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=441163"
   },
   "441164": {
    "course": "English Proficiency and Aptitude Building",
    "name": "Post Assessment Profit and Loss",
-   "section": "Anshuman Singh_ Active Learning Space",
+   "section": "Anshuman_ Active Learning Space",
    "type": "folder",
    "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=441164"
   },
   "441167": {
    "course": "English Proficiency and Aptitude Building",
    "name": "Pre Assessment Coding Decoding",
-   "section": "Anshuman Singh_ Active Learning Space",
+   "section": "Anshuman_ Active Learning Space",
    "type": "folder",
    "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=441167"
   },
   "441170": {
    "course": "English Proficiency and Aptitude Building",
    "name": "Post Assessment Coding Decoding",
-   "section": "Anshuman Singh_ Active Learning Space",
+   "section": "Anshuman_ Active Learning Space",
    "type": "folder",
    "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=441170"
   },
@@ -1638,7 +1650,7 @@
   "451494": {
    "course": "English Proficiency and Aptitude Building",
    "name": "Course Pack (copy)",
-   "section": "Anshuman Singh_ Active Learning Space",
+   "section": "Anshuman_ Active Learning Space",
    "type": "resource",
    "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=451494"
   },
@@ -2037,7 +2049,7 @@
   "460085": {
    "course": "English Proficiency and Aptitude Building",
    "name": "Percentage_Quiz",
-   "section": "Anshuman Singh_ Active Learning Space",
+   "section": "Anshuman_ Active Learning Space",
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
   },
@@ -2222,25 +2234,79 @@
    "section": "Shivani Tripathi",
    "type": "wooclap",
    "url": "https://gulms.galgotiasuniversity.org/mod/wooclap/view.php?id=466440"
+  },
+  "466663": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Percentage_Quiz",
+   "section": "Arun_ Active Learning Space",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=466663"
+  },
+  "466664": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Course Pack (copy)",
+   "section": "Arun_ Active Learning Space",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=466664"
+  },
+  "466665": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Pre Assessment Percentage",
+   "section": "Arun_ Active Learning Space",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=466665"
+  },
+  "466667": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Post Assessment Percentage",
+   "section": "Arun_ Active Learning Space",
+   "type": "folder",
+   "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=466667"
+  },
+  "466668": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Pre Assessment Profit and Loss",
+   "section": "Arun_ Active Learning Space",
+   "type": "folder",
+   "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=466668"
+  },
+  "466669": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Post Assessment Profit and Loss",
+   "section": "Arun_ Active Learning Space",
+   "type": "folder",
+   "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=466669"
+  },
+  "466671": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Pre Assessment Coding Decoding",
+   "section": "Arun_ Active Learning Space",
+   "type": "folder",
+   "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=466671"
+  },
+  "466672": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Post Assessment Coding Decoding",
+   "section": "Arun_ Active Learning Space",
+   "type": "folder",
+   "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=466672"
+  },
+  "466681": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Module Test 1 ( 1st Sem)",
+   "section": "Arun_ Active Learning Space",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=466681"
+  },
+  "466973": {
+   "course": "Programming with Python",
+   "name": "Assignment 1",
+   "section": "Section 2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466973"
   }
  },
  "notifications": {
-  "24118928": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24122175": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24124424": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24124575": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "24130275": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2304,6 +2370,22 @@
   "24454259": {
    "name": "Opens on Wednesday, 14 October 2026, 9:30 AM: IA-1 for section-1",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=464444"
+  },
+  "24499960": {
+   "name": "Assignment submission confirmation - Assignment 1",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=462322"
+  },
+  "24500229": {
+   "name": "Assignment submission confirmation - Lab 7 Functions",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=459122"
+  },
+  "24500325": {
+   "name": "Assignment submission confirmation - Assignment - 2",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=456172"
+  },
+  "24500328": {
+   "name": "Assignment submission confirmation - Assignment_2",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461907"
   }
  },
  "quizzes": {
@@ -2314,6 +2396,14 @@
    "name": "Pre-Visit Quiz",
    "open": 1787552760,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=414382"
+  },
+  "33241": {
+   "close": 0,
+   "course": "English Proficiency and Aptitude Building",
+   "limit": 0,
+   "name": "Module Test 1",
+   "open": 0,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=432344"
   },
   "33978": {
    "close": 1789632600,
@@ -2356,11 +2446,11 @@
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=459922"
   },
   "36315": {
-   "close": 1791450300,
+   "close": 1792055100,
    "course": "English Proficiency and Aptitude Building",
    "limit": 3600,
    "name": "Percentage_Quiz",
-   "open": 1791444000,
+   "open": 1792048800,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
   },
   "36564": {
@@ -2378,16 +2468,40 @@
    "name": "IA-1 for section-1",
    "open": 1791950400,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=464444"
+  },
+  "37130": {
+   "close": 1791450300,
+   "course": "English Proficiency and Aptitude Building",
+   "limit": 3600,
+   "name": "Percentage_Quiz",
+   "open": 1791444000,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=466663"
+  },
+  "37131": {
+   "close": 0,
+   "course": "English Proficiency and Aptitude Building",
+   "limit": 0,
+   "name": "Pre Assessment Percentage",
+   "open": 0,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=466665"
+  },
+  "37134": {
+   "close": 0,
+   "course": "English Proficiency and Aptitude Building",
+   "limit": 0,
+   "name": "Module Test 1 ( 1st Sem)",
+   "open": 0,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=466681"
   }
  },
  "subs": {
   "28535": "new",
-  "30186": "new",
-  "30553": "new",
+  "30186": "submitted",
+  "30553": "submitted",
   "30991": "new",
-  "31002": "new",
+  "31002": "submitted",
   "31009": "new",
-  "31057": "new",
+  "31057": "submitted",
   "31270": "new",
   "31277": "new",
   "31285": "new",
@@ -2395,6 +2509,7 @@
   "31340": "new",
   "31390": "new",
   "31422": "new",
-  "31431": "new"
+  "31431": "new",
+  "31493": "new"
  }
 }
