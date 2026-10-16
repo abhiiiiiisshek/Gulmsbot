@@ -272,30 +272,6 @@
   "30208": "Student Medical Document Submission (SMDS - Fall 2026-2027)"
  },
  "events": {
-  "144961": {
-   "course": "Programming with Python",
-   "due": 1792002600,
-   "instance": 461795,
-   "name": "Assignment - 1 is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461795"
-  },
-  "145077": {
-   "course": "Database Management System",
-   "due": 1792002600,
-   "instance": 461986,
-   "name": "Assignment - 1 is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461986"
-  },
-  "146438": {
-   "course": "Problem Solving and Computer Programming",
-   "due": 1791988800,
-   "instance": 463974,
-   "name": "MCA_SEC_1_Pattern_Problems is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=463974"
-  },
   "146636": {
    "course": "Introduction to Information Technology",
    "due": 1792261800,
@@ -312,14 +288,6 @@
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=464328"
   },
-  "147004": {
-   "course": "Database Management System",
-   "due": 1791988200,
-   "instance": 465901,
-   "name": "Practical 5 is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=465901"
-  },
   "147167": {
    "course": "Programming with Python",
    "due": 1792521000,
@@ -327,14 +295,6 @@
    "name": "Files with Python is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466133"
-  },
-  "147192": {
-   "course": "Problem Solving and Computer Programming",
-   "due": 1791992100,
-   "instance": 466171,
-   "name": "MCA_LAB_14_OCT_LAB_ASSIGNMENT is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466171"
   },
   "147666": {
    "course": "Programming with Python",
@@ -347,8 +307,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-15-19",
-  "last_run": 1792114139.3262818,
+  "digest_slot": "2026-10-16-12",
+  "last_run": 1792135146.1839027,
   "log_grades": [],
   "log_submitted": [
    [
@@ -425,7 +385,7 @@
     72
    ]
   },
-  "plan_date": "2026-10-15",
+  "plan_date": "2026-10-16",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -2307,30 +2267,6 @@
   }
  },
  "notifications": {
-  "24130275": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24133607": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24145599": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24151586": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24152566": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24160886": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "24166666": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2386,6 +2322,30 @@
   "24500328": {
    "name": "Assignment submission confirmation - Assignment_2",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461907"
+  },
+  "24549754": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24554745": {
+   "name": "Overdue: Assignment 1",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466973&action=view"
+  },
+  "24559919": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24655981": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24656142": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24659740": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
   }
  },
  "quizzes": {
