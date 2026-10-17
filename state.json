@@ -307,8 +307,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-17-16",
-  "last_run": 1792234502.5988953,
+  "digest_slot": "2026-10-17-19",
+  "last_run": 1792246561.5591602,
   "log_grades": [],
   "log_submitted": [
    [
@@ -364,6 +364,7 @@
     72
    ],
    "31332": [
+    6,
     24,
     72
    ],
@@ -2289,10 +2290,6 @@
   }
  },
  "notifications": {
-  "24298368": {
-   "name": "Opens on Thursday, 8 October 2026, 12:50 PM: Quiz October 8,2026",
-   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460039"
-  },
   "24298943": {
    "name": "Opens on Thursday, 8 October 2026, 12:50 PM: Percentage_Quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
@@ -2366,6 +2363,10 @@
    "url": ""
   },
   "24874183": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24907587": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
