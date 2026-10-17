@@ -272,6 +272,14 @@
   "30208": "Student Medical Document Submission (SMDS - Fall 2026-2027)"
  },
  "events": {
+  "143919": {
+   "course": "English Proficiency and Aptitude Building",
+   "due": 1792348140,
+   "instance": 460085,
+   "name": "Module-1_MCA closes",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
+  },
   "146636": {
    "course": "Introduction to Information Technology",
    "due": 1792261800,
@@ -296,19 +304,19 @@
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466133"
   },
-  "147666": {
-   "course": "Programming with Python",
-   "due": 1792076400,
-   "instance": 466973,
-   "name": "Assignment 1 is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466973"
+  "148215": {
+   "course": "Problem Solving and Computer Programming",
+   "due": 1792223400,
+   "instance": 467881,
+   "name": "Quiz-1 closes",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=467881"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-16-18",
-  "last_run": 1792197270.5391505,
+  "digest_slot": "2026-10-17-11",
+  "last_run": 1792215623.805055,
   "log_grades": [],
   "log_submitted": [
    [
@@ -364,6 +372,10 @@
     72
    ],
    "31332": [
+    24,
+    72
+   ],
+   "31340": [
     72
    ],
    "31390": [
@@ -385,7 +397,7 @@
     72
    ]
   },
-  "plan_date": "2026-10-16",
+  "plan_date": "2026-10-17",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -412,7 +424,10 @@
    ],
    "37130": [],
    "37131": [],
-   "37134": []
+   "37134": [],
+   "37307": [
+    "closing"
+   ]
   },
   "report_week": "2026-40"
  },
@@ -2008,7 +2023,7 @@
   },
   "460085": {
    "course": "English Proficiency and Aptitude Building",
-   "name": "Percentage_Quiz",
+   "name": "Module-1_MCA",
    "section": "Anshuman_ Active Learning Space",
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
@@ -2264,25 +2279,23 @@
    "section": "Section 2",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466973"
+  },
+  "467881": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Quiz-1",
+   "section": "Priya Pandey (sec-2, 6)",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=467881"
+  },
+  "467917": {
+   "course": "Computational Mathematics and Statistics",
+   "name": "Unit 3",
+   "section": "General",
+   "type": "folder",
+   "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=467917"
   }
  },
  "notifications": {
-  "24168992": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24175183": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24175419": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24181422": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "24183991": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2346,6 +2359,22 @@
   "24660999": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
+  },
+  "24670842": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24727108": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24827337": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24870482": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
   }
  },
  "quizzes": {
@@ -2406,11 +2435,11 @@
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=459922"
   },
   "36315": {
-   "close": 1792055100,
+   "close": 1792348140,
    "course": "English Proficiency and Aptitude Building",
    "limit": 3600,
-   "name": "Percentage_Quiz",
-   "open": 1792048800,
+   "name": "Module-1_MCA",
+   "open": 1792213200,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
   },
   "36564": {
@@ -2452,19 +2481,24 @@
    "name": "Module Test 1 ( 1st Sem)",
    "open": 0,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=466681"
+  },
+  "37307": {
+   "close": 1792223400,
+   "course": "Problem Solving and Computer Programming",
+   "limit": 0,
+   "name": "Quiz-1",
+   "open": 1792221900,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=467881"
   }
  },
  "subs": {
   "28535": "new",
   "30186": "submitted",
-  "30553": "submitted",
   "30991": "new",
-  "31002": "submitted",
   "31009": "new",
   "31057": "submitted",
   "31270": "new",
   "31277": "new",
-  "31285": "new",
   "31332": "new",
   "31340": "new",
   "31390": "new",
