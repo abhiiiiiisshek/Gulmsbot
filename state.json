@@ -259,6 +259,13 @@
    "due": 1792076400,
    "name": "Assignment 1",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466973"
+  },
+  "31694": {
+   "cmid": 468608,
+   "course": "Problem Solving and Computer Programming",
+   "due": 1792866600,
+   "name": "asisignment",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=468608"
   }
  },
  "courses": {
@@ -303,12 +310,20 @@
    "name": "Files with Python is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466133"
+  },
+  "148584": {
+   "course": "Problem Solving and Computer Programming",
+   "due": 1792866600,
+   "instance": 468608,
+   "name": "asisignment is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=468608"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-17-22",
-  "last_run": 1792285864.6683502,
+  "digest_slot": "2026-10-18-11",
+  "last_run": 1792303351.909188,
   "log_grades": [],
   "log_submitted": [
    [
@@ -378,6 +393,9 @@
     24,
     72
    ],
+   "31422": [
+    72
+   ],
    "31431": [
     2,
     6,
@@ -391,7 +409,7 @@
     72
    ]
   },
-  "plan_date": "2026-10-17",
+  "plan_date": "2026-10-18",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -2288,33 +2306,16 @@
    "section": "General",
    "type": "folder",
    "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=467917"
+  },
+  "468608": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "asisignment",
+   "section": "Shubhanshu Rawat ( section 7)",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=468608"
   }
  },
  "notifications": {
-  "24454259": {
-   "name": "Opens on Wednesday, 14 October 2026, 9:30 AM: IA-1 for section-1",
-   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=464444"
-  },
-  "24499960": {
-   "name": "Assignment submission confirmation - Assignment 1",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=462322"
-  },
-  "24500229": {
-   "name": "Assignment submission confirmation - Lab 7 Functions",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=459122"
-  },
-  "24500325": {
-   "name": "Assignment submission confirmation - Assignment - 2",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=456172"
-  },
-  "24500328": {
-   "name": "Assignment submission confirmation - Assignment_2",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=461907"
-  },
-  "24549754": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "24554745": {
    "name": "Overdue: Assignment 1",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466973&action=view"
@@ -2368,6 +2369,30 @@
    "url": ""
   },
   "24938189": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "24971007": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "25002763": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "25054882": {
+   "name": "Overdue: Assignment_Unit_1",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=464276&action=view"
+  },
+  "25085170": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "25121975": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "25147346": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -2489,13 +2514,12 @@
  "subs": {
   "28535": "new",
   "30186": "submitted",
-  "30991": "new",
-  "31009": "new",
   "31057": "submitted",
   "31270": "new",
   "31332": "new",
   "31340": "new",
   "31422": "new",
-  "31493": "new"
+  "31493": "new",
+  "31694": "new"
  }
 }
