@@ -336,8 +336,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-19-16",
-  "last_run": 1792448891.0258605,
+  "digest_slot": "2026-10-20-7",
+  "last_run": 1792461285.525341,
   "log_grades": [],
   "log_submitted": [
    [
@@ -411,6 +411,7 @@
     72
    ],
    "31422": [
+    24,
     72
    ],
    "31431": [
@@ -432,7 +433,7 @@
     72
    ]
   },
-  "plan_date": "2026-10-19",
+  "plan_date": "2026-10-20",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -2353,22 +2354,6 @@
   }
  },
  "notifications": {
-  "24870482": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24873953": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24874183": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "24907587": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "24938189": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2430,6 +2415,22 @@
    "url": ""
   },
   "25470672": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "25503532": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "25590313": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "25656399": {
+   "name": "Overdue: Assignment1",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=464328&action=view"
+  },
+  "25675181": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -2550,7 +2551,6 @@
  },
  "subs": {
   "28535": "new",
-  "30186": "submitted",
   "31057": "submitted",
   "31270": "new",
   "31332": "new",
