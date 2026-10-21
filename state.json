@@ -328,8 +328,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-21-7",
-  "last_run": 1792546899.336087,
+  "digest_slot": "2026-10-21-13",
+  "last_run": 1792568878.7191098,
   "log_grades": [],
   "log_submitted": [
    [
@@ -2349,14 +2349,6 @@
   }
  },
  "notifications": {
-  "25156789": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "25160604": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "25208247": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2426,6 +2418,14 @@
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466133&action=view"
   },
   "25920274": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "25949274": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "25951398": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
