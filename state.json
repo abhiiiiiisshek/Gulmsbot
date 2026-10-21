@@ -293,14 +293,6 @@
   "30208": "Student Medical Document Submission (SMDS - Fall 2026-2027)"
  },
  "events": {
-  "146659": {
-   "course": "Computational Mathematics and Statistics",
-   "due": 1792434600,
-   "instance": 464328,
-   "name": "Assignment1 is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=464328"
-  },
   "147167": {
    "course": "Programming with Python",
    "due": 1792521000,
@@ -336,8 +328,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-20-19",
-  "last_run": 1792535023.782394,
+  "digest_slot": "2026-10-21-7",
+  "last_run": 1792546899.336087,
   "log_grades": [],
   "log_submitted": [
    [
@@ -428,13 +420,15 @@
     72
    ],
    "31726": [
+    24,
     72
    ],
    "31727": [
+    24,
     72
    ]
   },
-  "plan_date": "2026-10-20",
+  "plan_date": "2026-10-21",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -2355,22 +2349,6 @@
   }
  },
  "notifications": {
-  "25054882": {
-   "name": "Overdue: Assignment_Unit_1",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=464276&action=view"
-  },
-  "25085170": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "25121975": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "25147346": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "25156789": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2432,6 +2410,22 @@
    "url": ""
   },
   "25685529": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "25748681": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "25810559": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "25861474": {
+   "name": "Overdue: Files with Python",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=466133&action=view"
+  },
+  "25920274": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -2552,9 +2546,7 @@
  },
  "subs": {
   "28535": "new",
-  "31057": "submitted",
   "31270": "new",
-  "31332": "new",
   "31340": "new",
   "31422": "new",
   "31694": "new",
