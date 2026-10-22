@@ -320,8 +320,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-22-13",
-  "last_run": 1792655018.5387242,
+  "digest_slot": "2026-10-22-19",
+  "last_run": 1792677256.987898,
   "log_grades": [],
   "log_submitted": [
    [
@@ -2346,10 +2346,6 @@
   }
  },
  "notifications": {
-  "25656399": {
-   "name": "Overdue: Assignment1",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=464328&action=view"
-  },
   "25675181": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2423,6 +2419,10 @@
    "url": ""
   },
   "26273514": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "26274923": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
