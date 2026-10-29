@@ -292,11 +292,20 @@
   "29725": "Programming with Python",
   "30208": "Student Medical Document Submission (SMDS - Fall 2026-2027)"
  },
- "events": {},
+ "events": {
+  "149431": {
+   "course": "English Proficiency and Aptitude Building",
+   "due": 1795771440,
+   "instance": 470857,
+   "name": "IA - 1 (Verbal Segment Only) closes",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=470857"
+  }
+ },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-29-8",
-  "last_run": 1793241180.6970851,
+  "digest_slot": "2026-10-29-15",
+  "last_run": 1793268644.6241112,
   "log_grades": [],
   "log_submitted": [
    [
@@ -434,7 +443,9 @@
    "37307": [
     "closing",
     "open"
-   ]
+   ],
+   "37630": [],
+   "37702": []
   },
   "report_week": "2026-43"
  },
@@ -2315,23 +2326,29 @@
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=468897"
   },
+  "470857": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "IA - 1 (Verbal Segment Only)",
+   "section": "Previous Year Debarred 2026-2027",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=470857"
+  },
   "471064": {
    "course": "Introduction to Information Technology",
    "name": "Lesson_plan",
    "section": "General",
    "type": "resource",
    "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=471064"
+  },
+  "471398": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "AI 1 29 OCT",
+   "section": "AI 1 29 OCT 2026",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=471398"
   }
  },
  "notifications": {
-  "27058753": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "27080815": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "27097139": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2401,6 +2418,14 @@
    "url": ""
   },
   "27555824": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "27574254": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "27601120": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -2517,6 +2542,22 @@
    "name": "Quiz-1",
    "open": 1792221900,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=467881"
+  },
+  "37630": {
+   "close": 1795771440,
+   "course": "English Proficiency and Aptitude Building",
+   "limit": 1500,
+   "name": "IA - 1 (Verbal Segment Only)",
+   "open": 1793093040,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=470857"
+  },
+  "37702": {
+   "close": 0,
+   "course": "English Proficiency and Aptitude Building",
+   "limit": 0,
+   "name": "AI 1 29 OCT",
+   "open": 0,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=471398"
   }
  },
  "subs": {
