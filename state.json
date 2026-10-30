@@ -304,8 +304,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-30-7",
-  "last_run": 1793325616.1733232,
+  "digest_slot": "2026-10-30-14",
+  "last_run": 1793349912.0174694,
   "log_grades": [],
   "log_submitted": [
    [
@@ -2349,14 +2349,6 @@
   }
  },
  "notifications": {
-  "27171578": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "27215859": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "27241181": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2428,6 +2420,14 @@
   "27696151": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
+  },
+  "27721098": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "27750303": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
   }
  },
  "quizzes": {
@@ -2464,7 +2464,7 @@
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=441157"
   },
   "34678": {
-   "close": 1792088760,
+   "close": 1793989560,
    "course": "Computational Mathematics and Statistics",
    "limit": 2400,
    "name": "Internal Assesment 1",
