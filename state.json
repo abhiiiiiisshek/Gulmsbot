@@ -297,15 +297,15 @@
    "course": "English Proficiency and Aptitude Building",
    "due": 1795771440,
    "instance": 470857,
-   "name": "IA - 1 (Verbal Segment Only) closes",
+   "name": "IA - 1 closes",
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=470857"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-10-30-14",
-  "last_run": 1793349912.0174694,
+  "digest_slot": "2026-10-30-21",
+  "last_run": 1793376006.1516562,
   "log_grades": [],
   "log_submitted": [
    [
@@ -2328,7 +2328,7 @@
   },
   "470857": {
    "course": "English Proficiency and Aptitude Building",
-   "name": "IA - 1 (Verbal Segment Only)",
+   "name": "IA - 1",
    "section": "Previous Year Debarred 2026-2027",
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=470857"
@@ -2349,10 +2349,6 @@
   }
  },
  "notifications": {
-  "27241181": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "27273513": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2426,6 +2422,10 @@
    "url": ""
   },
   "27750303": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "27756471": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -2546,8 +2546,8 @@
   "37630": {
    "close": 1795771440,
    "course": "English Proficiency and Aptitude Building",
-   "limit": 1500,
-   "name": "IA - 1 (Verbal Segment Only)",
+   "limit": 3000,
+   "name": "IA - 1",
    "open": 1793093040,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=470857"
   },
