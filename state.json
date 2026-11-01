@@ -304,14 +304,10 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-01-7",
-  "last_run": 1793499577.8186238,
+  "digest_slot": "2026-11-01-14",
+  "last_run": 1793525111.9792495,
   "log_grades": [],
   "log_submitted": [
-   [
-    1790924688.6686919,
-    "Assignment on Unit-1"
-   ],
    [
     1792071099.3160493,
     "Assignment - 2"
@@ -2345,14 +2341,6 @@
   }
  },
  "notifications": {
-  "27486235": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "27490903": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "27522065": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2422,6 +2410,14 @@
    "url": ""
   },
   "28006709": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28025350": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28057840": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
