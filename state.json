@@ -280,6 +280,13 @@
    "due": 1792607400,
    "name": "Assignment 1",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=468897"
+  },
+  "32180": {
+   "cmid": 472565,
+   "course": "Programming with Python",
+   "due": 1793622600,
+   "name": "Section 7 P2: Files in Python",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=472565"
   }
  },
  "courses": {
@@ -300,12 +307,20 @@
    "name": "IA - 1 closes",
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=470857"
+  },
+  "150287": {
+   "course": "Programming with Python",
+   "due": 1793622600,
+   "instance": 472565,
+   "name": "Section 7 P2: Files in Python is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=472565"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-01-22",
-  "last_run": 1793580713.4102836,
+  "digest_slot": "2026-11-02-13",
+  "last_run": 1793605534.5151565,
   "log_grades": [],
   "log_submitted": [
    [
@@ -402,9 +417,14 @@
     6,
     24,
     72
+   ],
+   "32180": [
+    6,
+    24,
+    72
    ]
   },
-  "plan_date": "2026-11-01",
+  "plan_date": "2026-11-02",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -2338,21 +2358,16 @@
    "section": "AI 1 29 OCT 2026",
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=471398"
+  },
+  "472565": {
+   "course": "Programming with Python",
+   "name": "Section 7 P2: Files in Python",
+   "section": "Section 7",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=472565"
   }
  },
  "notifications": {
-  "27555824": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "27574254": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "27601120": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "27615015": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2418,6 +2433,18 @@
    "url": ""
   },
   "28065449": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28104606": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28132544": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28153505": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -2554,6 +2581,7 @@
  },
  "subs": {
   "28535": "new",
-  "31270": "new"
+  "31270": "new",
+  "32180": "new"
  }
 }
