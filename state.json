@@ -320,7 +320,7 @@
    "cmid": 473386,
    "course": "Programming with Python",
    "due": 1793712600,
-   "name": "lab",
+   "name": "lab 8",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=473386"
   }
  },
@@ -350,14 +350,6 @@
    "name": "IA - 1 closes",
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=470857"
-  },
-  "150287": {
-   "course": "Programming with Python",
-   "due": 1793622600,
-   "instance": 472565,
-   "name": "Section 7 P2: Files in Python is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=472565"
   },
   "150467": {
    "course": "Database Management System",
@@ -403,15 +395,15 @@
    "course": "Programming with Python",
    "due": 1793712600,
    "instance": 473386,
-   "name": "lab is due",
+   "name": "lab 8 is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=473386"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-03-15",
-  "last_run": 1793748558.012361,
+  "digest_slot": "2026-11-04-12",
+  "last_run": 1793774418.0971959,
   "log_grades": [],
   "log_submitted": [
    [
@@ -539,7 +531,7 @@
     72
    ]
   },
-  "plan_date": "2026-11-03",
+  "plan_date": "2026-11-04",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -2576,33 +2568,20 @@
   },
   "473386": {
    "course": "Programming with Python",
-   "name": "lab",
+   "name": "lab 8",
    "section": "Section 2",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=473386"
+  },
+  "473504": {
+   "course": "Introduction to Information Technology",
+   "name": "Post session assessment 9",
+   "section": "Priya Pandey-Sec-1 and 5",
+   "type": "wooclap",
+   "url": "https://gulms.galgotiasuniversity.org/mod/wooclap/view.php?id=473504"
   }
  },
  "notifications": {
-  "27796767": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "27843672": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "27868865": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "27908674": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "27910311": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "27945827": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2660,6 +2639,26 @@
    "url": ""
   },
   "28359987": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28360888": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28376099": {
+   "name": "Overdue: lab 8",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=473386&action=view"
+  },
+  "28377059": {
+   "name": "Overdue: Practical 6",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=473018&action=view"
+  },
+  "28381373": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28395263": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
