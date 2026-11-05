@@ -22,6 +22,13 @@
    "name": "Assignment: Lab Cancellation : Section 7 P1 Group",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=428580"
   },
+  "27408": {
+   "cmid": 429193,
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "due": 1795977000,
+   "name": "Student Medical Document Submission",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429193"
+  },
   "27548": {
    "cmid": 431771,
    "course": "Programming with Python",
@@ -329,6 +336,13 @@
    "due": 1794335400,
    "name": "Lab 9: OOPS basics",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=473994"
+  },
+  "32565": {
+   "cmid": 474424,
+   "course": "Programming with Python",
+   "due": 1793885400,
+   "name": "LAB 9",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=474424"
   }
  },
  "courses": {
@@ -342,6 +356,14 @@
   "30208": "Student Medical Document Submission (SMDS - Fall 2026-2027)"
  },
  "events": {
+  "116985": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "due": 1795977000,
+   "instance": 429193,
+   "name": "Student Medical Document Submission is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429193"
+  },
   "143919": {
    "course": "English Proficiency and Aptitude Building",
    "due": 1795026540,
@@ -352,7 +374,7 @@
   },
   "149431": {
    "course": "English Proficiency and Aptitude Building",
-   "due": 1795771440,
+   "due": 1793950200,
    "instance": 470857,
    "name": "IA - 1 closes",
    "type": "quiz",
@@ -381,12 +403,28 @@
    "name": "Lab 9: OOPS basics is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=473994"
+  },
+  "151754": {
+   "course": "Computational Mathematics and Statistics",
+   "due": 1795338780,
+   "instance": 474391,
+   "name": "IA_Quiz closes",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=474391"
+  },
+  "151786": {
+   "course": "Programming with Python",
+   "due": 1793885400,
+   "instance": 474424,
+   "name": "LAB 9 is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=474424"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-05-8",
-  "last_run": 1793846032.292753,
+  "digest_slot": "2026-11-05-16",
+  "last_run": 1793877017.8707702,
   "log_grades": [],
   "log_submitted": [
    [
@@ -513,6 +551,11 @@
     6,
     24,
     72
+   ],
+   "32565": [
+    6,
+    24,
+    72
    ]
   },
   "plan_date": "2026-11-05",
@@ -547,10 +590,16 @@
     "closing",
     "open"
    ],
-   "37630": [],
+   "37630": [
+    "open",
+    "closing"
+   ],
    "37702": [],
    "38008": [],
-   "38009": []
+   "38009": [],
+   "38218": [
+    "open"
+   ]
   },
   "report_week": "2026-44"
  },
@@ -2570,17 +2619,30 @@
    "section": "Section 5: Group 1 Lab Assignments",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=473994"
+  },
+  "474273": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Post session assessment 11",
+   "section": "Priya Pandey (sec-2, 6)",
+   "type": "wooclap",
+   "url": "https://gulms.galgotiasuniversity.org/mod/wooclap/view.php?id=474273"
+  },
+  "474391": {
+   "course": "Computational Mathematics and Statistics",
+   "name": "IA_Quiz",
+   "section": "IA(For debarred students only)",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=474391"
+  },
+  "474424": {
+   "course": "Programming with Python",
+   "name": "LAB 9",
+   "section": "Section 2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=474424"
   }
  },
  "notifications": {
-  "28065449": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28104606": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "28132544": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2650,6 +2712,14 @@
    "url": ""
   },
   "28445360": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28446062": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28450097": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -2768,11 +2838,11 @@
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=467881"
   },
   "37630": {
-   "close": 1795771440,
+   "close": 1793950200,
    "course": "English Proficiency and Aptitude Building",
    "limit": 3000,
    "name": "IA - 1",
-   "open": 1793093040,
+   "open": 1793863800,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=470857"
   },
   "37702": {
@@ -2798,6 +2868,14 @@
    "name": "Pre Assessment Percentage",
    "open": 0,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=473142"
+  },
+  "38218": {
+   "close": 1795338780,
+   "course": "Computational Mathematics and Statistics",
+   "limit": 1200,
+   "name": "IA_Quiz",
+   "open": 1793869980,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=474391"
   }
  },
  "subs": {
@@ -2809,6 +2887,7 @@
   "32266": "new",
   "32341": "new",
   "32375": "new",
-  "32480": "new"
+  "32480": "new",
+  "32565": "new"
  }
 }
