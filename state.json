@@ -372,14 +372,6 @@
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
   },
-  "149431": {
-   "course": "English Proficiency and Aptitude Building",
-   "due": 1793950200,
-   "instance": 470857,
-   "name": "IA - 1 closes",
-   "type": "quiz",
-   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=470857"
-  },
   "150467": {
    "course": "Database Management System",
    "due": 1793903400,
@@ -423,8 +415,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-05-16",
-  "last_run": 1793924666.6581686,
+  "digest_slot": "2026-11-06-13",
+  "last_run": 1793951947.4081075,
   "log_grades": [],
   "log_submitted": [
    [
@@ -558,7 +550,7 @@
     72
    ]
   },
-  "plan_date": "2026-11-05",
+  "plan_date": "2026-11-06",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -2643,26 +2635,6 @@
   }
  },
  "notifications": {
-  "28132544": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28153505": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28194546": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28196294": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28234123": {
-   "name": "Overdue: Section 7 P2: Files in Python",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=472565&action=view"
-  },
   "28260884": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2720,6 +2692,26 @@
    "url": ""
   },
   "28450097": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28453352": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28462350": {
+   "name": "Overdue: LAB 9",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=474424&action=view"
+  },
+  "28464415": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28468583": {
+   "name": "Overdue: Assignment -2",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=472755&action=view"
+  },
+  "28472697": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -2881,7 +2873,6 @@
  "subs": {
   "28535": "new",
   "31270": "new",
-  "32180": "new",
   "32233": "new",
   "32255": "new",
   "32266": "new",
