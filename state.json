@@ -399,8 +399,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-07-7",
-  "last_run": 1794016809.995905,
+  "digest_slot": "2026-11-07-14",
+  "last_run": 1794041731.943801,
   "log_grades": [],
   "log_submitted": [
    [
@@ -2619,14 +2619,6 @@
   }
  },
  "notifications": {
-  "28376099": {
-   "name": "Overdue: lab 8",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=473386&action=view"
-  },
-  "28377059": {
-   "name": "Overdue: Practical 6",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=473018&action=view"
-  },
   "28381373": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2696,6 +2688,14 @@
    "url": ""
   },
   "28486864": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28487045": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28487656": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
