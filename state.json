@@ -399,8 +399,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-08-11",
-  "last_run": 1794118678.6153812,
+  "digest_slot": "2026-11-08-19",
+  "last_run": 1794145166.249779,
   "log_grades": [],
   "log_submitted": [
    [
@@ -580,7 +580,7 @@
     "open"
    ]
   },
-  "report_week": "2026-44"
+  "report_week": "2026-45"
  },
  "modules": {
   "406071": {
@@ -2622,14 +2622,6 @@
   }
  },
  "notifications": {
-  "28420621": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28421395": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "28445360": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2699,6 +2691,14 @@
    "url": ""
   },
   "28497283": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28497559": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28497732": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -2861,7 +2861,6 @@
   "28535": "new",
   "31270": "new",
   "32233": "new",
-  "32480": "new",
-  "32565": "new"
+  "32480": "new"
  }
 }
