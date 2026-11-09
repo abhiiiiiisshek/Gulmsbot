@@ -399,8 +399,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-09-8",
-  "last_run": 1794192227.3431222,
+  "digest_slot": "2026-11-09-17",
+  "last_run": 1794224898.001694,
   "log_grades": [],
   "log_submitted": [
    [
@@ -2622,14 +2622,6 @@
   }
  },
  "notifications": {
-  "28453352": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28462350": {
-   "name": "Overdue: LAB 9",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=474424&action=view"
-  },
   "28464415": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2699,6 +2691,14 @@
    "url": ""
   },
   "28538023": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28538155": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28548577": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
