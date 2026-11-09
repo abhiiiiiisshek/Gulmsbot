@@ -399,8 +399,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-08-19",
-  "last_run": 1794178627.7915664,
+  "digest_slot": "2026-11-09-8",
+  "last_run": 1794192227.3431222,
   "log_grades": [],
   "log_submitted": [
    [
@@ -537,7 +537,7 @@
     72
    ]
   },
-  "plan_date": "2026-11-08",
+  "plan_date": "2026-11-09",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -2622,18 +2622,6 @@
   }
  },
  "notifications": {
-  "28445360": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28446062": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28450097": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "28453352": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2699,6 +2687,18 @@
    "url": ""
   },
   "28497732": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28498217": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28498642": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28538023": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -2858,9 +2858,9 @@
   }
  },
  "subs": {
+  "27408": "new",
   "28535": "new",
   "31270": "new",
-  "32233": "new",
   "32480": "new"
  }
 }
