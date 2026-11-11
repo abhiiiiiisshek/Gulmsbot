@@ -399,8 +399,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-10-19",
-  "last_run": 1794359891.8809907,
+  "digest_slot": "2026-11-11-13",
+  "last_run": 1794383404.6314461,
   "log_grades": [],
   "log_submitted": [
    [
@@ -539,7 +539,7 @@
     72
    ]
   },
-  "plan_date": "2026-11-10",
+  "plan_date": "2026-11-11",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -2624,22 +2624,6 @@
   }
  },
  "notifications": {
-  "28474017": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28476174": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28486864": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28487045": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "28487656": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2701,6 +2685,22 @@
    "url": ""
   },
   "28584996": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28585928": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28596399": {
+   "name": "Overdue: Lab 9: OOPS basics",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=473994&action=view"
+  },
+  "28607557": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28608295": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
