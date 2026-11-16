@@ -391,8 +391,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-16-8",
-  "last_run": 1794797433.916249,
+  "digest_slot": "2026-11-16-17",
+  "last_run": 1794829363.1509519,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -2599,14 +2599,6 @@
   }
  },
  "notifications": {
-  "28624830": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28625098": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "28626838": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2676,6 +2668,14 @@
    "url": ""
   },
   "28697750": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28697948": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28699882": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
