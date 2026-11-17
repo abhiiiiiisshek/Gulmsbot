@@ -343,6 +343,13 @@
    "due": 1793885400,
    "name": "LAB 9",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=474424"
+  },
+  "32781": {
+   "cmid": 475646,
+   "course": "Programming with Python",
+   "due": 1794922200,
+   "name": "LAB 10(p2)",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=475646"
   }
  },
  "courses": {
@@ -387,12 +394,20 @@
    "name": "IA_Quiz closes",
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=474391"
+  },
+  "152271": {
+   "course": "Programming with Python",
+   "due": 1794922200,
+   "instance": 475646,
+   "name": "LAB 10(p2) is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=475646"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-17-10",
-  "last_run": 1794890287.2805831,
+  "digest_slot": "2026-11-17-20",
+  "last_run": 1794926303.3814955,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -2596,21 +2611,16 @@
    "section": "Section 2",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=474424"
+  },
+  "475646": {
+   "course": "Programming with Python",
+   "name": "LAB 10(p2)",
+   "section": "Section 2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=475646"
   }
  },
  "notifications": {
-  "28644540": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28644838": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28645591": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "28645759": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2678,6 +2688,18 @@
   "28713795": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
+  },
+  "28715708": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28719849": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28724677": {
+   "name": "Overdue: LAB 10(p2)",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=475646&action=view"
   }
  },
  "quizzes": {
@@ -2837,6 +2859,7 @@
  "subs": {
   "27408": "new",
   "28535": "new",
-  "31270": "new"
+  "31270": "new",
+  "32781": "new"
  }
 }
