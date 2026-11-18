@@ -242,8 +242,8 @@
   "31390": {
    "cmid": 465901,
    "course": "Database Management System",
-   "due": 1791988200,
-   "name": "Practical 5",
+   "due": 1795185000,
+   "name": "Practical 5 - To Create and manage tables with constraints on it.",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=465901"
   },
   "31422": {
@@ -350,6 +350,41 @@
    "due": 1794922200,
    "name": "LAB 10(p2)",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=475646"
+  },
+  "32919": {
+   "cmid": 476377,
+   "course": "Programming with Python",
+   "due": 1795545000,
+   "name": "Lab 10: OOPS extended",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476377"
+  },
+  "32943": {
+   "cmid": 476496,
+   "course": "Database Management System",
+   "due": 1795185000,
+   "name": "Practical 1- Introduction to date types in oracle.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476496"
+  },
+  "32944": {
+   "cmid": 476500,
+   "course": "Database Management System",
+   "due": 1795185000,
+   "name": "practical 2 - Creating Entity-Relationship Diagram using case tools",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476500"
+  },
+  "32945": {
+   "cmid": 476501,
+   "course": "Database Management System",
+   "due": 1795185000,
+   "name": "Practical 3 - To implement Create, insert and Basic SQL SELECT statements.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476501"
+  },
+  "32946": {
+   "cmid": 476504,
+   "course": "Database Management System",
+   "due": 1795185000,
+   "name": "Practical 4 - To Manipulate data in the existing tables",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476504"
   }
  },
  "courses": {
@@ -379,6 +414,14 @@
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
   },
+  "147004": {
+   "course": "Database Management System",
+   "due": 1795185000,
+   "instance": 465901,
+   "name": "Practical 5 - To Create and manage tables with constraints on it. is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=465901"
+  },
   "150736": {
    "course": "English Proficiency and Aptitude Building",
    "due": 1795026540,
@@ -395,19 +438,51 @@
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=474391"
   },
-  "152271": {
+  "152845": {
    "course": "Programming with Python",
-   "due": 1794922200,
-   "instance": 475646,
-   "name": "LAB 10(p2) is due",
+   "due": 1795545000,
+   "instance": 476377,
+   "name": "Lab 10: OOPS extended is due",
    "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=475646"
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476377"
+  },
+  "152923": {
+   "course": "Database Management System",
+   "due": 1795185000,
+   "instance": 476496,
+   "name": "Practical 1- Introduction to date types in oracle. is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476496"
+  },
+  "152928": {
+   "course": "Database Management System",
+   "due": 1795185000,
+   "instance": 476500,
+   "name": "practical 2 - Creating Entity-Relationship Diagram using case tools is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476500"
+  },
+  "152930": {
+   "course": "Database Management System",
+   "due": 1795185000,
+   "instance": 476501,
+   "name": "Practical 3 - To implement Create, insert and Basic SQL SELECT statements. is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476501"
+  },
+  "152932": {
+   "course": "Database Management System",
+   "due": 1795185000,
+   "instance": 476504,
+   "name": "Practical 4 - To Manipulate data in the existing tables is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476504"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-18-10",
-  "last_run": 1794976315.5432217,
+  "digest_slot": "2026-11-18-19",
+  "last_run": 1795011334.602793,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -526,6 +601,18 @@
    "32565": [
     6,
     24,
+    72
+   ],
+   "32943": [
+    72
+   ],
+   "32944": [
+    72
+   ],
+   "32945": [
+    72
+   ],
+   "32946": [
     72
    ]
   },
@@ -2322,7 +2409,7 @@
   },
   "465901": {
    "course": "Database Management System",
-   "name": "Practical 5",
+   "name": "Practical 5 - To Create and manage tables with constraints on it.",
    "section": "DBMS Lab Sec 5 P2",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=465901"
@@ -2620,17 +2707,72 @@
    "section": "Section 2",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=475646"
+  },
+  "476105": {
+   "course": "Introduction to Information Technology",
+   "name": "Lecture_Computer Graphics_Basics_Unit-3",
+   "section": "Unit-3",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=476105"
+  },
+  "476280": {
+   "course": "Programming with Python",
+   "name": "18: File Handling Pattern Matching",
+   "section": "Unit 3",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=476280"
+  },
+  "476281": {
+   "course": "Programming with Python",
+   "name": "19: File Handling Text Files",
+   "section": "Unit 3",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=476281"
+  },
+  "476283": {
+   "course": "Programming with Python",
+   "name": "20-23: OOP Complete Syllabus",
+   "section": "Unit 3",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=476283"
+  },
+  "476377": {
+   "course": "Programming with Python",
+   "name": "Lab 10: OOPS extended",
+   "section": "Section 5: Group 1 Lab Assignments",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476377"
+  },
+  "476496": {
+   "course": "Database Management System",
+   "name": "Practical 1- Introduction to date types in oracle.",
+   "section": "DBMS Lab Sec 5 P2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476496"
+  },
+  "476500": {
+   "course": "Database Management System",
+   "name": "practical 2 - Creating Entity-Relationship Diagram using case tools",
+   "section": "DBMS Lab Sec 5 P2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476500"
+  },
+  "476501": {
+   "course": "Database Management System",
+   "name": "Practical 3 - To implement Create, insert and Basic SQL SELECT statements.",
+   "section": "DBMS Lab Sec 5 P2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476501"
+  },
+  "476504": {
+   "course": "Database Management System",
+   "name": "Practical 4 - To Manipulate data in the existing tables",
+   "section": "DBMS Lab Sec 5 P2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476504"
   }
  },
  "notifications": {
-  "28650314": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28650929": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "28651071": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2700,6 +2842,14 @@
    "url": ""
   },
   "28744764": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28745747": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28747933": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -2862,6 +3012,12 @@
   "27408": "new",
   "28535": "new",
   "31270": "new",
-  "32781": "new"
+  "31390": "new",
+  "32781": "new",
+  "32919": "new",
+  "32943": "new",
+  "32944": "new",
+  "32945": "new",
+  "32946": "new"
  }
 }
