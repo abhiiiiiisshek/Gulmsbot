@@ -406,8 +406,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-17-20",
-  "last_run": 1794956321.5837166,
+  "digest_slot": "2026-11-18-10",
+  "last_run": 1794976315.5432217,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -529,7 +529,7 @@
     72
    ]
   },
-  "plan_date": "2026-11-17",
+  "plan_date": "2026-11-18",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -566,7 +566,9 @@
     "closing"
    ],
    "37702": [],
-   "38008": [],
+   "38008": [
+    "closing"
+   ],
    "38009": [],
    "38218": [
     "open"
@@ -2621,14 +2623,6 @@
   }
  },
  "notifications": {
-  "28645759": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28647327": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "28650314": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2700,6 +2694,14 @@
   "28724677": {
    "name": "Overdue: LAB 10(p2)",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=475646&action=view"
+  },
+  "28725069": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28744764": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
   }
  },
  "quizzes": {
