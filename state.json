@@ -406,14 +406,6 @@
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429193"
   },
-  "143919": {
-   "course": "English Proficiency and Aptitude Building",
-   "due": 1795026540,
-   "instance": 460085,
-   "name": "Module-1_MCA closes",
-   "type": "quiz",
-   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
-  },
   "147004": {
    "course": "Database Management System",
    "due": 1795185000,
@@ -421,14 +413,6 @@
    "name": "Practical 5 - To Create and manage tables with constraints on it. is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=465901"
-  },
-  "150736": {
-   "course": "English Proficiency and Aptitude Building",
-   "due": 1795026540,
-   "instance": 473140,
-   "name": "Module-1_MCA closes",
-   "type": "quiz",
-   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=473140"
   },
   "151754": {
    "course": "Computational Mathematics and Statistics",
@@ -481,8 +465,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-18-19",
-  "last_run": 1795039617.545407,
+  "digest_slot": "2026-11-19-9",
+  "last_run": 1795059581.0201182,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -616,7 +600,7 @@
     72
    ]
   },
-  "plan_date": "2026-11-18",
+  "plan_date": "2026-11-19",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -2773,18 +2757,6 @@
   }
  },
  "notifications": {
-  "28651071": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28651885": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28655895": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "28663024": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2850,6 +2822,18 @@
    "url": ""
   },
   "28747933": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28777635": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28791504": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28865321": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
