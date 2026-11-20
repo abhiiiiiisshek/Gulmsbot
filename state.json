@@ -385,6 +385,13 @@
    "due": 1795185000,
    "name": "Practical 4 - To Manipulate data in the existing tables",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476504"
+  },
+  "33015": {
+   "cmid": 476941,
+   "course": "Programming with Python",
+   "due": 1795093200,
+   "name": "LAB 10(p1)",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476941"
   }
  },
  "courses": {
@@ -461,12 +468,20 @@
    "name": "Practical 4 - To Manipulate data in the existing tables is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476504"
+  },
+  "153206": {
+   "course": "Programming with Python",
+   "due": 1795093200,
+   "instance": 476941,
+   "name": "LAB 10(p1) is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476941"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-19-9",
-  "last_run": 1795126573.041962,
+  "digest_slot": "2026-11-20-9",
+  "last_run": 1795145470.5986726,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -588,19 +603,23 @@
     72
    ],
    "32943": [
+    24,
     72
    ],
    "32944": [
+    24,
     72
    ],
    "32945": [
+    24,
     72
    ],
    "32946": [
+    24,
     72
    ]
   },
-  "plan_date": "2026-11-19",
+  "plan_date": "2026-11-20",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -2754,29 +2773,23 @@
    "section": "DBMS Lab Sec 5 P2",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476504"
+  },
+  "476941": {
+   "course": "Programming with Python",
+   "name": "LAB 10(p1)",
+   "section": "Section 2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476941"
+  },
+  "477081": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture_Array",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=477081"
   }
  },
  "notifications": {
-  "28663024": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28663183": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28663888": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28664336": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28666548": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "28697750": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2834,6 +2847,26 @@
    "url": ""
   },
   "28865321": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28927837": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28956238": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "28991329": {
+   "name": "Overdue: LAB 10(p1)",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476941&action=view"
+  },
+  "28994337": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29102018": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -3002,6 +3035,7 @@
   "32943": "new",
   "32944": "new",
   "32945": "new",
-  "32946": "new"
+  "32946": "new",
+  "33015": "new"
  }
 }
