@@ -468,20 +468,12 @@
    "name": "Practical 4 - To Manipulate data in the existing tables is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476504"
-  },
-  "153575": {
-   "course": "English Proficiency and Aptitude Building",
-   "due": 1795199340,
-   "instance": 477396,
-   "name": "Module Test 1 (Garima Nandal) closes",
-   "type": "quiz",
-   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=477396"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-20-18",
-  "last_run": 1795209371.11235,
+  "digest_slot": "2026-11-21-7",
+  "last_run": 1795228192.9019146,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -627,7 +619,7 @@
     72
    ]
   },
-  "plan_date": "2026-11-20",
+  "plan_date": "2026-11-21",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -2809,54 +2801,6 @@
   }
  },
  "notifications": {
-  "28699882": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28700476": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28713795": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28715708": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28719849": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28724677": {
-   "name": "Overdue: LAB 10(p2)",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=475646&action=view"
-  },
-  "28725069": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28744764": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28745747": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28747933": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28777635": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28791504": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "28865321": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2886,6 +2830,54 @@
    "url": ""
   },
   "29175537": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29206926": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29214090": {
+   "name": "Overdue: Practical 5 - To Create and manage tables with constraints on it.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=465901&action=view"
+  },
+  "29214751": {
+   "name": "Overdue: Practical 1- Introduction to date types in oracle.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476496&action=view"
+  },
+  "29215415": {
+   "name": "Overdue: practical 2 - Creating Entity-Relationship Diagram using case tools",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476500&action=view"
+  },
+  "29216071": {
+   "name": "Overdue: Practical 3 - To implement Create, insert and Basic SQL SELECT statements.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476501&action=view"
+  },
+  "29216731": {
+   "name": "Overdue: Practical 4 - To Manipulate data in the existing tables",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476504&action=view"
+  },
+  "29217421": {
+   "name": "Overdue: Practical 5 - To Create and manage tables with constraints on it.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476521&action=view"
+  },
+  "29218112": {
+   "name": "Overdue: Practical 1- Introduction to date types in oracle.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476522&action=view"
+  },
+  "29218795": {
+   "name": "Overdue: practical 2 - Creating Entity-Relationship Diagram using case tools",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476523&action=view"
+  },
+  "29219484": {
+   "name": "Overdue: Practical 3 - To implement Create, insert and Basic SQL SELECT statements.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476524&action=view"
+  },
+  "29220173": {
+   "name": "Overdue: Practical 4 - To Manipulate data in the existing tables",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476525&action=view"
+  },
+  "29231717": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -3057,7 +3049,6 @@
   "28535": "new",
   "31270": "new",
   "31390": "new",
-  "32781": "new",
   "32919": "new",
   "32943": "new",
   "32944": "new",
