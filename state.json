@@ -392,6 +392,55 @@
    "due": 1795093200,
    "name": "LAB 10(p1)",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476941"
+  },
+  "33189": {
+   "cmid": 477932,
+   "course": "Database Management System",
+   "due": 1795530600,
+   "name": "Practical 1 - Introduction to date types in oracle.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477932"
+  },
+  "33190": {
+   "cmid": 477934,
+   "course": "Database Management System",
+   "due": 1795530600,
+   "name": "Practical 2 - Creating Entity-Relationship Diagram using case tools",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477934"
+  },
+  "33191": {
+   "cmid": 477937,
+   "course": "Database Management System",
+   "due": 1795530600,
+   "name": "Practical 3 - To implement Create, insert and Basic SQL SELECT statements.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477937"
+  },
+  "33192": {
+   "cmid": 477938,
+   "course": "Database Management System",
+   "due": 1795530600,
+   "name": "Practical 4 - To Manipulate data in the existing tables",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477938"
+  },
+  "33193": {
+   "cmid": 477939,
+   "course": "Database Management System",
+   "due": 1795530600,
+   "name": "Practical 5 - To Create and manage tables with constraints on it.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477939"
+  },
+  "33195": {
+   "cmid": 477941,
+   "course": "Database Management System",
+   "due": 1795530600,
+   "name": "Practical 6 - To Alter structure of table.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477941"
+  },
+  "33197": {
+   "cmid": 477943,
+   "course": "Database Management System",
+   "due": 1795530600,
+   "name": "Practical 8 - To implement join concepts.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477943"
   }
  },
  "courses": {
@@ -412,6 +461,14 @@
    "name": "Student Medical Document Submission is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429193"
+  },
+  "143919": {
+   "course": "English Proficiency and Aptitude Building",
+   "due": 1795372140,
+   "instance": 460085,
+   "name": "Module-1_MCA closes",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
   },
   "147004": {
    "course": "Database Management System",
@@ -468,12 +525,68 @@
    "name": "Practical 4 - To Manipulate data in the existing tables is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476504"
+  },
+  "154007": {
+   "course": "Database Management System",
+   "due": 1795530600,
+   "instance": 477932,
+   "name": "Practical 1 - Introduction to date types in oracle. is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477932"
+  },
+  "154011": {
+   "course": "Database Management System",
+   "due": 1795530600,
+   "instance": 477934,
+   "name": "Practical 2 - Creating Entity-Relationship Diagram using case tools is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477934"
+  },
+  "154015": {
+   "course": "Database Management System",
+   "due": 1795530600,
+   "instance": 477937,
+   "name": "Practical 3 - To implement Create, insert and Basic SQL SELECT statements. is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477937"
+  },
+  "154017": {
+   "course": "Database Management System",
+   "due": 1795530600,
+   "instance": 477938,
+   "name": "Practical 4 - To Manipulate data in the existing tables is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477938"
+  },
+  "154019": {
+   "course": "Database Management System",
+   "due": 1795530600,
+   "instance": 477939,
+   "name": "Practical 5 - To Create and manage tables with constraints on it. is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477939"
+  },
+  "154023": {
+   "course": "Database Management System",
+   "due": 1795530600,
+   "instance": 477941,
+   "name": "Practical 6 - To Alter structure of table. is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477941"
+  },
+  "154027": {
+   "course": "Database Management System",
+   "due": 1795530600,
+   "instance": 477943,
+   "name": "Practical 8 - To implement join concepts. is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477943"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-21-7",
-  "last_run": 1795228192.9019146,
+  "digest_slot": "2026-11-21-16",
+  "last_run": 1795260231.3905666,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -661,7 +774,8 @@
    ],
    "38009": [],
    "38218": [
-    "open"
+    "open",
+    "closing"
    ],
    "38617": [
     "open",
@@ -2798,17 +2912,58 @@
    "section": "Active Learning Space_Garima Nandal",
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=477396"
+  },
+  "477932": {
+   "course": "Database Management System",
+   "name": "Practical 1 - Introduction to date types in oracle.",
+   "section": "DBMS Lab Sec 5 P1",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477932"
+  },
+  "477934": {
+   "course": "Database Management System",
+   "name": "Practical 2 - Creating Entity-Relationship Diagram using case tools",
+   "section": "DBMS Lab Sec 5 P1",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477934"
+  },
+  "477937": {
+   "course": "Database Management System",
+   "name": "Practical 3 - To implement Create, insert and Basic SQL SELECT statements.",
+   "section": "DBMS Lab Sec 5 P1",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477937"
+  },
+  "477938": {
+   "course": "Database Management System",
+   "name": "Practical 4 - To Manipulate data in the existing tables",
+   "section": "DBMS Lab Sec 5 P1",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477938"
+  },
+  "477939": {
+   "course": "Database Management System",
+   "name": "Practical 5 - To Create and manage tables with constraints on it.",
+   "section": "DBMS Lab Sec 5 P1",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477939"
+  },
+  "477941": {
+   "course": "Database Management System",
+   "name": "Practical 6 - To Alter structure of table.",
+   "section": "DBMS Lab Sec 5 P1",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477941"
+  },
+  "477943": {
+   "course": "Database Management System",
+   "name": "Practical 8 - To implement join concepts.",
+   "section": "DBMS Lab Sec 5 P1",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477943"
   }
  },
  "notifications": {
-  "28865321": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28927837": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "28956238": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -2880,6 +3035,14 @@
   "29231717": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
+  },
+  "29232701": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29236632": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
   }
  },
  "quizzes": {
@@ -2940,9 +3103,9 @@
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=459922"
   },
   "36315": {
-   "close": 1795026540,
+   "close": 1795372140,
    "course": "English Proficiency and Aptitude Building",
-   "limit": 21600,
+   "limit": 1800,
    "name": "Module-1_MCA",
    "open": 1789621200,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
@@ -3054,6 +3217,13 @@
   "32944": "new",
   "32945": "new",
   "32946": "new",
-  "33015": "new"
+  "33015": "new",
+  "33189": "new",
+  "33190": "new",
+  "33191": "new",
+  "33192": "new",
+  "33193": "new",
+  "33195": "new",
+  "33197": "new"
  }
 }
