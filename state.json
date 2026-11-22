@@ -441,6 +441,13 @@
    "due": 1795530600,
    "name": "Practical 8 - To implement join concepts.",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477943"
+  },
+  "33235": {
+   "cmid": 478091,
+   "course": "Problem Solving and Computer Programming",
+   "due": 1795977000,
+   "name": "Lab_Assignment_P1&P2",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=478091"
   }
  },
  "courses": {
@@ -470,14 +477,6 @@
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
   },
-  "147004": {
-   "course": "Database Management System",
-   "due": 1795185000,
-   "instance": 465901,
-   "name": "Practical 5 - To Create and manage tables with constraints on it. is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=465901"
-  },
   "151754": {
    "course": "Computational Mathematics and Statistics",
    "due": 1795338780,
@@ -493,38 +492,6 @@
    "name": "Lab 10: OOPS extended is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476377"
-  },
-  "152923": {
-   "course": "Database Management System",
-   "due": 1795185000,
-   "instance": 476496,
-   "name": "Practical 1- Introduction to date types in oracle. is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476496"
-  },
-  "152928": {
-   "course": "Database Management System",
-   "due": 1795185000,
-   "instance": 476500,
-   "name": "practical 2 - Creating Entity-Relationship Diagram using case tools is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476500"
-  },
-  "152930": {
-   "course": "Database Management System",
-   "due": 1795185000,
-   "instance": 476501,
-   "name": "Practical 3 - To implement Create, insert and Basic SQL SELECT statements. is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476501"
-  },
-  "152932": {
-   "course": "Database Management System",
-   "due": 1795185000,
-   "instance": 476504,
-   "name": "Practical 4 - To Manipulate data in the existing tables is due",
-   "type": "assign",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476504"
   },
   "154007": {
    "course": "Database Management System",
@@ -581,12 +548,20 @@
    "name": "Practical 8 - To implement join concepts. is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477943"
+  },
+  "154200": {
+   "course": "Problem Solving and Computer Programming",
+   "due": 1795977000,
+   "instance": 478091,
+   "name": "Lab_Assignment_P1&P2 is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=478091"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-21-16",
-  "last_run": 1795307209.6824844,
+  "digest_slot": "2026-11-22-13",
+  "last_run": 1795334912.2623782,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -707,6 +682,9 @@
     24,
     72
    ],
+   "32919": [
+    72
+   ],
    "32943": [
     2,
     6,
@@ -730,9 +708,30 @@
     6,
     24,
     72
+   ],
+   "33189": [
+    72
+   ],
+   "33190": [
+    72
+   ],
+   "33191": [
+    72
+   ],
+   "33192": [
+    72
+   ],
+   "33193": [
+    72
+   ],
+   "33195": [
+    72
+   ],
+   "33197": [
+    72
    ]
   },
-  "plan_date": "2026-11-21",
+  "plan_date": "2026-11-22",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -2961,29 +2960,23 @@
    "section": "DBMS Lab Sec 5 P1",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477943"
+  },
+  "478082": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture_pointer",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=478082"
+  },
+  "478091": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lab_Assignment_P1&P2",
+   "section": "Suraj Singh-section-8",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=478091"
   }
  },
  "notifications": {
-  "28956238": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "28991329": {
-   "name": "Overdue: LAB 10(p1)",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476941&action=view"
-  },
-  "28994337": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "29102018": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "29164349": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
   "29175537": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -3043,6 +3036,26 @@
   "29236632": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
+  },
+  "29239456": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29244136": {
+   "name": "Problem Solving and Computer Programming(E1PA103B) content change",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=478091"
+  },
+  "29302810": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29362189": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29364514": {
+   "name": "Problem Solving and Computer Programming(E1PA103B) content change",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=478091"
   }
  },
  "quizzes": {
@@ -3224,6 +3237,7 @@
   "33192": "new",
   "33193": "new",
   "33195": "new",
-  "33197": "new"
+  "33197": "new",
+  "33235": "new"
  }
 }
