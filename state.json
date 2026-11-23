@@ -448,6 +448,13 @@
    "due": 1795977000,
    "name": "Lab_Assignment_P1&P2",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=478091"
+  },
+  "33280": {
+   "cmid": 478565,
+   "course": "Digital Computer Organization",
+   "due": 1795890600,
+   "name": "Assignment_dco",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=478565"
   }
  },
  "courses": {
@@ -468,14 +475,6 @@
    "name": "Student Medical Document Submission is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429193"
-  },
-  "143919": {
-   "course": "English Proficiency and Aptitude Building",
-   "due": 1795372140,
-   "instance": 460085,
-   "name": "Module-1_MCA closes",
-   "type": "quiz",
-   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=460085"
   },
   "152845": {
    "course": "Programming with Python",
@@ -548,12 +547,20 @@
    "name": "Lab_Assignment_P1&P2 is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=478091"
+  },
+  "154625": {
+   "course": "Digital Computer Organization",
+   "due": 1795890600,
+   "instance": 478565,
+   "name": "Assignment_dco is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=478565"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-22-21",
-  "last_run": 1795386745.0340486,
+  "digest_slot": "2026-11-23-9",
+  "last_run": 1795405628.814388,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -723,7 +730,7 @@
     72
    ]
   },
-  "plan_date": "2026-11-22",
+  "plan_date": "2026-11-23",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -3029,21 +3036,30 @@
    "section": "Dr Sudheer Kumar SIngh Section 4",
    "type": "folder",
    "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=478524"
+  },
+  "478563": {
+   "course": "Digital Computer Organization",
+   "name": "DCO_Lecture_19",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=478563"
+  },
+  "478564": {
+   "course": "Digital Computer Organization",
+   "name": "DCO_Lecture_20",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=478564"
+  },
+  "478565": {
+   "course": "Digital Computer Organization",
+   "name": "Assignment_dco",
+   "section": "General",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=478565"
   }
  },
  "notifications": {
-  "29214090": {
-   "name": "Overdue: Practical 5 - To Create and manage tables with constraints on it.",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=465901&action=view"
-  },
-  "29214751": {
-   "name": "Overdue: Practical 1- Introduction to date types in oracle.",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476496&action=view"
-  },
-  "29215415": {
-   "name": "Overdue: practical 2 - Creating Entity-Relationship Diagram using case tools",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476500&action=view"
-  },
   "29216071": {
    "name": "Overdue: Practical 3 - To implement Create, insert and Basic SQL SELECT statements.",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476501&action=view"
@@ -3109,6 +3125,18 @@
    "url": ""
   },
   "29377898": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29383326": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29413557": {
+   "name": "You have assignments due in 7 days",
+   "url": ""
+  },
+  "29435998": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -3292,6 +3320,7 @@
   "33193": "new",
   "33195": "new",
   "33197": "new",
-  "33235": "new"
+  "33235": "new",
+  "33280": "new"
  }
 }
