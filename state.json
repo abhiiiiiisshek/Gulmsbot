@@ -559,8 +559,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-24-7",
-  "last_run": 1795486796.8060465,
+  "digest_slot": "2026-11-24-18",
+  "last_run": 1795524173.7954404,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -682,6 +682,7 @@
     72
    ],
    "32919": [
+    6,
     24,
     72
    ],
@@ -710,30 +711,44 @@
     72
    ],
    "33189": [
+    2,
+    6,
     24,
     72
    ],
    "33190": [
+    2,
+    6,
     24,
     72
    ],
    "33191": [
+    2,
+    6,
     24,
     72
    ],
    "33192": [
+    2,
+    6,
     24,
     72
    ],
    "33193": [
+    2,
+    6,
     24,
     72
    ],
    "33195": [
+    2,
+    6,
     24,
     72
    ],
    "33197": [
+    2,
+    6,
     24,
     72
    ]
@@ -786,7 +801,8 @@
    "38617": [
     "open",
     "closing"
-   ]
+   ],
+   "38994": []
   },
   "report_week": "2026-47"
  },
@@ -3065,17 +3081,16 @@
    "section": "General",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=478565"
+  },
+  "479175": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Module Test - 1 (copy)",
+   "section": "Active Learning Space_Monu Kumar",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=479175"
   }
  },
  "notifications": {
-  "29218112": {
-   "name": "Overdue: Practical 1- Introduction to date types in oracle.",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476522&action=view"
-  },
-  "29218795": {
-   "name": "Overdue: practical 2 - Creating Entity-Relationship Diagram using case tools",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476523&action=view"
-  },
   "29219484": {
    "name": "Overdue: Practical 3 - To implement Create, insert and Basic SQL SELECT statements.",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476524&action=view"
@@ -3145,6 +3160,14 @@
    "url": ""
   },
   "29497586": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29589711": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29592398": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -3309,6 +3332,14 @@
    "name": "Module Test 1 (Garima Nandal)",
    "open": 1795148340,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=477396"
+  },
+  "38994": {
+   "close": 1791450600,
+   "course": "English Proficiency and Aptitude Building",
+   "limit": 1800,
+   "name": "Module Test - 1 (copy)",
+   "open": 1791439800,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=479175"
   }
  },
  "subs": {
