@@ -559,8 +559,8 @@
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-24-18",
-  "last_run": 1795561521.974022,
+  "digest_slot": "2026-11-25-10",
+  "last_run": 1795584553.9634256,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -753,7 +753,7 @@
     72
    ]
   },
-  "plan_date": "2026-11-24",
+  "plan_date": "2026-11-25",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -1027,7 +1027,7 @@
   "429189": {
    "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
    "name": "Student Medical Document Submission",
-   "section": "School of Basic Sciences",
+   "section": "School of forensic science",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=429189"
   },
@@ -3088,49 +3088,65 @@
    "section": "Active Learning Space_Monu Kumar",
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=479175"
+  },
+  "479340": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture-36",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=479340"
+  },
+  "479341": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture-37",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=479341"
+  },
+  "479344": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture-38",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=479344"
+  },
+  "479345": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture-39",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=479345"
+  },
+  "479347": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture-40",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=479347"
+  },
+  "479356": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture-41",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=479356"
+  },
+  "479360": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture-42",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=479360"
+  },
+  "479436": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture Notes on Introduction to algorithmic strategies and design paradigms",
+   "section": "Rajiv Chourasiya_Section-3",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=479436"
   }
  },
  "notifications": {
-  "29219484": {
-   "name": "Overdue: Practical 3 - To implement Create, insert and Basic SQL SELECT statements.",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476524&action=view"
-  },
-  "29220173": {
-   "name": "Overdue: Practical 4 - To Manipulate data in the existing tables",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476525&action=view"
-  },
-  "29231717": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "29232701": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "29236632": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "29239456": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "29244136": {
-   "name": "Problem Solving and Computer Programming(E1PA103B) content change",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=478091"
-  },
-  "29302810": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "29362189": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "29364514": {
-   "name": "Problem Solving and Computer Programming(E1PA103B) content change",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=478091"
-  },
   "29375792": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
@@ -3168,6 +3184,46 @@
    "url": ""
   },
   "29592398": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29592906": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29594300": {
+   "name": "Overdue: Practical 1 - Introduction to date types in oracle.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477932&action=view"
+  },
+  "29594998": {
+   "name": "Overdue: Practical 2 - Creating Entity-Relationship Diagram using case tools",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477934&action=view"
+  },
+  "29595666": {
+   "name": "Overdue: Practical 3 - To implement Create, insert and Basic SQL SELECT statements.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477937&action=view"
+  },
+  "29596336": {
+   "name": "Overdue: Practical 4 - To Manipulate data in the existing tables",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477938&action=view"
+  },
+  "29597006": {
+   "name": "Overdue: Practical 5 - To Create and manage tables with constraints on it.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477939&action=view"
+  },
+  "29597674": {
+   "name": "Overdue: Practical 6 - To Alter structure of table.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477941&action=view"
+  },
+  "29598344": {
+   "name": "Overdue: Practical 8 - To implement join concepts.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477943&action=view"
+  },
+  "29613318": {
+   "name": "Overdue: Lab 10: OOPS extended",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476377&action=view"
+  },
+  "29635524": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
