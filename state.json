@@ -541,7 +541,7 @@
  "grades": {},
  "meta": {
   "digest_slot": "2026-11-26-7",
-  "last_run": 1795657814.4434462,
+  "last_run": 1795724121.8494253,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -3314,7 +3314,7 @@
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=440172"
   },
   "34033": {
-   "close": 0,
+   "close": 1795716720,
    "course": "English Proficiency and Aptitude Building",
    "limit": 0,
    "name": "Pre Assessment Percentage",
