@@ -541,7 +541,7 @@
  "grades": {},
  "meta": {
   "digest_slot": "2026-11-26-7",
-  "last_run": 1795724121.8494253,
+  "last_run": 1795817160.0732853,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -770,7 +770,6 @@
    ],
    "37130": [],
    "37131": [],
-   "37134": [],
    "37307": [
     "closing",
     "open"
@@ -792,7 +791,8 @@
     "open",
     "closing"
    ],
-   "38994": []
+   "38994": [],
+   "39592": []
   },
   "report_week": "2026-47"
  },
@@ -3378,20 +3378,12 @@
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=466663"
   },
   "37131": {
-   "close": 0,
+   "close": 1798392840,
    "course": "English Proficiency and Aptitude Building",
    "limit": 0,
    "name": "Pre Assessment Percentage",
    "open": 0,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=466665"
-  },
-  "37134": {
-   "close": 0,
-   "course": "English Proficiency and Aptitude Building",
-   "limit": 0,
-   "name": "Module Test 1 ( 1st Sem)",
-   "open": 0,
-   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=466681"
   },
   "37307": {
    "close": 1792224300,
@@ -3456,6 +3448,14 @@
    "name": "Module Test - 1 (section - 6)",
    "open": 1791439800,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=479175"
+  },
+  "39592": {
+   "close": 1796063340,
+   "course": "English Proficiency and Aptitude Building",
+   "limit": 1800,
+   "name": "Module-1_MCA",
+   "open": 1789621200,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=481998"
   }
  },
  "subs": {
