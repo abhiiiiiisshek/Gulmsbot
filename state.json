@@ -476,6 +476,62 @@
    "due": 1795789800,
    "name": "Practical 8 - To implement join concepts.",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=479856"
+  },
+  "33585": {
+   "cmid": 480635,
+   "course": "Programming with Python",
+   "due": 1798288800,
+   "name": "LAB 11",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480635"
+  },
+  "33623": {
+   "cmid": 480902,
+   "course": "Programming with Python",
+   "due": 1796128200,
+   "name": "LAB 12(P1)",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480902"
+  },
+  "33624": {
+   "cmid": 480905,
+   "course": "Programming with Python",
+   "due": 1796149800,
+   "name": "Lab 13(p1)",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480905"
+  },
+  "33625": {
+   "cmid": 480906,
+   "course": "Programming with Python",
+   "due": 1796214600,
+   "name": "LAB 14(P1)",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480906"
+  },
+  "33628": {
+   "cmid": 480910,
+   "course": "Programming with Python",
+   "due": 1796215200,
+   "name": "LAB 11 (P2)",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480910"
+  },
+  "33629": {
+   "cmid": 480911,
+   "course": "Programming with Python",
+   "due": 1796214600,
+   "name": "LAB 12(P2)",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480911"
+  },
+  "33630": {
+   "cmid": 480912,
+   "course": "Programming with Python",
+   "due": 1796149800,
+   "name": "Lab 13(p2)",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480912"
+  },
+  "33631": {
+   "cmid": 480914,
+   "course": "Programming with Python",
+   "due": 1796214600,
+   "name": "LAB 14(P2)",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480914"
   }
  },
  "courses": {
@@ -536,15 +592,98 @@
    "name": "Practical 8 - To implement join concepts. is due",
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=479856"
+  },
+  "156214": {
+   "course": "Programming with Python",
+   "due": 1798288800,
+   "instance": 480635,
+   "name": "LAB 11 is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480635"
+  },
+  "156382": {
+   "course": "Programming with Python",
+   "due": 1796128200,
+   "instance": 480902,
+   "name": "LAB 12(P1) is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480902"
+  },
+  "156385": {
+   "course": "Programming with Python",
+   "due": 1796149800,
+   "instance": 480905,
+   "name": "Lab 13(p1) is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480905"
+  },
+  "156387": {
+   "course": "Programming with Python",
+   "due": 1796214600,
+   "instance": 480906,
+   "name": "LAB 14(P1) is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480906"
+  },
+  "156393": {
+   "course": "Programming with Python",
+   "due": 1796215200,
+   "instance": 480910,
+   "name": "LAB 11 (P2) is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480910"
+  },
+  "156394": {
+   "course": "Programming with Python",
+   "due": 1796214600,
+   "instance": 480911,
+   "name": "LAB 12(P2) is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480911"
+  },
+  "156395": {
+   "course": "Programming with Python",
+   "due": 1796149800,
+   "instance": 480912,
+   "name": "Lab 13(p2) is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480912"
+  },
+  "156397": {
+   "course": "Programming with Python",
+   "due": 1796214600,
+   "instance": 480914,
+   "name": "LAB 14(P2) is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480914"
+  },
+  "157507": {
+   "course": "English Proficiency and Aptitude Building",
+   "due": 1796063340,
+   "instance": 481998,
+   "name": "Module-1_MCA closes",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=481998"
+  },
+  "157514": {
+   "course": "English Proficiency and Aptitude Building",
+   "due": 1798392840,
+   "instance": 466665,
+   "name": "Pre Assessment Percentage closes",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=466665"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-26-7",
-  "last_run": 1795817160.0732853,
+  "digest_slot": "2026-11-28-9",
+  "last_run": 1795838335.6550934,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
+   "27408": [
+    72
+   ],
    "29791": [
     6,
     24,
@@ -733,7 +872,11 @@
     24,
     72
    ],
+   "33235": [
+    72
+   ],
    "33280": [
+    24,
     72
    ],
    "33446": [
@@ -743,7 +886,7 @@
     72
    ]
   },
-  "plan_date": "2026-11-26",
+  "plan_date": "2026-11-28",
   "quiz": {
    "32268": [],
    "33241": [],
@@ -2624,13 +2767,6 @@
    "type": "folder",
    "url": "https://gulms.galgotiasuniversity.org/mod/folder/view.php?id=466672"
   },
-  "466681": {
-   "course": "English Proficiency and Aptitude Building",
-   "name": "Module Test 1 ( 1st Sem)",
-   "section": "Arun_ Active Learning Space",
-   "type": "quiz",
-   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=466681"
-  },
   "466973": {
    "course": "Programming with Python",
    "name": "Assignment 1",
@@ -3179,7 +3315,7 @@
   },
   "480009": {
    "course": "Problem Solving and Computer Programming",
-   "name": "Introduction to algorithmic strategies",
+   "name": "Introduction to algorithmic strategies and design paradigms",
    "section": "Priya Pandey (sec-2, 6)",
    "type": "resource",
    "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=480009"
@@ -3204,49 +3340,135 @@
    "section": "Priya Pandey-Sec-1 and 5",
    "type": "resource",
    "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=480012"
+  },
+  "480165": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture-34",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=480165"
+  },
+  "480173": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture-35",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=480173"
+  },
+  "480341": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture 25.26",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=480341"
+  },
+  "480344": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture 27.28",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=480344"
+  },
+  "480358": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture 23",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=480358"
+  },
+  "480361": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture 24",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=480361"
+  },
+  "480367": {
+   "course": "Problem Solving and Computer Programming",
+   "name": "Lecture 29.30",
+   "section": "General",
+   "type": "resource",
+   "url": "https://gulms.galgotiasuniversity.org/mod/resource/view.php?id=480367"
+  },
+  "480635": {
+   "course": "Programming with Python",
+   "name": "LAB 11",
+   "section": "Section 2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480635"
+  },
+  "480902": {
+   "course": "Programming with Python",
+   "name": "LAB 12(P1)",
+   "section": "Section 2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480902"
+  },
+  "480905": {
+   "course": "Programming with Python",
+   "name": "Lab 13(p1)",
+   "section": "Section 2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480905"
+  },
+  "480906": {
+   "course": "Programming with Python",
+   "name": "LAB 14(P1)",
+   "section": "Section 2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480906"
+  },
+  "480910": {
+   "course": "Programming with Python",
+   "name": "LAB 11 (P2)",
+   "section": "Section 2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480910"
+  },
+  "480911": {
+   "course": "Programming with Python",
+   "name": "LAB 12(P2)",
+   "section": "Section 2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480911"
+  },
+  "480912": {
+   "course": "Programming with Python",
+   "name": "Lab 13(p2)",
+   "section": "Section 2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480912"
+  },
+  "480914": {
+   "course": "Programming with Python",
+   "name": "LAB 14(P2)",
+   "section": "Section 2",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480914"
+  },
+  "481980": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of basic science",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=481980"
+  },
+  "481981": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Aerospace and Defence Technology",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=481981"
+  },
+  "481998": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "Module-1_MCA",
+   "section": "Arun_ Active Learning Space",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=481998"
   }
  },
  "notifications": {
-  "29438504": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "29444903": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "29497586": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "29589711": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "29592398": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "29592906": {
-   "name": "New sign in to your ActiLearn account",
-   "url": ""
-  },
-  "29594300": {
-   "name": "Overdue: Practical 1 - Introduction to date types in oracle.",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477932&action=view"
-  },
-  "29594998": {
-   "name": "Overdue: Practical 2 - Creating Entity-Relationship Diagram using case tools",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477934&action=view"
-  },
-  "29595666": {
-   "name": "Overdue: Practical 3 - To implement Create, insert and Basic SQL SELECT statements.",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477937&action=view"
-  },
-  "29596336": {
-   "name": "Overdue: Practical 4 - To Manipulate data in the existing tables",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477938&action=view"
-  },
   "29597006": {
    "name": "Overdue: Practical 5 - To Create and manage tables with constraints on it.",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477939&action=view"
@@ -3284,6 +3506,46 @@
    "url": ""
   },
   "29715931": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29792317": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29828309": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29829496": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29874694": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29903829": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29911684": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29925115": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29939692": {
+   "name": "Overdue: Practical 6 - To Alter structure of table.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=479854&action=view"
+  },
+  "29940401": {
+   "name": "Overdue: Practical 8 - To implement join concepts.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=479856&action=view"
+  },
+  "29993908": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -3462,18 +3724,17 @@
   "27408": "new",
   "28535": "new",
   "31270": "new",
-  "32919": "new",
-  "33189": "new",
-  "33190": "new",
-  "33191": "new",
-  "33192": "new",
-  "33193": "new",
-  "33195": "new",
-  "33197": "new",
   "33235": "new",
   "33280": "new",
   "33440": "new",
   "33446": "new",
-  "33447": "new"
+  "33447": "new",
+  "33623": "new",
+  "33624": "new",
+  "33625": "new",
+  "33628": "new",
+  "33629": "new",
+  "33630": "new",
+  "33631": "new"
  }
 }
