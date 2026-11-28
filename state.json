@@ -532,6 +532,48 @@
    "due": 1796214600,
    "name": "LAB 14(P2)",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480914"
+  },
+  "33891": {
+   "cmid": 481981,
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "due": 1795977000,
+   "name": "Student Medical Document Submission",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=481981"
+  },
+  "33955": {
+   "cmid": 482314,
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "due": 1795977000,
+   "name": "Student Medical Document Submission",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=482314"
+  },
+  "33964": {
+   "cmid": 482391,
+   "course": "Database Management System",
+   "due": 1795890600,
+   "name": "Practical 1 - Introduction to data types in oracle.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=482391"
+  },
+  "33966": {
+   "cmid": 482399,
+   "course": "Database Management System",
+   "due": 1795890600,
+   "name": "Practical 2 - Creating Entity - Relationship Diagram using case tools.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=482399"
+  },
+  "33967": {
+   "cmid": 482402,
+   "course": "Database Management System",
+   "due": 1795890600,
+   "name": "Practical 3 - To implement Create, insert and Basic SQL SELECT statements.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=482402"
+  },
+  "33969": {
+   "cmid": 482410,
+   "course": "Database Management System",
+   "due": 1795890600,
+   "name": "Practical 4 - To Manipulate data in the existing tables.",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=482410"
   }
  },
  "courses": {
@@ -657,6 +699,14 @@
    "type": "assign",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=480914"
   },
+  "157493": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "due": 1795977000,
+   "instance": 481981,
+   "name": "Student Medical Document Submission is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=481981"
+  },
   "157507": {
    "course": "English Proficiency and Aptitude Building",
    "due": 1796063340,
@@ -672,12 +722,60 @@
    "name": "Pre Assessment Percentage closes",
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=466665"
+  },
+  "157796": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "due": 1795977000,
+   "instance": 482314,
+   "name": "Student Medical Document Submission is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=482314"
+  },
+  "157823": {
+   "course": "Digital Computer Organization",
+   "due": 1795874400,
+   "instance": 482343,
+   "name": "IA for Debarred Students closes",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=482343"
+  },
+  "157899": {
+   "course": "Database Management System",
+   "due": 1795890600,
+   "instance": 482391,
+   "name": "Practical 1 - Introduction to data types in oracle. is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=482391"
+  },
+  "157908": {
+   "course": "Database Management System",
+   "due": 1795890600,
+   "instance": 482399,
+   "name": "Practical 2 - Creating Entity - Relationship Diagram using case tools. is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=482399"
+  },
+  "157911": {
+   "course": "Database Management System",
+   "due": 1795890600,
+   "instance": 482402,
+   "name": "Practical 3 - To implement Create, insert and Basic SQL SELECT statements. is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=482402"
+  },
+  "157914": {
+   "course": "Database Management System",
+   "due": 1795890600,
+   "instance": 482410,
+   "name": "Practical 4 - To Manipulate data in the existing tables. is due",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=482410"
   }
  },
  "grades": {},
  "meta": {
-  "digest_slot": "2026-11-28-9",
-  "last_run": 1795838335.6550934,
+  "digest_slot": "2026-11-28-18",
+  "last_run": 1795871661.2137434,
   "log_grades": [],
   "log_submitted": [],
   "nag": {
@@ -876,6 +974,7 @@
     72
    ],
    "33280": [
+    6,
     24,
     72
    ],
@@ -883,6 +982,35 @@
     72
    ],
    "33447": [
+    72
+   ],
+   "33623": [
+    72
+   ],
+   "33891": [
+    72
+   ],
+   "33955": [
+    72
+   ],
+   "33964": [
+    6,
+    24,
+    72
+   ],
+   "33966": [
+    6,
+    24,
+    72
+   ],
+   "33967": [
+    6,
+    24,
+    72
+   ],
+   "33969": [
+    6,
+    24,
     72
    ]
   },
@@ -935,7 +1063,14 @@
     "closing"
    ],
    "38994": [],
-   "39592": []
+   "39592": [],
+   "39648": [
+    "open"
+   ],
+   "39697": [
+    "open",
+    "closing"
+   ]
   },
   "report_week": "2026-47"
  },
@@ -3466,21 +3601,58 @@
    "section": "Arun_ Active Learning Space",
    "type": "quiz",
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=481998"
+  },
+  "482139": {
+   "course": "English Proficiency and Aptitude Building",
+   "name": "INTERNAL ASSESSMENT MCA QUANT",
+   "section": "General",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=482139"
+  },
+  "482314": {
+   "course": "Student Medical Document Submission (SMDS - Fall 2026-2027)",
+   "name": "Student Medical Document Submission",
+   "section": "School of Skill Sciences & Entrepreneurship",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=482314"
+  },
+  "482343": {
+   "course": "Digital Computer Organization",
+   "name": "IA for Debarred Students",
+   "section": "Debarred Exam",
+   "type": "quiz",
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=482343"
+  },
+  "482391": {
+   "course": "Database Management System",
+   "name": "Practical 1 - Introduction to data types in oracle.",
+   "section": "DBMS Lab Section - 8",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=482391"
+  },
+  "482399": {
+   "course": "Database Management System",
+   "name": "Practical 2 - Creating Entity - Relationship Diagram using case tools.",
+   "section": "DBMS Lab Section - 8",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=482399"
+  },
+  "482402": {
+   "course": "Database Management System",
+   "name": "Practical 3 - To implement Create, insert and Basic SQL SELECT statements.",
+   "section": "DBMS Lab Section - 8",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=482402"
+  },
+  "482410": {
+   "course": "Database Management System",
+   "name": "Practical 4 - To Manipulate data in the existing tables.",
+   "section": "DBMS Lab Section - 8",
+   "type": "assign",
+   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=482410"
   }
  },
  "notifications": {
-  "29597006": {
-   "name": "Overdue: Practical 5 - To Create and manage tables with constraints on it.",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477939&action=view"
-  },
-  "29597674": {
-   "name": "Overdue: Practical 6 - To Alter structure of table.",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477941&action=view"
-  },
-  "29598344": {
-   "name": "Overdue: Practical 8 - To implement join concepts.",
-   "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=477943&action=view"
-  },
   "29613318": {
    "name": "Overdue: Lab 10: OOPS extended",
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=476377&action=view"
@@ -3546,6 +3718,18 @@
    "url": "https://gulms.galgotiasuniversity.org/mod/assign/view.php?id=479856&action=view"
   },
   "29993908": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "29997752": {
+   "name": "New sign in to your ActiLearn account",
+   "url": ""
+  },
+  "30000180": {
+   "name": "Welcome to English Proficiency and Aptitude Building(O1PA102L)",
+   "url": "https://gulms.galgotiasuniversity.org/user/view.php?id=84111&amp;course=29722"
+  },
+  "30006348": {
    "name": "New sign in to your ActiLearn account",
    "url": ""
   }
@@ -3718,6 +3902,22 @@
    "name": "Module-1_MCA",
    "open": 1789621200,
    "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=481998"
+  },
+  "39648": {
+   "close": 1795869000,
+   "course": "English Proficiency and Aptitude Building",
+   "limit": 4800,
+   "name": "INTERNAL ASSESSMENT MCA QUANT",
+   "open": 1795841400,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=482139"
+  },
+  "39697": {
+   "close": 1795874400,
+   "course": "Digital Computer Organization",
+   "limit": 1800,
+   "name": "IA for Debarred Students",
+   "open": 1795870800,
+   "url": "https://gulms.galgotiasuniversity.org/mod/quiz/view.php?id=482343"
   }
  },
  "subs": {
@@ -3735,6 +3935,12 @@
   "33628": "new",
   "33629": "new",
   "33630": "new",
-  "33631": "new"
+  "33631": "new",
+  "33891": "new",
+  "33955": "new",
+  "33964": "new",
+  "33966": "new",
+  "33967": "new",
+  "33969": "new"
  }
 }
